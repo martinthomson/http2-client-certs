@@ -1,6 +1,6 @@
 ---
 title: Reactive Certificate-Based Client Authentication in HTTP/2
-abbrev: CATCH 2
+abbrev: HTTP/2 Client Certs
 docname: draft-thomson-http2-client-certs-latest
 date: 2015
 category: std
