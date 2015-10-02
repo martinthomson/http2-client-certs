@@ -55,7 +55,7 @@ Copyright Notice
 
 Thomson                   Expires April 4, 2016                 [Page 1]
 
-Internet-Draft                   CATCH 2                    October 2015
+Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
    publication of this document.  Please review these documents
@@ -111,7 +111,7 @@ Table of Contents
 
 Thomson                   Expires April 4, 2016                 [Page 2]
 
-Internet-Draft                   CATCH 2                    October 2015
+Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
    information about the resource to construct an appropriate TLS
@@ -167,7 +167,7 @@ Internet-Draft                   CATCH 2                    October 2015
 
 Thomson                   Expires April 4, 2016                 [Page 3]
 
-Internet-Draft                   CATCH 2                    October 2015
+Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
    The server initiates TLS renegotiation by sending a TLS HelloRequest
@@ -223,7 +223,7 @@ Internet-Draft                   CATCH 2                    October 2015
 
 Thomson                   Expires April 4, 2016                 [Page 4]
 
-Internet-Draft                   CATCH 2                    October 2015
+Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
    Thus, the minimum necessary mechanism to support reactive certificate
@@ -279,7 +279,7 @@ Internet-Draft                   CATCH 2                    October 2015
 
 Thomson                   Expires April 4, 2016                 [Page 5]
 
-Internet-Draft                   CATCH 2                    October 2015
+Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 3.  HTTP/2 Request Correlation in TLS 1.2
@@ -335,7 +335,7 @@ Internet-Draft                   CATCH 2                    October 2015
 
 Thomson                   Expires April 4, 2016                 [Page 6]
 
-Internet-Draft                   CATCH 2                    October 2015
+Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
    TLS renegotiation MUST NOT be used to circumvent the other
@@ -391,7 +391,7 @@ Internet-Draft                   CATCH 2                    October 2015
 
 Thomson                   Expires April 4, 2016                 [Page 7]
 
-Internet-Draft                   CATCH 2                    October 2015
+Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 6.  IANA Considerations
@@ -447,7 +447,7 @@ Internet-Draft                   CATCH 2                    October 2015
 
 Thomson                   Expires April 4, 2016                 [Page 8]
 
-Internet-Draft                   CATCH 2                    October 2015
+Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
    [RFC7230]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
