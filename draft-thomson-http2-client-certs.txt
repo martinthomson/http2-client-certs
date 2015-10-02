@@ -350,6 +350,14 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
       particular, cipher suites on the black list from Appendix A of
       [RFC7540] can be removed from the handshake.
 
+   In addition to the requirements from [RFC7540], endpoints that
+   renegotiate MUST implement the TLS extended master secret extension
+   [RFC7627] and the TLS renegotiation indication extension [RFC5746].
+   These extensions MUST be negotiated and used to prevent serious
+   attacks on TLS renegotiation.  If an endpoint receives a TLS
+   ClientHello or ServerHello that does not include these extensions, it
+   MUST respond with a fatal TLS "no_renegotiation" alert.
+
    Once the HTTP/2 connection preface has been received from a peer, an
    endpoint SHOULD treat the receipt of a TLS ClientHello or ServerHello
    without an "application_context_id" extension as a fatal error and
@@ -371,20 +379,12 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 5.  Security Considerations
 
+   The TLS extended master secret extension [RFC7627] and the TLS
+   renegotiation indication extension [RFC5746] MUST be used to mitigate
+   several known attacks on TLS renegotiation.
+
    Adding correlation between requests and TLS-layer authentication
    addresses the primary functional concerns with mid-session client
-   authentication.  However, implementations need to be aware of the
-   potential for confusion about the state of a connection.
-
-   The presence of absence of a validated client certificate can change
-   during the processing of a request, potentially multiple times.  A
-   server that uses reactive certificate authentication needs to be
-   prepared to reevaluate the authorization state of a request as the
-   set of certificates changes.
-
-
-
-
 
 
 
@@ -393,6 +393,15 @@ Thomson                   Expires April 4, 2016                 [Page 7]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
+
+   authentication.  However, implementations need to be aware of the
+   potential for confusion about the state of a connection.
+
+   The presence of absence of a validated client certificate can change
+   during the processing of a request, potentially multiple times.  A
+   server that uses reactive certificate authentication needs to be
+   prepared to reevaluate the authorization state of a request as the
+   set of certificates changes.
 
 6.  IANA Considerations
 
@@ -431,6 +440,16 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
               Version 1.3", draft-ietf-tls-tls13-08 (work in progress),
               August 2015.
 
+
+
+
+
+
+Thomson                   Expires April 4, 2016                 [Page 8]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
+
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
               RFC2119, March 1997,
@@ -441,14 +460,10 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
               RFC5246, August 2008,
               <http://www.rfc-editor.org/info/rfc5246>.
 
-
-
-
-
-Thomson                   Expires April 4, 2016                 [Page 8]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
+   [RFC5746]  Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
+              "Transport Layer Security (TLS) Renegotiation Indication
+              Extension", RFC 5746, DOI 10.17487/RFC5746, February 2010,
+              <http://www.rfc-editor.org/info/rfc5746>.
 
    [RFC7230]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
               Protocol (HTTP/1.1): Message Syntax and Routing", RFC
@@ -460,33 +475,18 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
               10.17487/RFC7540, May 2015,
               <http://www.rfc-editor.org/info/rfc7540>.
 
+   [RFC7627]  Bhargavan, K., Ed., Delignat-Lavaud, A., Pironti, A.,
+              Langley, A., and M. Ray, "Transport Layer Security (TLS)
+              Session Hash and Extended Master Secret Extension", RFC
+              7627, DOI 10.17487/RFC7627, September 2015,
+              <http://www.rfc-editor.org/info/rfc7627>.
+
 Author's Address
 
    Martin Thomson
    Mozilla
 
    Email: martin.thomson@gmail.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

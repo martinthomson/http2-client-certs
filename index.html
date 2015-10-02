@@ -648,13 +648,15 @@ struct {
   <dt>Note:</dt>
   <dd style="margin-left: 8">A client need not offer cipher suites that might otherwise be offered for compatibility reasons when renegotiating.  In particular, cipher suites on the black list from Appendix A of <a href="#RFC7540">[RFC7540]</a> can be removed from the handshake.</dd>
 </dl>
-<p id="rfc.section.3.2.p.4">Once the HTTP/2 connection preface has been received from a peer, an endpoint SHOULD treat the receipt of a TLS ClientHello or ServerHello without an <samp>application_context_id</samp> extension as a fatal error and SHOULD send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
+<p id="rfc.section.3.2.p.4">In addition to the requirements from <a href="#RFC7540">[RFC7540]</a>, endpoints that renegotiate MUST implement the TLS extended master secret extension <a href="#RFC7627">[RFC7627]</a> and the TLS renegotiation indication extension <a href="#RFC5746">[RFC5746]</a>.  These extensions MUST be negotiated and used to prevent serious attacks on TLS renegotiation.  If an endpoint receives a TLS ClientHello or ServerHello that does not include these extensions, it MUST respond with a fatal TLS <samp>no_renegotiation</samp> alert.</p>
+<p id="rfc.section.3.2.p.5">Once the HTTP/2 connection preface has been received from a peer, an endpoint SHOULD treat the receipt of a TLS ClientHello or ServerHello without an <samp>application_context_id</samp> extension as a fatal error and SHOULD send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
 <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#setting" id="setting">Indicating Support for Reactive Certificate Authentication</a></h1>
 <p id="rfc.section.4.p.1">Clients that support reactive certificate authentication indicate this using the HTTP/2 <samp>SETTINGS_REACTIVE_AUTH</samp> (0xSETTING-TBD) setting.</p>
 <p id="rfc.section.4.p.2">The initial value for the <samp>SETTINGS_REACTIVE_AUTH</samp> setting is 0, indicating that the client does not support reactive client authentication.  A client sets the <samp>SETTINGS_REACTIVE_AUTH</samp> setting to a value of 1 to indicate support for reactive certificate authentication as defined in this document.  Any value other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of <a href="#RFC7540">[RFC7540]</a>) of type PROTOCOL_ERROR.</p>
 <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#security" id="security">Security Considerations</a></h1>
-<p id="rfc.section.5.p.1">Adding correlation between requests and TLS-layer authentication addresses the primary functional concerns with mid-session client authentication.  However, implementations need to be aware of the potential for confusion about the state of a connection.</p>
-<p id="rfc.section.5.p.2">The presence of absence of a validated client certificate can change during the processing of a request, potentially multiple times.  A server that uses reactive certificate authentication needs to be prepared to reevaluate the authorization state of a request as the set of certificates changes.</p>
+<p id="rfc.section.5.p.1">The TLS extended master secret extension <a href="#RFC7627">[RFC7627]</a> and the TLS renegotiation indication extension <a href="#RFC5746">[RFC5746]</a> MUST be used to mitigate several known attacks on TLS renegotiation.</p>
+<p id="rfc.section.5.p.2">Adding correlation between requests and TLS-layer authentication addresses the primary functional concerns with mid-session client authentication.  However, implementations need to be aware of the potential for confusion about the state of a connection.</p>
+<p id="rfc.section.5.p.3">The presence of absence of a validated client certificate can change during the processing of a request, potentially multiple times.  A server that uses reactive certificate authentication needs to be prepared to reevaluate the authorization state of a request as the set of certificates changes.</p>
 <h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a> <a href="#iana" id="iana">IANA Considerations</a></h1>
 <p id="rfc.section.6.p.1">The TLS <samp>application_context_id</samp> extension is registered in <a href="#iana-extension">Section 6.1</a>.  The HTTP/2 <samp>SETTINGS_REACTIVE_AUTH</samp> setting is registered in <a href="#iana-setting">Section 6.2</a>.</p>
 <h1 id="rfc.section.6.1"><a href="#rfc.section.6.1">6.1.</a> <a href="#iana-extension" id="iana-extension">TLS application_context_id Extension</a></h1>
@@ -706,6 +708,12 @@ struct {
     </tr>
     <tr>
       <td class="reference">
+        <b id="RFC5746">[RFC5746]</b>
+      </td>
+      <td class="top"><a>Rescorla, E.</a>, <a>Ray, M.</a>, <a>Dispensa, S.</a> and <a>N. Oskov</a>, "<a href="http://tools.ietf.org/html/rfc5746">Transport Layer Security (TLS) Renegotiation Indication Extension</a>", RFC 5746, DOI 10.17487/RFC5746, February 2010.</td>
+    </tr>
+    <tr>
+      <td class="reference">
         <b id="RFC7230">[RFC7230]</b>
       </td>
       <td class="top"><a>Fielding, R.</a> and <a>J. Reschke</a>, "<a href="http://tools.ietf.org/html/rfc7230">Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing</a>", RFC 7230, DOI 10.17487/RFC7230, June 2014.</td>
@@ -715,6 +723,12 @@ struct {
         <b id="RFC7540">[RFC7540]</b>
       </td>
       <td class="top"><a>Belshe, M.</a>, <a>Peon, R.</a> and <a>M. Thomson</a>, "<a href="http://tools.ietf.org/html/rfc7540">Hypertext Transfer Protocol Version 2 (HTTP/2)</a>", RFC 7540, DOI 10.17487/RFC7540, May 2015.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="RFC7627">[RFC7627]</b>
+      </td>
+      <td class="top"><a>Bhargavan, K.</a>, <a>Delignat-Lavaud, A.</a>, <a>Pironti, A.</a>, <a>Langley, A.</a> and <a>M. Ray</a>, "<a href="http://tools.ietf.org/html/rfc7627">Transport Layer Security (TLS) Session Hash and Extended Master Secret Extension</a>", RFC 7627, DOI 10.17487/RFC7627, September 2015.</td>
     </tr>
   </tbody>
 </table>
