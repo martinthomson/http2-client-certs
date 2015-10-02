@@ -394,24 +394,24 @@ Thomson                   Expires April 4, 2016                 [Page 7]
 Internet-Draft                   CATCH 2                    October 2015
 
 
-   Value:  EXTENSION-TBD Extension name:
+   Value:  EXTENSION-TBD
 
-      application_context_id Reference:
+   Extension name:  application_context_id
 
-      This document.
+   Reference:  This document.
 
 6.2.  HTTP/2 SETTINGS_REACTIVE_AUTH Setting
 
    The SETTINGS_REACTIVE_AUTH setting is registered in the "HTTP/2
    Settings" registry established in [RFC7540].
 
-   Name:  SETTINGS_REACTIVE_AUTH Code:
+   Name:  SETTINGS_REACTIVE_AUTH
 
-      0xSETTING-TBD Initial Value:
+   Code:  0xSETTING-TBD
 
-      0 Specification:
+   Initial Value:  0
 
-      This document.
+   Specification:  This document.
 
 7.  Normative References
 
