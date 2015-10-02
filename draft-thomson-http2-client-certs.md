@@ -43,6 +43,7 @@ This document describes a how client authentication might be requested by a
 server as a result of receiving a request to a protected resource.  This
 document updates RFC 7540 to allow TLS renegotiation in limited circumstances.
 
+
 --- middle
 
 # Introduction
@@ -71,6 +72,14 @@ only in cases where all clients are expected or required to have a single
 certificate that is used for all resources.  Many other uses for client
 certificates are reactive, that is, certificates are requested in response to
 the client making a request.
+
+CAVEAT:
+: As of 2015-10-02, TLS 1.3 does not include the client authentication features
+  this draft relies on.  While these features have been agreed in the TLS
+  working group, the exact design is still under revision.  The basic
+  functionality shouldn't change in a way that will affect this document, though
+  some details such as field names are highly likely to change.
+
 
 ## Reactive Certificate Authentication in HTTP/1.1
 
