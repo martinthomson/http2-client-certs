@@ -563,6 +563,12 @@ ul.toc a:first-child {
 <p id="rfc.section.1.p.2">For servers that wish to use client certificates to authenticate users, they might request client authentication during the TLS handshake.  However, if not all users or resources need certificate-based authentication, a request for a certificate has the unfortunate consequence of triggering the client to seek a certificate.  Such a request can result in a poor experience, particular when sent to a client that does not expect the request.</p>
 <p id="rfc.section.1.p.3">The TLS CertificateRequest can be used by servers to give clients hints about which certificate to offer.  Servers that rely on certificate-based authentication might request different certificates for different resources.  Such a server cannot use contextual information about the resource to construct an appropriate TLS CertificateRequest message during the initial handshake.</p>
 <p id="rfc.section.1.p.4">Consequently, client certificates are requested at connection establishment time only in cases where all clients are expected or required to have a single certificate that is used for all resources.  Many other uses for client certificates are reactive, that is, certificates are requested in response to the client making a request.</p>
+<p/>
+
+<dl>
+  <dt>CAVEAT:</dt>
+  <dd style="margin-left: 8">As of 2015-10-02, TLS 1.3 does not include the client authentication features this draft relies on.  While these features have been agreed in the TLS working group, the exact design is still under revision.  The basic functionality shouldn&#8217;t change in a way that will affect this document, though some details such as field names are highly likely to change.</dd>
+</dl>
 <h1 id="rfc.section.1.1"><a href="#rfc.section.1.1">1.1.</a> <a href="#reactive-certificate-authentication-in-http11" id="reactive-certificate-authentication-in-http11">Reactive Certificate Authentication in HTTP/1.1</a></h1>
 <p id="rfc.section.1.1.p.1">In HTTP/1.1, a server that relies on client authentication for a subset of users or resources does not request a certificate when the connection is established.  Instead, it only requests a client certificate when a request is made to a resource that requires a certificate.</p>
 <p><a href="#ex-http11">Figure 1</a> shows the server initiating a TLS-layer renegotiation in response to receiving an HTTP/1.1 request to a protected resource.</p>
