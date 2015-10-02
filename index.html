@@ -455,7 +455,7 @@ ul.toc a:first-child {
 <link href="#rfc.section.1" rel="Chapter" title="1 Introduction"/>
 <link href="#rfc.section.1.1" rel="Chapter" title="1.1 Reactive Certificate Authentication in HTTP/1.1"/>
 <link href="#rfc.section.1.2" rel="Chapter" title="1.2 TLS 1.3 Client Authentication"/>
-<link href="#rfc.section.1.3" rel="Chapter" title="1.3 Reactuve Client Authentication in HTTP/2"/>
+<link href="#rfc.section.1.3" rel="Chapter" title="1.3 Reactive Client Authentication in HTTP/2"/>
 <link href="#rfc.section.1.4" rel="Chapter" title="1.4 Terminology"/>
 <link href="#rfc.section.2" rel="Chapter" title="2 HTTP/2 Request Correlation in TLS 1.3"/>
 <link href="#rfc.section.3" rel="Chapter" title="3 HTTP/2 Request Correlation in TLS 1.2"/>
@@ -466,7 +466,8 @@ ul.toc a:first-child {
 <link href="#rfc.section.6" rel="Chapter" title="6 IANA Considerations"/>
 <link href="#rfc.section.6.1" rel="Chapter" title="6.1 TLS application_context_id Extension"/>
 <link href="#rfc.section.6.2" rel="Chapter" title="6.2 HTTP/2 SETTINGS_REACTIVE_AUTH Setting"/>
-<link href="#rfc.references" rel="Chapter" title="7 Normative References"/>
+<link href="#rfc.section.7" rel="Chapter" title="7 Acknowledgements"/>
+<link href="#rfc.references" rel="Chapter" title="8 Normative References"/>
 <link href="#rfc.authors" rel="Chapter"/>
 
 
@@ -541,7 +542,7 @@ ul.toc a:first-child {
   	<li>1.   <a href="#rfc.section.1">Introduction</a></li>
 <ul><li>1.1.   <a href="#rfc.section.1.1">Reactive Certificate Authentication in HTTP/1.1</a></li>
 <li>1.2.   <a href="#rfc.section.1.2">TLS 1.3 Client Authentication</a></li>
-<li>1.3.   <a href="#rfc.section.1.3">Reactuve Client Authentication in HTTP/2</a></li>
+<li>1.3.   <a href="#rfc.section.1.3">Reactive Client Authentication in HTTP/2</a></li>
 <li>1.4.   <a href="#rfc.section.1.4">Terminology</a></li>
 </ul><li>2.   <a href="#rfc.section.2">HTTP/2 Request Correlation in TLS 1.3</a></li>
 <li>3.   <a href="#rfc.section.3">HTTP/2 Request Correlation in TLS 1.2</a></li>
@@ -552,7 +553,8 @@ ul.toc a:first-child {
 <li>6.   <a href="#rfc.section.6">IANA Considerations</a></li>
 <ul><li>6.1.   <a href="#rfc.section.6.1">TLS application_context_id Extension</a></li>
 <li>6.2.   <a href="#rfc.section.6.2">HTTP/2 SETTINGS_REACTIVE_AUTH Setting</a></li>
-</ul><li>7.   <a href="#rfc.references">Normative References</a></li>
+</ul><li>7.   <a href="#rfc.section.7">Acknowledgements</a></li>
+<li>8.   <a href="#rfc.references">Normative References</a></li>
 <li><a href="#rfc.authors">Author's Address</a></li>
 
 
@@ -604,7 +606,7 @@ Client                                      Server
 </pre>
 <p class="figure">Figure 2: HTTP/1.1 Reactive Certificate Authentication with TLS 1.3</p>
 <p id="rfc.section.1.2.p.2">TLS 1.3 does not support renegotiation, instead supporting direct client authentication.  In contrast to the TLS 1.2 example, in TLS 1.3, a server can simply request a certificate.</p>
-<h1 id="rfc.section.1.3"><a href="#rfc.section.1.3">1.3.</a> <a href="#reactuve-client-authentication-in-http2" id="reactuve-client-authentication-in-http2">Reactuve Client Authentication in HTTP/2</a></h1>
+<h1 id="rfc.section.1.3"><a href="#rfc.section.1.3">1.3.</a> <a href="#reactive-client-authentication-in-http2" id="reactive-client-authentication-in-http2">Reactive Client Authentication in HTTP/2</a></h1>
 <p id="rfc.section.1.3.p.1">An important part of the HTTP/1.1 exchange is that the client is able to easily identify the request that caused the TLS renegotiation.  The client is able to assume that the next unanswered request on the connection is responsible.  The HTTP stack in the client is then able to direct the certificate request to the application or component that initiated that request.  This ensures that the application has the right contextual information for processing the request.</p>
 <p id="rfc.section.1.3.p.2">In HTTP/2, a client can have multiple outstanding requests.  Without some sort of correlation information, a client is unable to identify which request caused the server to request a certificate.</p>
 <p id="rfc.section.1.3.p.3">Thus, the minimum necessary mechanism to support reactive certificate authentication in HTTP/2 is an identifier that can be use to correlate an HTTP request with either a TLS renegotiation or CertificateRequest.</p>
@@ -616,15 +618,18 @@ Client                                      Server
 <p id="rfc.section.2.p.2">The certificate_request_id (name TBD) field of the TLS CertificateRequest is populated by the server with the stream identifier of the request that triggered the request.  That is, the value includes 32-bit value with a single reserved bit and the 31-bit stream identifier in network byte order.  This allows a client to correlate the TLS CertificateRequest with a request.</p>
 <p id="rfc.section.2.p.3">The stream identifier provided in certificate_request_id MUST identify a client-initiated stream.  The server MUST NOT send a TLS CertificateRequest for a server-initiated stream or for a stream that does not have an outstanding request.  In other words, a server can only initiate a request for a client certificate from the &#8220;open&#8221; or &#8220;half-closed (remote)&#8221; stream states.</p>
 <p id="rfc.section.2.p.4">A client that receives a TLS CertificateRequest with a certificate_request_id that does not identify a stream in a valid state (&#8220;open&#8221; or &#8220;half-closed (local)&#8221; for clients) SHOULD treat this as a connection error of type PROTOCOL_ERROR.</p>
-<p id="rfc.section.2.p.5">A server MAY send multiple TLS CertificateRequest messages.  If a server requires that a client provide multiple certificates before authorizing a single request, it MUST await a response to the first TLS CertificateRequest message before sending another request.</p>
+<p id="rfc.section.2.p.5">A server MAY send multiple TLS CertificateRequest messages.  If a server requires that a client provide multiple certificates before authorizing a single request, it MUST await a response to the first TLS CertificateRequest message before sending another TLS CertificateRequest for the same stream.</p>
 <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#aci-12" id="aci-12">HTTP/2 Request Correlation in TLS 1.2</a></h1>
 <p id="rfc.section.3.p.1">An HTTP/2 server that uses TLS 1.2 initiates client authentication by sending a TLS HelloRequest.  This triggers a TLS renegotiation.</p>
 <p id="rfc.section.3.p.2">An HTTP/2 client that receives a TLS HelloRequest message MUST initiate a TLS handshake, including an empty <samp>application_context_id</samp> extension.  If the client has not indicated support for renegotiation (see <a href="#setting">Section 4</a>), the client MUST send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
 <p id="rfc.section.3.p.3">The server populates the <samp>application_context_id</samp> extension with the stream identifier of the request that triggered the renegotiation.</p>
-<p id="rfc.section.3.p.4">Absence of an <samp>application_context_id</samp> extension or an empty value from the server MUST be treated as a fatal error that results in a fatal TLS <samp>no_renegotiation</samp> alert.</p>
+<p id="rfc.section.3.p.4">Absence of an <samp>application_context_id</samp> extension or an empty value from the server MUST be treated as a fatal error; endpoints MAY send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
+<p id="rfc.section.3.p.5">As with the TLS 1.3 solution, a server MAY request multiple client certificates, either for different requests or for the same request.  Only one TLS renegotiation can be in progress at a time.</p>
+<p id="rfc.section.3.p.6">A server MAY treat all certificates presented in the same connection as cumulative, remembering multiple certificates as they are presented.  Note that the authentication information collected from the client will need to be checked after each TLS renegotiation completes, since most TLS stacks only report the presence of the client certificate presented during the last TLS handshake.</p>
 <h1 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1.</a> <a href="#extension" id="extension">The TLS application_context_id Hello Extension</a></h1>
-<p id="rfc.section.3.1.p.1">The <samp>application_context_id</samp> TLS Hello Extension is used to carry an idenfier from an application context in the TLS handshake.  This is used to identify an application context in which</p>
+<p id="rfc.section.3.1.p.1">The <samp>application_context_id</samp> TLS Hello Extension is used to carry an idenfier from an application context in the TLS handshake.  This is used to identify the application context that caused the TLS handshake to be initiated.  The semantics of the field depend on application protocol, and could further depend on application protocol state.</p>
 <p id="rfc.section.3.1.p.2">Either client or server can populate this field.  A client can provide an empty value to indicate that it does not know the application context, but would like the server to provide a value.  A server can provide an empty value in response to a non-empty value only.</p>
+<p id="rfc.section.3.1.p.3">In HTTP/2 clients always provide an empty <samp>application_context_id</samp> value, and servers always provide a value that includes a stream identifier.</p>
 <div id="rfc.figure.3"/>
 <div id="acid-extension"/>
 <pre>
@@ -640,7 +645,7 @@ struct {
 </pre>
 <p class="figure">Figure 3: The application_context_id Extension Format</p>
 <h1 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2.</a> <a href="#update" id="update">Permitting TLS Renegotiation in HTTP/2</a></h1>
-<p id="rfc.section.3.2.p.1">The prohibition from Section 9.2.1 of <a href="#RFC7540">[RFC7540]</a> against TLS renegotiation is removed, provided that the requirements of this section are adhered to and that the renegotiation handshake includes the <samp>application_context_id</samp> extension.</p>
+<p id="rfc.section.3.2.p.1">The prohibition from Section 9.2.1 of <a href="#RFC7540">[RFC7540]</a> against TLS renegotiation is removed, provided that the requirements of this section are adhered to.</p>
 <p id="rfc.section.3.2.p.2">TLS renegotiation MUST NOT be used to circumvent the other restrictions on TLS use from Section 9.2 of <a href="#RFC7540">[RFC7540]</a>.  Furthermore, TLS renegotiation MUST negotiate the same ALPN [RFC7301] identifier (that is, &#8220;h2&#8221;).  An endpoint MAY treat failure to comply with these requirements as a connection error (Section 5.4.1 of <a href="#RFC7540">[RFC7540]</a>) of type INADEQUATE_SECURITY.</p>
 <p/>
 
@@ -649,7 +654,9 @@ struct {
   <dd style="margin-left: 8">A client need not offer cipher suites that might otherwise be offered for compatibility reasons when renegotiating.  In particular, cipher suites on the black list from Appendix A of <a href="#RFC7540">[RFC7540]</a> can be removed from the handshake.</dd>
 </dl>
 <p id="rfc.section.3.2.p.4">In addition to the requirements from <a href="#RFC7540">[RFC7540]</a>, endpoints that renegotiate MUST implement the TLS extended master secret extension <a href="#RFC7627">[RFC7627]</a> and the TLS renegotiation indication extension <a href="#RFC5746">[RFC5746]</a>.  These extensions MUST be negotiated and used to prevent serious attacks on TLS renegotiation.  If an endpoint receives a TLS ClientHello or ServerHello that does not include these extensions, it MUST respond with a fatal TLS <samp>no_renegotiation</samp> alert.</p>
-<p id="rfc.section.3.2.p.5">Once the HTTP/2 connection preface has been received from a peer, an endpoint SHOULD treat the receipt of a TLS ClientHello or ServerHello without an <samp>application_context_id</samp> extension as a fatal error and SHOULD send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
+<p id="rfc.section.3.2.p.5">The TLS renegotiation handshake MUST include the <samp>application_context_id</samp> extension when used with HTTP/2.</p>
+<p id="rfc.section.3.2.p.6">A server MUST present the same certificate during TLS renegotiation it used during the initial handshake.  Clients MUST verify that the server certificate does not change.  Clients MUST verify that the server certificate has not changed; a different certificate MUST be treated as a fatal error and MAY cause a fatal <samp>handshake_failure</samp> alert to be sent.</p>
+<p id="rfc.section.3.2.p.7">Once the HTTP/2 connection preface has been received from a peer, an endpoint SHOULD treat the receipt of a TLS ClientHello or ServerHello without an <samp>application_context_id</samp> extension as a fatal error and SHOULD send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
 <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#setting" id="setting">Indicating Support for Reactive Certificate Authentication</a></h1>
 <p id="rfc.section.4.p.1">Clients that support reactive certificate authentication indicate this using the HTTP/2 <samp>SETTINGS_REACTIVE_AUTH</samp> (0xSETTING-TBD) setting.</p>
 <p id="rfc.section.4.p.2">The initial value for the <samp>SETTINGS_REACTIVE_AUTH</samp> setting is 0, indicating that the client does not support reactive client authentication.  A client sets the <samp>SETTINGS_REACTIVE_AUTH</samp> setting to a value of 1 to indicate support for reactive certificate authentication as defined in this document.  Any value other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of <a href="#RFC7540">[RFC7540]</a>) of type PROTOCOL_ERROR.</p>
@@ -685,7 +692,9 @@ struct {
   <dt>Specification:</dt>
   <dd style="margin-left: 8">This document.</dd>
 </dl>
-<h1 id="rfc.references"><a href="#rfc.references">7.</a> Normative References</h1>
+<h1 id="rfc.section.7"><a href="#rfc.section.7">7.</a> <a href="#ack" id="ack">Acknowledgements</a></h1>
+<p id="rfc.section.7.p.1">Eric Rescorla pointed out several failings in an earlier revision.</p>
+<h1 id="rfc.references"><a href="#rfc.references">8.</a> Normative References</h1>
 <table>
   <tbody>
     <tr>

@@ -70,19 +70,20 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
      1.1.  Reactive Certificate Authentication in HTTP/1.1 . . . . .   3
      1.2.  TLS 1.3 Client Authentication . . . . . . . . . . . . . .   4
-     1.3.  Reactuve Client Authentication in HTTP/2  . . . . . . . .   4
+     1.3.  Reactive Client Authentication in HTTP/2  . . . . . . . .   4
      1.4.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   5
    2.  HTTP/2 Request Correlation in TLS 1.3 . . . . . . . . . . . .   5
    3.  HTTP/2 Request Correlation in TLS 1.2 . . . . . . . . . . . .   6
      3.1.  The TLS application_context_id Hello Extension  . . . . .   6
-     3.2.  Permitting TLS Renegotiation in HTTP/2  . . . . . . . . .   6
-   4.  Indicating Support for Reactive Certificate Authentication  .   7
-   5.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
+     3.2.  Permitting TLS Renegotiation in HTTP/2  . . . . . . . . .   7
+   4.  Indicating Support for Reactive Certificate Authentication  .   8
+   5.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
    6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
      6.1.  TLS application_context_id Extension  . . . . . . . . . .   8
-     6.2.  HTTP/2 SETTINGS_REACTIVE_AUTH Setting . . . . . . . . . .   8
-   7.  Normative References  . . . . . . . . . . . . . . . . . . . .   8
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   9
+     6.2.  HTTP/2 SETTINGS_REACTIVE_AUTH Setting . . . . . . . . . .   9
+   7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   9
+   8.  Normative References  . . . . . . . . . . . . . . . . . . . .   9
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  10
 
 1.  Introduction
 
@@ -105,7 +106,6 @@ Table of Contents
    The TLS CertificateRequest can be used by servers to give clients
    hints about which certificate to offer.  Servers that rely on
    certificate-based authentication might request different certificates
-   for different resources.  Such a server cannot use contextual
 
 
 
@@ -114,6 +114,7 @@ Thomson                   Expires April 4, 2016                 [Page 2]
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
+   for different resources.  Such a server cannot use contextual
    information about the resource to construct an appropriate TLS
    CertificateRequest message during the initial handshake.
 
@@ -164,7 +165,6 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-
 Thomson                   Expires April 4, 2016                 [Page 3]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
@@ -204,7 +204,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    client authentication.  In contrast to the TLS 1.2 example, in TLS
    1.3, a server can simply request a certificate.
 
-1.3.  Reactuve Client Authentication in HTTP/2
+1.3.  Reactive Client Authentication in HTTP/2
 
    An important part of the HTTP/1.1 exchange is that the client is able
    to easily identify the request that caused the TLS renegotiation.
@@ -272,8 +272,8 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    A server MAY send multiple TLS CertificateRequest messages.  If a
    server requires that a client provide multiple certificates before
    authorizing a single request, it MUST await a response to the first
-   TLS CertificateRequest message before sending another request.
-
+   TLS CertificateRequest message before sending another TLS
+   CertificateRequest for the same stream.
 
 
 
@@ -297,20 +297,46 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    stream identifier of the request that triggered the renegotiation.
 
    Absence of an "application_context_id" extension or an empty value
-   from the server MUST be treated as a fatal error that results in a
-   fatal TLS "no_renegotiation" alert.
+   from the server MUST be treated as a fatal error; endpoints MAY send
+   a fatal TLS "no_renegotiation" alert.
+
+   As with the TLS 1.3 solution, a server MAY request multiple client
+   certificates, either for different requests or for the same request.
+   Only one TLS renegotiation can be in progress at a time.
+
+   A server MAY treat all certificates presented in the same connection
+   as cumulative, remembering multiple certificates as they are
+   presented.  Note that the authentication information collected from
+   the client will need to be checked after each TLS renegotiation
+   completes, since most TLS stacks only report the presence of the
+   client certificate presented during the last TLS handshake.
 
 3.1.  The TLS application_context_id Hello Extension
 
    The "application_context_id" TLS Hello Extension is used to carry an
    idenfier from an application context in the TLS handshake.  This is
-   used to identify an application context in which
+   used to identify the application context that caused the TLS
+   handshake to be initiated.  The semantics of the field depend on
+   application protocol, and could further depend on application
+   protocol state.
 
    Either client or server can populate this field.  A client can
    provide an empty value to indicate that it does not know the
    application context, but would like the server to provide a value.  A
    server can provide an empty value in response to a non-empty value
    only.
+
+   In HTTP/2 clients always provide an empty "application_context_id"
+   value, and servers always provide a value that includes a stream
+   identifier.
+
+
+
+
+Thomson                   Expires April 4, 2016                 [Page 6]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
 
    enum {
        ...
@@ -328,15 +354,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
    The prohibition from Section 9.2.1 of [RFC7540] against TLS
    renegotiation is removed, provided that the requirements of this
-   section are adhered to and that the renegotiation handshake includes
-   the "application_context_id" extension.
-
-
-
-Thomson                   Expires April 4, 2016                 [Page 6]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
+   section are adhered to.
 
    TLS renegotiation MUST NOT be used to circumvent the other
    restrictions on TLS use from Section 9.2 of [RFC7540].  Furthermore,
@@ -357,6 +375,24 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    attacks on TLS renegotiation.  If an endpoint receives a TLS
    ClientHello or ServerHello that does not include these extensions, it
    MUST respond with a fatal TLS "no_renegotiation" alert.
+
+   The TLS renegotiation handshake MUST include the
+   "application_context_id" extension when used with HTTP/2.
+
+   A server MUST present the same certificate during TLS renegotiation
+   it used during the initial handshake.  Clients MUST verify that the
+   server certificate does not change.  Clients MUST verify that the
+   server certificate has not changed; a different certificate MUST be
+   treated as a fatal error and MAY cause a fatal "handshake_failure"
+   alert to be sent.
+
+
+
+
+Thomson                   Expires April 4, 2016                 [Page 7]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
 
    Once the HTTP/2 connection preface has been received from a peer, an
    endpoint SHOULD treat the receipt of a TLS ClientHello or ServerHello
@@ -385,15 +421,6 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
    Adding correlation between requests and TLS-layer authentication
    addresses the primary functional concerns with mid-session client
-
-
-
-
-Thomson                   Expires April 4, 2016                 [Page 7]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
-
    authentication.  However, implementations need to be aware of the
    potential for confusion about the state of a connection.
 
@@ -416,6 +443,13 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
    Value:  EXTENSION-TBD
 
+
+
+Thomson                   Expires April 4, 2016                 [Page 8]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
+
    Extension name:  application_context_id
 
    Reference:  This document.
@@ -433,22 +467,16 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
    Specification:  This document.
 
-7.  Normative References
+7.  Acknowledgements
+
+   Eric Rescorla pointed out several failings in an earlier revision.
+
+8.  Normative References
 
    [I-D.ietf-tls-tls13]
               Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", draft-ietf-tls-tls13-08 (work in progress),
               August 2015.
-
-
-
-
-
-
-Thomson                   Expires April 4, 2016                 [Page 8]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
@@ -469,6 +497,14 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
               Protocol (HTTP/1.1): Message Syntax and Routing", RFC
               7230, DOI 10.17487/RFC7230, June 2014,
               <http://www.rfc-editor.org/info/rfc7230>.
+
+
+
+
+Thomson                   Expires April 4, 2016                 [Page 9]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
 
    [RFC7540]  Belshe, M., Peon, R., and M. Thomson, Ed., "Hypertext
               Transfer Protocol Version 2 (HTTP/2)", RFC 7540, DOI
@@ -501,4 +537,24 @@ Author's Address
 
 
 
-Thomson                   Expires April 4, 2016                 [Page 9]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Thomson                   Expires April 4, 2016                [Page 10]
