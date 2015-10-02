@@ -1,6 +1,6 @@
-# Client Authentication with TLS Certificates in HTTP/2
+# Reactive Certificate-Based Client Authentication in HTTP/2
 
-This is the working area for the Individual internet-draft, "Client Authentication with TLS Certificates in HTTP/2".
+This is the working area for the Individual internet-draft, "Reactive Certificate-Based Client Authentication in HTTP/2".
 
 * [Editor's copy](https://martinthomson.github.io/http2-client-certs/)
 * [Individual Draft] (https://tools.ietf.org/html/draft-thomson-http2-client-certs)
