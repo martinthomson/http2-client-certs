@@ -271,7 +271,7 @@ endif
 	  DRAFT_STATUS=$$(test "$$AUTHOR_LABEL" = ietf && echo Working Group || echo Individual); \
 	  GITHUB_USER=$(GITHUB_USER); GITHUB_REPO=$(GITHUB_REPO); \
 	  DRAFT_TITLE=$$(sed -e '/<title[^>]*>[^<]*$$/{s/.*>//g;H};/<\/title>/{H;x;s/.*<title/</g;s/<[^>]*>//g;q};d' $<); \
-	  sed -i~ $(foreach label,DRAFT_NAME DRAFT_TITLE DRAFT_STATUS GITHUB_USER GITHUB_REPO WG_NAME,-e 's/{$(label)}/'"$$$(label)"'/g') README.md CONTRIBUTING.md
+	  sed -i~ $(foreach label,DRAFT_NAME DRAFT_TITLE DRAFT_STATUS GITHUB_USER GITHUB_REPO WG_NAME,-e 's~{$(label)}~'"$$$(label)"'~g') README.md CONTRIBUTING.md
 	git add README.md CONTRIBUTING.md
 ifneq (xml,$(firstword $(draft_types)))
 	echo $< >> .gitignore
