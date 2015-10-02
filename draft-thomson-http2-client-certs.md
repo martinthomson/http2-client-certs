@@ -148,7 +148,7 @@ authentication.  In contrast to the TLS 1.2 example, in TLS 1.3, a server can
 simply request a certificate.
 
 
-## Reactuve Client Authentication in HTTP/2
+## Reactive Client Authentication in HTTP/2
 
 An important part of the HTTP/1.1 exchange is that the client is able to easily
 identify the request that caused the TLS renegotiation.  The client is able to
@@ -204,7 +204,7 @@ PROTOCOL_ERROR.
 A server MAY send multiple TLS CertificateRequest messages.  If a server
 requires that a client provide multiple certificates before authorizing a single
 request, it MUST await a response to the first TLS CertificateRequest message
-before sending another request.
+before sending another TLS CertificateRequest for the same stream.
 
 
 # HTTP/2 Request Correlation in TLS 1.2 {#aci-12}
@@ -221,20 +221,35 @@ The server populates the `application_context_id` extension with the stream
 identifier of the request that triggered the renegotiation.
 
 Absence of an `application_context_id` extension or an empty value from the
-server MUST be treated as a fatal error that results in a fatal TLS
+server MUST be treated as a fatal error; endpoints MAY send a fatal TLS
 `no_renegotiation` alert.
+
+As with the TLS 1.3 solution, a server MAY request multiple client certificates,
+either for different requests or for the same request.  Only one TLS
+renegotiation can be in progress at a time.
+
+A server MAY treat all certificates presented in the same connection as
+cumulative, remembering multiple certificates as they are presented.  Note that
+the authentication information collected from the client will need to be checked
+after each TLS renegotiation completes, since most TLS stacks only report the
+presence of the client certificate presented during the last TLS handshake.
 
 
 ## The TLS application_context_id Hello Extension {#extension}
 
 The `application_context_id` TLS Hello Extension is used to carry an idenfier
-from an application context in the TLS handshake.  This is used to identify an
-application context in which
+from an application context in the TLS handshake.  This is used to identify the
+application context that caused the TLS handshake to be initiated.  The
+semantics of the field depend on application protocol, and could further depend
+on application protocol state.
 
 Either client or server can populate this field.  A client can provide an empty
 value to indicate that it does not know the application context, but would like
 the server to provide a value.  A server can provide an empty value in response
 to a non-empty value only.
+
+In HTTP/2 clients always provide an empty `application_context_id` value, and
+servers always provide a value that includes a stream identifier.
 
 ~~~
 enum {
@@ -253,8 +268,7 @@ struct {
 ## Permitting TLS Renegotiation in HTTP/2 {#update}
 
 The prohibition from Section 9.2.1 of [RFC7540] against TLS renegotiation is
-removed, provided that the requirements of this section are adhered to and that
-the renegotiation handshake includes the `application_context_id` extension.
+removed, provided that the requirements of this section are adhered to.
 
 TLS renegotiation MUST NOT be used to circumvent the other restrictions on TLS
 use from Section 9.2 of [RFC7540].  Furthermore, TLS renegotiation MUST
@@ -273,6 +287,15 @@ renegotiation indication extension [RFC5746].  These extensions MUST be
 negotiated and used to prevent serious attacks on TLS renegotiation.  If an
 endpoint receives a TLS ClientHello or ServerHello that does not include these
 extensions, it MUST respond with a fatal TLS `no_renegotiation` alert.
+
+The TLS renegotiation handshake MUST include the `application_context_id`
+extension when used with HTTP/2.
+
+A server MUST present the same certificate during TLS renegotiation it used
+during the initial handshake.  Clients MUST verify that the server certificate
+does not change.  Clients MUST verify that the server certificate has not
+changed; a different certificate MUST be treated as a fatal error and MAY cause
+a fatal `handshake_failure` alert to be sent.
 
 Once the HTTP/2 connection preface has been received from a peer, an endpoint
 SHOULD treat the receipt of a TLS ClientHello or ServerHello without an
@@ -347,6 +370,10 @@ Initial Value:
 
 Specification:
 : This document.
+
+# Acknowledgements {#ack}
+
+Eric Rescorla pointed out several failings in an earlier revision.
 
 
 --- back
