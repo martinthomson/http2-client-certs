@@ -24,8 +24,10 @@ author:
 normative:
   RFC2119:
   RFC5246:
+  RFC5746:
   RFC7230:
   RFC7540:
+  RFC7627:
   I-D.ietf-tls-tls13:
 
 informative:
@@ -265,6 +267,13 @@ Note:
 compatibility reasons when renegotiating.  In particular, cipher suites on the
 black list from Appendix A of [RFC7540] can be removed from the handshake.
 
+In addition to the requirements from [RFC7540], endpoints that renegotiate MUST
+implement the TLS extended master secret extension [RFC7627] and the TLS
+renegotiation indication extension [RFC5746].  These extensions MUST be
+negotiated and used to prevent serious attacks on TLS renegotiation.  If an
+endpoint receives a TLS ClientHello or ServerHello that does not include these
+extensions, it MUST respond with a fatal TLS `no_renegotiation` alert.
+
 Once the HTTP/2 connection preface has been received from a peer, an endpoint
 SHOULD treat the receipt of a TLS ClientHello or ServerHello without an
 `application_context_id` extension as a fatal error and SHOULD send a fatal TLS
@@ -285,6 +294,10 @@ other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of
 
 
 # Security Considerations {#security}
+
+The TLS extended master secret extension [RFC7627] and the TLS renegotiation
+indication extension [RFC5746] MUST be used to mitigate several known attacks on
+TLS renegotiation.
 
 Adding correlation between requests and TLS-layer authentication addresses the
 primary functional concerns with mid-session client authentication.  However,
