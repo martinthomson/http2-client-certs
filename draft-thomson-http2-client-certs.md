@@ -301,8 +301,10 @@ Values" registry established by [RFC5246].
 
 Value:
 : EXTENSION-TBD
+
 Extension name:
 : application_context_id
+
 Reference:
 : This document.
 
@@ -314,10 +316,13 @@ registry established in [RFC7540].
 
 Name:
 : SETTINGS_REACTIVE_AUTH
+
 Code:
 : 0xSETTING-TBD
+
 Initial Value:
 : 0
+
 Specification:
 : This document.
 
