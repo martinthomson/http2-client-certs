@@ -21,6 +21,12 @@ author:
     organization: Mozilla
     email: martin.thomson@gmail.com
 
+ -
+    ins: M. Bishop
+    name: Mike Bishop
+    organization: Microsoft
+    email: michael.bishop@microsoft.com
+
 normative:
   RFC2119:
   RFC5246:
@@ -107,23 +113,23 @@ Client                                      Server
 ~~~
 {: #ex-http11 title="HTTP/1.1 Reactive Certificate Authentication with TLS 1.2"}
 
-In this example, the server receives a request for a protected resource (at *1
+In this example, the server receives a request for a protected resource (at \*1
 on {{ex-http11}}).  Upon performing an authorization check, the server
 determines that the request requires authentication using a client certificate
 and that no such certificate has been provided.
 
-The server initiates TLS renegotiation by sending a TLS HelloRequest (at *2).
+The server initiates TLS renegotiation by sending a TLS HelloRequest (at \*2).
 The client then initiates a TLS handshake.  Note that some TLS messages are
 elided from the exchange for the sake of brevity.
 
 The critical messages for this example are the server requesting a certificate
-with a TLS CertificateRequest (*3); this request might use information about
+with a TLS CertificateRequest (\*3); this request might use information about
 the request or resource.  The client then provides a certificate and proof of
-possession of the private key in Certificate and CertificateVerify messages (*4).
+possession of the private key in Certificate and CertificateVerify messages (\*4).
 
 When the handshake completes, the server performs any authorization checks a
 second time.  With the client certificate available, it then authorizes the
-request and provides a response (*5).
+request and provides a response (\*5).
 
 
 ## TLS 1.3 Client Authentication
@@ -165,12 +171,12 @@ Thus, the minimum necessary mechanism to support reactive certificate
 authentication in HTTP/2 is an identifier that can be use to correlate an HTTP
 request with either a TLS renegotiation or CertificateRequest.
 
-{{aci-13}} describes how the existing TLS 1.3 fields can be used to correlate a
-request with a TLS CertificateRequest.  {{aci-12}} describes how the same can be
+{{aci-13}} describes how the existing TLS 1.3 fields and a new HTTP/2 frame
+described in {{frame}} can be used to correlate a request with a TLS
+CertificateRequest.  {{aci-12}} describes how the same can be
 done in TLS 1.2 using TLS renegotiation and a new TLS `application_context_id`
 extension.  Finally, {{setting}} describes how an HTTP/2 client can announce
 support for this feature so that a server might use these capabilities.
-
 
 ## Terminology
 
@@ -185,26 +191,18 @@ client authentication.  In TLS 1.3 a server does this by sending a new TLS 1.3
 CertificateRequest.
 
 The certificate_request_id (name TBD) field of the TLS CertificateRequest is
-populated by the server with the stream identifier of the request that triggered
-the request.  That is, the value includes 32-bit value with a single reserved
-bit and the 31-bit stream identifier in network byte order.  This allows a
-client to correlate the TLS CertificateRequest with a request.
-
-The stream identifier provided in certificate_request_id MUST identify a
-client-initiated stream.  The server MUST NOT send a TLS CertificateRequest for
-a server-initiated stream or for a stream that does not have an outstanding
-request.  In other words, a server can only initiate a request for a client
-certificate from the "open" or "half-closed (remote)" stream states.
-
-A client that receives a TLS CertificateRequest with a certificate_request_id
-that does not identify a stream in a valid state ("open" or "half-closed
-(local)" for clients) SHOULD treat this as a connection error of type
-PROTOCOL_ERROR.
+populated by the server with a random value.  The server SHOULD then send a
+WAITING_FOR_AUTH frame (see {{frame}}) on any streams where the server is
+awaiting client authentication before responding.  This allows a client to
+correlate the TLS CertificateRequest with one or more outstanding requests.
 
 A server MAY send multiple TLS CertificateRequest messages.  If a server
 requires that a client provide multiple certificates before authorizing a single
 request, it MUST await a response to the first TLS CertificateRequest message
 before sending another TLS CertificateRequest for the same stream.
+CertificateRequest messages for other streams MAY be sent without waiting.  The
+server SHOULD send a new WAITING_FOR_AUTH frame referencing each new
+CertificateRequest.
 
 
 # HTTP/2 Request Correlation in TLS 1.2 {#aci-12}
@@ -237,7 +235,7 @@ presence of the client certificate presented during the last TLS handshake.
 
 ## The TLS application_context_id Hello Extension {#extension}
 
-The `application_context_id` TLS Hello Extension is used to carry an idenfier
+The `application_context_id` TLS Hello Extension is used to carry an identifier
 from an application context in the TLS handshake.  This is used to identify the
 application context that caused the TLS handshake to be initiated.  The
 semantics of the field depend on application protocol, and could further depend
@@ -249,7 +247,8 @@ the server to provide a value.  A server can provide an empty value in response
 to a non-empty value only.
 
 In HTTP/2 clients always provide an empty `application_context_id` value, and
-servers always provide a value that includes a stream identifier.
+servers always provide a value that will appear in a subsequent WAITING_FOR_AUTH
+frame.
 
 ~~~
 enum {
@@ -302,6 +301,45 @@ SHOULD treat the receipt of a TLS ClientHello or ServerHello without an
 `application_context_id` extension as a fatal error and SHOULD send a fatal TLS
 `no_renegotiation` alert.
 
+# Indicating Stream Dependency on Certificate Authentication {#frame}
+
+Servers which employ reactive certificate authentication can require that
+authentication on multiple resources.  Because many requests could be awaiting
+responses to the same CertificateRequest, it is insufficient to use the
+stream ID as the `certificate_request_id` or `application_context_id`.
+
+The frame is structured as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |X|                       Request ID (31)                       |
+ +-+-------------------------------------------------------------+
+~~~
+{: #wfa-frame title="The WAITING_FOR_AUTH frame"}
+
+The WAITING_FOR_AUTH frame is sent by servers to indicate that processing of
+a request is blocked pending authentication outside of the HTTP channel. The
+frame includes a Request ID which can be used to correlate the stream with
+challenges for authentication received at other layers, such as TLS.
+
+The WAITING_FOR_AUTH frame MUST NOT be sent by clients.  A WAITING_FOR_AUTH
+frame received by a server SHOULD be rejected with a stream error of type
+PROTOCOL_ERROR.
+
+The server MUST NOT send a WAITING_FOR_AUTH frame on stream zero, a
+server-initiated stream or a stream that does not have an outstanding
+request.  In other words, a server can only send in the "open" or
+"half-closed (remote)" stream states.  A server SHOULD NOT send the frame until
+after having initiated the out-of-band authentication challenge.
+
+A client that receives a WAITING_FOR_AUTH frame on a stream which is not in a
+valid state ("open" or "half-closed (local)" for clients) SHOULD treat this as
+a connection error of type PROTOCOL_ERROR.  A client that receives a
+WAITING_FOR_AUTH frame which does not match an outstanding authentication
+request MAY treat this as a stream error.
+
 
 # Indicating Support for Reactive Certificate Authentication {#setting}
 
@@ -327,7 +365,7 @@ primary functional concerns with mid-session client authentication.  However,
 implementations need to be aware of the potential for confusion about the state
 of a connection.
 
-The presence of absence of a validated client certificate can change during the
+The presence or absence of a validated client certificate can change during the
 processing of a request, potentially multiple times.  A server that uses
 reactive certificate authentication needs to be prepared to reevaluate the
 authorization state of a request as the set of certificates changes.
@@ -337,6 +375,7 @@ authorization state of a request as the set of certificates changes.
 
 The TLS `application_context_id` extension is registered in {{iana-extension}}.
 The HTTP/2 `SETTINGS_REACTIVE_AUTH` setting is registered in {{iana-setting}}.
+The HTTP/2 `WAITING_FOR_AUTH` frame type is registered in {{iana-frame}}.
 
 
 ## TLS application_context_id Extension {#iana-extension}
@@ -370,6 +409,24 @@ Initial Value:
 
 Specification:
 : This document.
+
+## HTTP/2 WAITING_FOR_AUTH Frame {#iana-frame}
+
+The WAITING_FOR_AUTH frame type is registered in the "HTTP/2 Frame Types"
+registry established in [RFC7540].
+
+Name:
+: WAITING_FOR_AUTH
+
+Code:
+: 0xSETTING-TBD
+
+Initial Value:
+: 0
+
+Specification:
+: This document.
+
 
 # Acknowledgements {#ack}
 
