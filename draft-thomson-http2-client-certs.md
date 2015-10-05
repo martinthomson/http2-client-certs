@@ -190,41 +190,47 @@ certificate authentication (see {{setting}}) might cause a server to request
 client authentication.  In TLS 1.3 a server does this by sending a new TLS 1.3
 CertificateRequest.
 
+The server MUST first send a WAITING_FOR_AUTH frame (see {{frame}}) on the
+stream which triggered the request for client credentials.
 The certificate_request_id (name TBD) field of the TLS CertificateRequest is
-populated by the server with a random value.  The server SHOULD then send a
-WAITING_FOR_AUTH frame (see {{frame}}) on any streams where the server is
-awaiting client authentication before responding.  This allows a client to
-correlate the TLS CertificateRequest with one or more outstanding requests.
+populated by the server with the same value in the WAITING_FOR_AUTH frame.
+Subsequent WAITING_FOR_AUTH frames MAY be sent when the server is
+awaiting ongoing client authentication before responding.  This allows a client
+to correlate the TLS CertificateRequest with one or more outstanding requests.
 
 A server MAY send multiple TLS CertificateRequest messages.  If a server
 requires that a client provide multiple certificates before authorizing a single
 request, it MUST await a response to the first TLS CertificateRequest message
 before sending another TLS CertificateRequest for the same stream.
 CertificateRequest messages for other streams MAY be sent without waiting.  The
-server SHOULD send a new WAITING_FOR_AUTH frame referencing each new
-CertificateRequest.
+server MUST precede each new CertificateRequest with a new WAITING_FOR_AUTH
+frame referencing it.
 
 
 # HTTP/2 Request Correlation in TLS 1.2 {#aci-12}
 
 An HTTP/2 server that uses TLS 1.2 initiates client authentication by sending a
-TLS HelloRequest.  This triggers a TLS renegotiation.
+an HTTP/2 WAITING_FOR_AUTH frame containing a random value, followed by a TLS
+HelloRequest.  This triggers a TLS renegotiation.
 
 An HTTP/2 client that receives a TLS HelloRequest message MUST initiate a TLS
 handshake, including an empty `application_context_id` extension.  If the client
 has not indicated support for renegotiation (see {{setting}}), the client MUST
 send a fatal TLS `no_renegotiation` alert.
 
-The server populates the `application_context_id` extension with the stream
-identifier of the request that triggered the renegotiation.
+The server populates the `application_context_id` extension with the same value
+previously used in the WAITING_FOR_AUTH frame.
 
 Absence of an `application_context_id` extension or an empty value from the
 server MUST be treated as a fatal error; endpoints MAY send a fatal TLS
 `no_renegotiation` alert.
 
 As with the TLS 1.3 solution, a server MAY request multiple client certificates,
-either for different requests or for the same request.  Only one TLS
-renegotiation can be in progress at a time.
+either for different requests or for the same request.  If multiple requests are
+waiting for authentication and require different certificates, the server SHOULD
+immediately send the WAITING_FOR_AUTH frames with unique values.  Only one TLS
+renegotiation can be in progress at a time, though a new HelloRequest can be
+emitted once the renegotiation has completed.
 
 A server MAY treat all certificates presented in the same connection as
 cumulative, remembering multiple certificates as they are presented.  Note that
@@ -338,7 +344,8 @@ A client that receives a WAITING_FOR_AUTH frame on a stream which is not in a
 valid state ("open" or "half-closed (local)" for clients) SHOULD treat this as
 a connection error of type PROTOCOL_ERROR.  A client that receives a
 WAITING_FOR_AUTH frame which does not match an outstanding authentication
-request MAY treat this as a stream error.
+request MAY treat this as a stream error if no challenge is received within a
+few seconds.
 
 
 # Indicating Support for Reactive Certificate Authentication {#setting}
