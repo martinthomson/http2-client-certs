@@ -308,11 +308,6 @@ SHOULD treat the receipt of a TLS ClientHello or ServerHello without an
 
 # Indicating Stream Dependency on Certificate Authentication {#frame}
 
-Servers which employ reactive certificate authentication can require that
-authentication on multiple resources.  Because many requests could be awaiting
-responses to the same CertificateRequest, it is insufficient to use the
-stream ID as the `certificate_request_id` or `application_context_id`.
-
 The WAITING_FOR_AUTH frame (0xFRAME-TBD) is sent by servers to indicate that
 processing of a request is blocked pending authentication outside of the HTTP
 channel. The frame includes a request identifier which can be used to correlate
@@ -321,9 +316,9 @@ TLS.
 
 The WAITING_FOR_AUTH frame contains between 1 and 255 octets, which is the
 authentication request identifier.  A client that receives a WAITING_FOR_AUTH of
-any other length MUST treat this as a stream error of type PROTOCOL_ERROR.  The
-request identifier MUST be unique amongst all concurrently outstanding
-authentication requests on the connection.
+any other length MUST treat this as a stream error of type PROTOCOL_ERROR.
+Frames with identical request identifiers refer to the same TLS
+CertificateRequest.
 
 The WAITING_FOR_AUTH frame MUST NOT be sent by clients.  A WAITING_FOR_AUTH
 frame received by a server SHOULD be rejected with a stream error of type
