@@ -191,27 +191,25 @@ client authentication.  In TLS 1.3 a server does this by sending a new TLS 1.3
 CertificateRequest.
 
 The server MUST first send a WAITING_FOR_AUTH frame (see {{frame}}) on the
-stream which triggered the request for client credentials.
-The certificate_request_id (name TBD) field of the TLS CertificateRequest is
+stream which triggered the request for client credentials.  The
+certificate_request_id (name TBD) field of the TLS CertificateRequest is
 populated by the server with the same value in the WAITING_FOR_AUTH frame.
-Subsequent WAITING_FOR_AUTH frames MAY be sent when the server is
-awaiting ongoing client authentication before responding.  This allows a client
-to correlate the TLS CertificateRequest with one or more outstanding requests.
+Subsequent WAITING_FOR_AUTH frames with the same request identifier MAY be sent
+on other streams while the server is awaiting client authentication with the
+same parameters.  This allows a client to correlate the TLS CertificateRequest
+with one or more outstanding requests.
 
-A server MAY send multiple TLS CertificateRequest messages.  If a server
-requires that a client provide multiple certificates before authorizing a single
-request, it MUST await a response to the first TLS CertificateRequest message
-before sending another TLS CertificateRequest for the same stream.
-CertificateRequest messages for other streams MAY be sent without waiting.  The
-server MUST precede each new CertificateRequest with a new WAITING_FOR_AUTH
-frame referencing it.
+A server MAY send multiple concurrent TLS CertificateRequest messages.  If a
+server requires that a client provide multiple certificates before authorizing a
+single request, it MUST send WAITING_FOR_AUTH frames with different request
+identifiers before sending subsequent TLS CertificateRequest messages.
 
 
 # HTTP/2 Request Correlation in TLS 1.2 {#aci-12}
 
 An HTTP/2 server that uses TLS 1.2 initiates client authentication by sending a
-an HTTP/2 WAITING_FOR_AUTH frame containing a random value, followed by a TLS
-HelloRequest.  This triggers a TLS renegotiation.
+an HTTP/2 WAITING_FOR_AUTH frame followed by a TLS HelloRequest.  This triggers
+a TLS renegotiation.
 
 An HTTP/2 client that receives a TLS HelloRequest message MUST initiate a TLS
 handshake, including an empty `application_context_id` extension.  If the client
@@ -219,7 +217,7 @@ has not indicated support for renegotiation (see {{setting}}), the client MUST
 send a fatal TLS `no_renegotiation` alert.
 
 The server populates the `application_context_id` extension with the same value
-previously used in the WAITING_FOR_AUTH frame.
+it previously sent in a WAITING_FOR_AUTH frame.
 
 Absence of an `application_context_id` extension or an empty value from the
 server MUST be treated as a fatal error; endpoints MAY send a fatal TLS
@@ -307,6 +305,7 @@ SHOULD treat the receipt of a TLS ClientHello or ServerHello without an
 `application_context_id` extension as a fatal error and SHOULD send a fatal TLS
 `no_renegotiation` alert.
 
+
 # Indicating Stream Dependency on Certificate Authentication {#frame}
 
 Servers which employ reactive certificate authentication can require that
@@ -320,32 +319,30 @@ The frame is structured as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |X|                       Request ID (31)                       |
+ |X|                   Request Identifier (31)                   |
  +-+-------------------------------------------------------------+
 ~~~
 {: #wfa-frame title="The WAITING_FOR_AUTH frame"}
 
-The WAITING_FOR_AUTH frame is sent by servers to indicate that processing of
-a request is blocked pending authentication outside of the HTTP channel. The
-frame includes a Request ID which can be used to correlate the stream with
-challenges for authentication received at other layers, such as TLS.
+The WAITING_FOR_AUTH frame (0xFRAME-TBD) is sent by servers to indicate that
+processing of a request is blocked pending authentication outside of the HTTP
+channel. The frame includes a request identifier which can be used to correlate
+the stream with challenges for authentication received at other layers, such as
+TLS.  The request identifier MUST be unique amongst all concurrently outstanding
+authentication requests on the connection.
 
 The WAITING_FOR_AUTH frame MUST NOT be sent by clients.  A WAITING_FOR_AUTH
 frame received by a server SHOULD be rejected with a stream error of type
 PROTOCOL_ERROR.
 
 The server MUST NOT send a WAITING_FOR_AUTH frame on stream zero, a
-server-initiated stream or a stream that does not have an outstanding
-request.  In other words, a server can only send in the "open" or
-"half-closed (remote)" stream states.  A server SHOULD NOT send the frame until
-after having initiated the out-of-band authentication challenge.
+server-initiated stream or a stream that does not have an outstanding request.
+In other words, a server can only send in the "open" or "half-closed (remote)"
+stream states.
 
 A client that receives a WAITING_FOR_AUTH frame on a stream which is not in a
-valid state ("open" or "half-closed (local)" for clients) SHOULD treat this as
-a connection error of type PROTOCOL_ERROR.  A client that receives a
-WAITING_FOR_AUTH frame which does not match an outstanding authentication
-request MAY treat this as a stream error if no challenge is received within a
-few seconds.
+valid state ("open" or "half-closed (local)" for clients) SHOULD treat this as a
+connection error of type PROTOCOL_ERROR.
 
 
 # Indicating Support for Reactive Certificate Authentication {#setting}
@@ -422,14 +419,11 @@ Specification:
 The WAITING_FOR_AUTH frame type is registered in the "HTTP/2 Frame Types"
 registry established in [RFC7540].
 
-Name:
+Frame Type:
 : WAITING_FOR_AUTH
 
 Code:
-: 0xSETTING-TBD
-
-Initial Value:
-: 0
+: 0xFRAME-TBD
 
 Specification:
 : This document.
