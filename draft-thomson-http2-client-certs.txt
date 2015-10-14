@@ -6,7 +6,7 @@ HTTP                                                          M. Thomson
 Internet-Draft                                                   Mozilla
 Updates: 7450 (if approved)                                    M. Bishop
 Intended status: Standards Track                               Microsoft
-Expires: April 14, 2016                                 October 12, 2015
+Expires: April 16, 2016                                 October 14, 2015
 
 
        Reactive Certificate-Based Client Authentication in HTTP/2
@@ -40,7 +40,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 14, 2016.
+   This Internet-Draft will expire on April 16, 2016.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Thomson & Bishop         Expires April 14, 2016                 [Page 1]
+Thomson & Bishop         Expires April 16, 2016                 [Page 1]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Thomson & Bishop         Expires April 14, 2016                 [Page 2]
+Thomson & Bishop         Expires April 16, 2016                 [Page 2]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -165,7 +165,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 14, 2016                 [Page 3]
+Thomson & Bishop         Expires April 16, 2016                 [Page 3]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -221,7 +221,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 14, 2016                 [Page 4]
+Thomson & Bishop         Expires April 16, 2016                 [Page 4]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -259,25 +259,25 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    on the stream which triggered the request for client credentials.
    The certificate_request_id (name TBD) field of the TLS
    CertificateRequest is populated by the server with the same value in
-   the WAITING_FOR_AUTH frame.  Subsequent WAITING_FOR_AUTH frames MAY
-   be sent when the server is awaiting ongoing client authentication
-   before responding.  This allows a client to correlate the TLS
-   CertificateRequest with one or more outstanding requests.
+   the WAITING_FOR_AUTH frame.  Subsequent WAITING_FOR_AUTH frames with
+   the same request identifier MAY be sent on other streams while the
+   server is awaiting client authentication with the same parameters.
+   This allows a client to correlate the TLS CertificateRequest with one
+   or more outstanding requests.
 
-   A server MAY send multiple TLS CertificateRequest messages.  If a
-   server requires that a client provide multiple certificates before
-   authorizing a single request, it MUST await a response to the first
-   TLS CertificateRequest message before sending another TLS
-   CertificateRequest for the same stream.  CertificateRequest messages
-   for other streams MAY be sent without waiting.  The server MUST
-   precede each new CertificateRequest with a new WAITING_FOR_AUTH frame
-   referencing it.
+   A server MAY send multiple concurrent TLS CertificateRequest
+   messages.  If a server requires that a client provide multiple
+   certificates before authorizing a single request, it MUST send
+   WAITING_FOR_AUTH frames with different request identifiers before
+   sending subsequent TLS CertificateRequest messages.
 
 
 
 
 
-Thomson & Bishop         Expires April 14, 2016                 [Page 5]
+
+
+Thomson & Bishop         Expires April 16, 2016                 [Page 5]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -285,8 +285,8 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 3.  HTTP/2 Request Correlation in TLS 1.2
 
    An HTTP/2 server that uses TLS 1.2 initiates client authentication by
-   sending a an HTTP/2 WAITING_FOR_AUTH frame containing a random value,
-   followed by a TLS HelloRequest.  This triggers a TLS renegotiation.
+   sending a an HTTP/2 WAITING_FOR_AUTH frame followed by a TLS
+   HelloRequest.  This triggers a TLS renegotiation.
 
    An HTTP/2 client that receives a TLS HelloRequest message MUST
    initiate a TLS handshake, including an empty "application_context_id"
@@ -295,7 +295,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    alert.
 
    The server populates the "application_context_id" extension with the
-   same value previously used in the WAITING_FOR_AUTH frame.
+   same value it previously sent in a WAITING_FOR_AUTH frame.
 
    Absence of an "application_context_id" extension or an empty value
    from the server MUST be treated as a fatal error; endpoints MAY send
@@ -333,7 +333,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 14, 2016                 [Page 6]
+Thomson & Bishop         Expires April 16, 2016                 [Page 6]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -389,7 +389,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 14, 2016                 [Page 7]
+Thomson & Bishop         Expires April 16, 2016                 [Page 7]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -416,16 +416,18 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |X|                       Request ID (31)                       |
+    |X|                   Request Identifier (31)                   |
     +-+-------------------------------------------------------------+
 
                    Figure 4: The WAITING_FOR_AUTH frame
 
-   The WAITING_FOR_AUTH frame is sent by servers to indicate that
-   processing of a request is blocked pending authentication outside of
-   the HTTP channel.  The frame includes a Request ID which can be used
-   to correlate the stream with challenges for authentication received
-   at other layers, such as TLS.
+   The WAITING_FOR_AUTH frame (0xFRAME-TBD) is sent by servers to
+   indicate that processing of a request is blocked pending
+   authentication outside of the HTTP channel.  The frame includes a
+   request identifier which can be used to correlate the stream with
+   challenges for authentication received at other layers, such as TLS.
+   The request identifier MUST be unique amongst all concurrently
+   outstanding authentication requests on the connection.
 
    The WAITING_FOR_AUTH frame MUST NOT be sent by clients.  A
    WAITING_FOR_AUTH frame received by a server SHOULD be rejected with a
@@ -434,24 +436,19 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    The server MUST NOT send a WAITING_FOR_AUTH frame on stream zero, a
    server-initiated stream or a stream that does not have an outstanding
    request.  In other words, a server can only send in the "open" or
-   "half-closed (remote)" stream states.  A server SHOULD NOT send the
-   frame until after having initiated the out-of-band authentication
-   challenge.
+   "half-closed (remote)" stream states.
 
    A client that receives a WAITING_FOR_AUTH frame on a stream which is
    not in a valid state ("open" or "half-closed (local)" for clients)
-   SHOULD treat this as a connection error of type PROTOCOL_ERROR.  A
-   client that receives a WAITING_FOR_AUTH frame which does not match an
+   SHOULD treat this as a connection error of type PROTOCOL_ERROR.
 
 
 
-Thomson & Bishop         Expires April 14, 2016                 [Page 8]
+
+Thomson & Bishop         Expires April 16, 2016                 [Page 8]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
-
-   outstanding authentication request MAY treat this as a stream error
-   if no challenge is received within a few seconds.
 
 5.  Indicating Support for Reactive Certificate Authentication
 
@@ -498,17 +495,16 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
    Value:  EXTENSION-TBD
 
-
-
-
-Thomson & Bishop         Expires April 14, 2016                 [Page 9]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
-
    Extension name:  application_context_id
 
    Reference:  This document.
+
+
+
+Thomson & Bishop         Expires April 16, 2016                 [Page 9]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
 
 7.2.  HTTP/2 SETTINGS_REACTIVE_AUTH Setting
 
@@ -528,11 +524,9 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    The WAITING_FOR_AUTH frame type is registered in the "HTTP/2 Frame
    Types" registry established in [RFC7540].
 
-   Name:  WAITING_FOR_AUTH
+   Frame Type:  WAITING_FOR_AUTH
 
-   Code:  0xSETTING-TBD
-
-   Initial Value:  0
+   Code:  0xFRAME-TBD
 
    Specification:  This document.
 
@@ -552,20 +546,21 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
               RFC2119, March 1997,
               <http://www.rfc-editor.org/info/rfc2119>.
 
-
-
-
-
-
-Thomson & Bishop         Expires April 14, 2016                [Page 10]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
-
    [RFC5246]  Dierks, T. and E. Rescorla, "The Transport Layer Security
               (TLS) Protocol Version 1.2", RFC 5246, DOI 10.17487/
               RFC5246, August 2008,
               <http://www.rfc-editor.org/info/rfc5246>.
+
+
+
+
+
+
+
+Thomson & Bishop         Expires April 16, 2016                [Page 10]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
 
    [RFC5746]  Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
               "Transport Layer Security (TLS) Renegotiation Indication
@@ -613,4 +608,9 @@ Authors' Addresses
 
 
 
-Thomson & Bishop         Expires April 14, 2016                [Page 11]
+
+
+
+
+
+Thomson & Bishop         Expires April 16, 2016                [Page 11]

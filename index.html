@@ -478,7 +478,7 @@ ul.toc a:first-child {
 
   <meta name="dct.creator" content="Thomson, M. and M. Bishop" />
   <meta name="dct.identifier" content="urn:ietf:id:draft-thomson-http2-client-certs-latest" />
-  <meta name="dct.issued" scheme="ISO8601" content="2015-10-12" />
+  <meta name="dct.issued" scheme="ISO8601" content="2015-10-14" />
   <meta name="dct.abstract" content="Some HTTP servers provide a subset of resources that require additional authentication to interact with.  HTTP/1.1 servers rely on TLS renegotiation that is triggered by a request to a protected resource.  HTTP/2 made this pattern impossible by forbidding the use of TLS renegotiation." />
   <meta name="description" content="Some HTTP servers provide a subset of resources that require additional authentication to interact with.  HTTP/1.1 servers rely on TLS renegotiation that is triggered by a request to a protected resource.  HTTP/2 made this pattern impossible by forbidding the use of TLS renegotiation." />
 
@@ -507,8 +507,8 @@ ul.toc a:first-child {
   <td class="right">Microsoft</td>
 </tr>
 <tr>
-  <td class="left">Expires: April 14, 2016</td>
-  <td class="right">October 12, 2015</td>
+  <td class="left">Expires: April 16, 2016</td>
+  <td class="right">October 14, 2015</td>
 </tr>
 
     	
@@ -529,7 +529,7 @@ ul.toc a:first-child {
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at http://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on April 14, 2016.</p>
+<p>This Internet-Draft will expire on April 16, 2016.</p>
 <h1 id="rfc.copyrightnotice">
   <a href="#rfc.copyrightnotice">Copyright Notice</a>
 </h1>
@@ -619,12 +619,12 @@ Client                                      Server
 <p id="rfc.section.1.4.p.1">RFC 2119 <a href="#RFC2119">[RFC2119]</a> defines the terms &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;SHOULD&#8221; and &#8220;MAY&#8221;.</p>
 <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a> <a href="#aci-13" id="aci-13">HTTP/2 Request Correlation in TLS 1.3</a></h1>
 <p id="rfc.section.2.p.1">An HTTP/2 request from a client that has signaled support for reactive certificate authentication (see <a href="#setting">Section 5</a>) might cause a server to request client authentication.  In TLS 1.3 a server does this by sending a new TLS 1.3 CertificateRequest.</p>
-<p id="rfc.section.2.p.2">The server MUST first send a WAITING_FOR_AUTH frame (see <a href="#frame">Section 4</a>) on the stream which triggered the request for client credentials.  The certificate_request_id (name TBD) field of the TLS CertificateRequest is populated by the server with the same value in the WAITING_FOR_AUTH frame.  Subsequent WAITING_FOR_AUTH frames MAY be sent when the server is awaiting ongoing client authentication before responding.  This allows a client to correlate the TLS CertificateRequest with one or more outstanding requests.</p>
-<p id="rfc.section.2.p.3">A server MAY send multiple TLS CertificateRequest messages.  If a server requires that a client provide multiple certificates before authorizing a single request, it MUST await a response to the first TLS CertificateRequest message before sending another TLS CertificateRequest for the same stream.  CertificateRequest messages for other streams MAY be sent without waiting.  The server MUST precede each new CertificateRequest with a new WAITING_FOR_AUTH frame referencing it.</p>
+<p id="rfc.section.2.p.2">The server MUST first send a WAITING_FOR_AUTH frame (see <a href="#frame">Section 4</a>) on the stream which triggered the request for client credentials.  The certificate_request_id (name TBD) field of the TLS CertificateRequest is populated by the server with the same value in the WAITING_FOR_AUTH frame.  Subsequent WAITING_FOR_AUTH frames with the same request identifier MAY be sent on other streams while the server is awaiting client authentication with the same parameters.  This allows a client to correlate the TLS CertificateRequest with one or more outstanding requests.</p>
+<p id="rfc.section.2.p.3">A server MAY send multiple concurrent TLS CertificateRequest messages.  If a server requires that a client provide multiple certificates before authorizing a single request, it MUST send WAITING_FOR_AUTH frames with different request identifiers before sending subsequent TLS CertificateRequest messages.</p>
 <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#aci-12" id="aci-12">HTTP/2 Request Correlation in TLS 1.2</a></h1>
-<p id="rfc.section.3.p.1">An HTTP/2 server that uses TLS 1.2 initiates client authentication by sending a an HTTP/2 WAITING_FOR_AUTH frame containing a random value, followed by a TLS HelloRequest.  This triggers a TLS renegotiation.</p>
+<p id="rfc.section.3.p.1">An HTTP/2 server that uses TLS 1.2 initiates client authentication by sending a an HTTP/2 WAITING_FOR_AUTH frame followed by a TLS HelloRequest.  This triggers a TLS renegotiation.</p>
 <p id="rfc.section.3.p.2">An HTTP/2 client that receives a TLS HelloRequest message MUST initiate a TLS handshake, including an empty <samp>application_context_id</samp> extension.  If the client has not indicated support for renegotiation (see <a href="#setting">Section 5</a>), the client MUST send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
-<p id="rfc.section.3.p.3">The server populates the <samp>application_context_id</samp> extension with the same value previously used in the WAITING_FOR_AUTH frame.</p>
+<p id="rfc.section.3.p.3">The server populates the <samp>application_context_id</samp> extension with the same value it previously sent in a WAITING_FOR_AUTH frame.</p>
 <p id="rfc.section.3.p.4">Absence of an <samp>application_context_id</samp> extension or an empty value from the server MUST be treated as a fatal error; endpoints MAY send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
 <p id="rfc.section.3.p.5">As with the TLS 1.3 solution, a server MAY request multiple client certificates, either for different requests or for the same request.  If multiple requests are waiting for authentication and require different certificates, the server SHOULD immediately send the WAITING_FOR_AUTH frames with unique values.  Only one TLS renegotiation can be in progress at a time, though a new HelloRequest can be emitted once the renegotiation has completed.</p>
 <p id="rfc.section.3.p.6">A server MAY treat all certificates presented in the same connection as cumulative, remembering multiple certificates as they are presented.  Note that the authentication information collected from the client will need to be checked after each TLS renegotiation completes, since most TLS stacks only report the presence of the client certificate presented during the last TLS handshake.</p>
@@ -668,14 +668,14 @@ struct {
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |X|                       Request ID (31)                       |
+ |X|                   Request Identifier (31)                   |
  +-+-------------------------------------------------------------+
 </pre>
 <p class="figure">Figure 4: The WAITING_FOR_AUTH frame</p>
-<p id="rfc.section.4.p.3">The WAITING_FOR_AUTH frame is sent by servers to indicate that processing of a request is blocked pending authentication outside of the HTTP channel. The frame includes a Request ID which can be used to correlate the stream with challenges for authentication received at other layers, such as TLS.</p>
+<p id="rfc.section.4.p.3">The WAITING_FOR_AUTH frame (0xFRAME-TBD) is sent by servers to indicate that processing of a request is blocked pending authentication outside of the HTTP channel. The frame includes a request identifier which can be used to correlate the stream with challenges for authentication received at other layers, such as TLS.  The request identifier MUST be unique amongst all concurrently outstanding authentication requests on the connection.</p>
 <p id="rfc.section.4.p.4">The WAITING_FOR_AUTH frame MUST NOT be sent by clients.  A WAITING_FOR_AUTH frame received by a server SHOULD be rejected with a stream error of type PROTOCOL_ERROR.</p>
-<p id="rfc.section.4.p.5">The server MUST NOT send a WAITING_FOR_AUTH frame on stream zero, a server-initiated stream or a stream that does not have an outstanding request.  In other words, a server can only send in the &#8220;open&#8221; or &#8220;half-closed (remote)&#8221; stream states.  A server SHOULD NOT send the frame until after having initiated the out-of-band authentication challenge.</p>
-<p id="rfc.section.4.p.6">A client that receives a WAITING_FOR_AUTH frame on a stream which is not in a valid state (&#8220;open&#8221; or &#8220;half-closed (local)&#8221; for clients) SHOULD treat this as a connection error of type PROTOCOL_ERROR.  A client that receives a WAITING_FOR_AUTH frame which does not match an outstanding authentication request MAY treat this as a stream error if no challenge is received within a few seconds.</p>
+<p id="rfc.section.4.p.5">The server MUST NOT send a WAITING_FOR_AUTH frame on stream zero, a server-initiated stream or a stream that does not have an outstanding request.  In other words, a server can only send in the &#8220;open&#8221; or &#8220;half-closed (remote)&#8221; stream states.</p>
+<p id="rfc.section.4.p.6">A client that receives a WAITING_FOR_AUTH frame on a stream which is not in a valid state (&#8220;open&#8221; or &#8220;half-closed (local)&#8221; for clients) SHOULD treat this as a connection error of type PROTOCOL_ERROR.</p>
 <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#setting" id="setting">Indicating Support for Reactive Certificate Authentication</a></h1>
 <p id="rfc.section.5.p.1">Clients that support reactive certificate authentication indicate this using the HTTP/2 <samp>SETTINGS_REACTIVE_AUTH</samp> (0xSETTING-TBD) setting.</p>
 <p id="rfc.section.5.p.2">The initial value for the <samp>SETTINGS_REACTIVE_AUTH</samp> setting is 0, indicating that the client does not support reactive client authentication.  A client sets the <samp>SETTINGS_REACTIVE_AUTH</samp> setting to a value of 1 to indicate support for reactive certificate authentication as defined in this document.  Any value other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of <a href="#RFC7540">[RFC7540]</a>) of type PROTOCOL_ERROR.</p>
@@ -716,12 +716,10 @@ struct {
 <p/>
 
 <dl>
-  <dt>Name:</dt>
+  <dt>Frame Type:</dt>
   <dd style="margin-left: 8">WAITING_FOR_AUTH</dd>
   <dt>Code:</dt>
-  <dd style="margin-left: 8">0xSETTING-TBD</dd>
-  <dt>Initial Value:</dt>
-  <dd style="margin-left: 8">0</dd>
+  <dd style="margin-left: 8">0xFRAME-TBD</dd>
   <dt>Specification:</dt>
   <dd style="margin-left: 8">This document.</dd>
 </dl>
