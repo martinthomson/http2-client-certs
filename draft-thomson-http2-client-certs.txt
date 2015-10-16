@@ -6,7 +6,7 @@ HTTP                                                          M. Thomson
 Internet-Draft                                                   Mozilla
 Updates: 7450 (if approved)                                    M. Bishop
 Intended status: Standards Track                               Microsoft
-Expires: April 16, 2016                                 October 14, 2015
+Expires: April 18, 2016                                 October 16, 2015
 
 
        Reactive Certificate-Based Client Authentication in HTTP/2
@@ -40,7 +40,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 16, 2016.
+   This Internet-Draft will expire on April 18, 2016.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 1]
+Thomson & Bishop         Expires April 18, 2016                 [Page 1]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 2]
+Thomson & Bishop         Expires April 18, 2016                 [Page 2]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -165,7 +165,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 3]
+Thomson & Bishop         Expires April 18, 2016                 [Page 3]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -221,7 +221,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 4]
+Thomson & Bishop         Expires April 18, 2016                 [Page 4]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -277,7 +277,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 5]
+Thomson & Bishop         Expires April 18, 2016                 [Page 5]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -333,7 +333,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 6]
+Thomson & Bishop         Expires April 18, 2016                 [Page 6]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -389,7 +389,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 7]
+Thomson & Bishop         Expires April 18, 2016                 [Page 7]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -445,7 +445,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 8]
+Thomson & Bishop         Expires April 18, 2016                 [Page 8]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -501,7 +501,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 16, 2016                 [Page 9]
+Thomson & Bishop         Expires April 18, 2016                 [Page 9]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -557,7 +557,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 16, 2016                [Page 10]
+Thomson & Bishop         Expires April 18, 2016                [Page 10]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -613,4 +613,4 @@ Authors' Addresses
 
 
 
-Thomson & Bishop         Expires April 16, 2016                [Page 11]
+Thomson & Bishop         Expires April 18, 2016                [Page 11]
