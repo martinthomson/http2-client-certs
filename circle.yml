@@ -9,6 +9,10 @@ dependencies:
     - pip install xml2rfc
     - gem install kramdown-rfc2629
 
+checkout:
+  post:
+    - git fetch origin gh-pages --depth 10
+
 test:
   override:
     - make
