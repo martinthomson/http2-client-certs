@@ -1,0 +1,18 @@
+machine:
+  python:
+    version: 2.7.6
+  ruby:
+    version: 2.2.3
+
+dependencies:
+  pre:
+    - pip install xml2rfc
+    - gem install kramdown-rfc2629
+
+test:
+  override:
+    - make
+
+deployment:
+  commands:
+    - make ghpages
