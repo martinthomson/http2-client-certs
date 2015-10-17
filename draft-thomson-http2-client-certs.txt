@@ -6,7 +6,7 @@ HTTP                                                          M. Thomson
 Internet-Draft                                                   Mozilla
 Updates: 7450 (if approved)                                    M. Bishop
 Intended status: Standards Track                               Microsoft
-Expires: April 18, 2016                                 October 16, 2015
+Expires: April 19, 2016                                 October 17, 2015
 
 
        Reactive Certificate-Based Client Authentication in HTTP/2
@@ -40,7 +40,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 18, 2016.
+   This Internet-Draft will expire on April 19, 2016.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Thomson & Bishop         Expires April 18, 2016                 [Page 1]
+Thomson & Bishop         Expires April 19, 2016                 [Page 1]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -77,11 +77,11 @@ Table of Contents
      3.1.  The TLS application_context_id Hello Extension  . . . . .   6
      3.2.  Permitting TLS Renegotiation in HTTP/2  . . . . . . . . .   7
    4.  Indicating Stream Dependency on Certificate Authentication  .   8
-   5.  Indicating Support for Reactive Certificate Authentication  .   9
+   5.  Indicating Support for Reactive Certificate Authentication  .   8
    6.  Security Considerations . . . . . . . . . . . . . . . . . . .   9
    7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
      7.1.  TLS application_context_id Extension  . . . . . . . . . .   9
-     7.2.  HTTP/2 SETTINGS_REACTIVE_AUTH Setting . . . . . . . . . .  10
+     7.2.  HTTP/2 SETTINGS_REACTIVE_AUTH Setting . . . . . . . . . .   9
      7.3.  HTTP/2 WAITING_FOR_AUTH Frame . . . . . . . . . . . . . .  10
    8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  10
    9.  Normative References  . . . . . . . . . . . . . . . . . . . .  10
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Thomson & Bishop         Expires April 18, 2016                 [Page 2]
+Thomson & Bishop         Expires April 19, 2016                 [Page 2]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -165,7 +165,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 18, 2016                 [Page 3]
+Thomson & Bishop         Expires April 19, 2016                 [Page 3]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -221,7 +221,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 18, 2016                 [Page 4]
+Thomson & Bishop         Expires April 19, 2016                 [Page 4]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -277,7 +277,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 18, 2016                 [Page 5]
+Thomson & Bishop         Expires April 19, 2016                 [Page 5]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -333,7 +333,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 18, 2016                 [Page 6]
+Thomson & Bishop         Expires April 19, 2016                 [Page 6]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -389,7 +389,7 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 18, 2016                 [Page 7]
+Thomson & Bishop         Expires April 19, 2016                 [Page 7]
 
 Internet-Draft             HTTP/2 Client Certs              October 2015
 
@@ -405,29 +405,17 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 4.  Indicating Stream Dependency on Certificate Authentication
 
-   Servers which employ reactive certificate authentication can require
-   that authentication on multiple resources.  Because many requests
-   could be awaiting responses to the same CertificateRequest, it is
-   insufficient to use the stream ID as the "certificate_request_id" or
-   "application_context_id".
-
-   The frame is structured as follows:
-
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |X|                   Request Identifier (31)                   |
-    +-+-------------------------------------------------------------+
-
-                   Figure 4: The WAITING_FOR_AUTH frame
-
    The WAITING_FOR_AUTH frame (0xFRAME-TBD) is sent by servers to
    indicate that processing of a request is blocked pending
    authentication outside of the HTTP channel.  The frame includes a
    request identifier which can be used to correlate the stream with
    challenges for authentication received at other layers, such as TLS.
-   The request identifier MUST be unique amongst all concurrently
-   outstanding authentication requests on the connection.
+
+   The WAITING_FOR_AUTH frame contains between 1 and 255 octets, which
+   is the authentication request identifier.  A client that receives a
+   WAITING_FOR_AUTH of any other length MUST treat this as a stream
+   error of type PROTOCOL_ERROR.  Frames with identical request
+   identifiers refer to the same TLS CertificateRequest.
 
    The WAITING_FOR_AUTH frame MUST NOT be sent by clients.  A
    WAITING_FOR_AUTH frame received by a server SHOULD be rejected with a
@@ -442,14 +430,6 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    not in a valid state ("open" or "half-closed (local)" for clients)
    SHOULD treat this as a connection error of type PROTOCOL_ERROR.
 
-
-
-
-Thomson & Bishop         Expires April 18, 2016                 [Page 8]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
-
 5.  Indicating Support for Reactive Certificate Authentication
 
    Clients that support reactive certificate authentication indicate
@@ -461,6 +441,15 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    authentication.  A client sets the "SETTINGS_REACTIVE_AUTH" setting
    to a value of 1 to indicate support for reactive certificate
    authentication as defined in this document.  Any value other than 0
+
+
+
+
+Thomson & Bishop         Expires April 19, 2016                 [Page 8]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
+
    or 1 MUST be treated as a connection error (Section 5.4.1 of
    [RFC7540]) of type PROTOCOL_ERROR.
 
@@ -499,13 +488,6 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
    Reference:  This document.
 
-
-
-Thomson & Bishop         Expires April 18, 2016                 [Page 9]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
-
 7.2.  HTTP/2 SETTINGS_REACTIVE_AUTH Setting
 
    The SETTINGS_REACTIVE_AUTH setting is registered in the "HTTP/2
@@ -516,6 +498,13 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
    Code:  0xSETTING-TBD
 
    Initial Value:  0
+
+
+
+Thomson & Bishop         Expires April 19, 2016                 [Page 9]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
 
    Specification:  This document.
 
@@ -551,17 +540,6 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
               RFC5246, August 2008,
               <http://www.rfc-editor.org/info/rfc5246>.
 
-
-
-
-
-
-
-Thomson & Bishop         Expires April 18, 2016                [Page 10]
-
-Internet-Draft             HTTP/2 Client Certs              October 2015
-
-
    [RFC5746]  Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
               "Transport Layer Security (TLS) Renegotiation Indication
               Extension", RFC 5746, DOI 10.17487/RFC5746, February 2010,
@@ -576,6 +554,13 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
               Transfer Protocol Version 2 (HTTP/2)", RFC 7540, DOI
               10.17487/RFC7540, May 2015,
               <http://www.rfc-editor.org/info/rfc7540>.
+
+
+
+Thomson & Bishop         Expires April 19, 2016                [Page 10]
+
+Internet-Draft             HTTP/2 Client Certs              October 2015
+
 
    [RFC7627]  Bhargavan, K., Ed., Delignat-Lavaud, A., Pironti, A.,
               Langley, A., and M. Ray, "Transport Layer Security (TLS)
@@ -613,4 +598,19 @@ Authors' Addresses
 
 
 
-Thomson & Bishop         Expires April 18, 2016                [Page 11]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Thomson & Bishop         Expires April 19, 2016                [Page 11]
