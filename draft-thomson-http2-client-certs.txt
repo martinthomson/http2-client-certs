@@ -6,7 +6,7 @@ HTTP                                                          M. Thomson
 Internet-Draft                                                   Mozilla
 Updates: 7450 (if approved)                                    M. Bishop
 Intended status: Standards Track                               Microsoft
-Expires: April 19, 2016                                 October 17, 2015
+Expires: June 16, 2016                                 December 14, 2015
 
 
        Reactive Certificate-Based Client Authentication in HTTP/2
@@ -40,7 +40,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 19, 2016.
+   This Internet-Draft will expire on June 16, 2016.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 1]
+Thomson & Bishop          Expires June 16, 2016                 [Page 1]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    publication of this document.  Please review these documents
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 2]
+Thomson & Bishop          Expires June 16, 2016                 [Page 2]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    The TLS CertificateRequest can be used by servers to give clients
@@ -165,9 +165,9 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 3]
+Thomson & Bishop          Expires June 16, 2016                 [Page 3]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    using a client certificate and that no such certificate has been
@@ -221,9 +221,9 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 4]
+Thomson & Bishop          Expires June 16, 2016                 [Page 4]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    In HTTP/2, a client can have multiple outstanding requests.  Without
@@ -277,9 +277,9 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 5]
+Thomson & Bishop          Expires June 16, 2016                 [Page 5]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
 3.  HTTP/2 Request Correlation in TLS 1.2
@@ -333,9 +333,9 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 6]
+Thomson & Bishop          Expires June 16, 2016                 [Page 6]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    In HTTP/2 clients always provide an empty "application_context_id"
@@ -389,9 +389,9 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 7]
+Thomson & Bishop          Expires June 16, 2016                 [Page 7]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    server certificate has not changed; a different certificate MUST be
@@ -445,9 +445,9 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 8]
+Thomson & Bishop          Expires June 16, 2016                 [Page 8]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    or 1 MUST be treated as a connection error (Section 5.4.1 of
@@ -501,9 +501,9 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
 
 
-Thomson & Bishop         Expires April 19, 2016                 [Page 9]
+Thomson & Bishop          Expires June 16, 2016                 [Page 9]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    Specification:  This document.
@@ -527,17 +527,17 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
 
    [I-D.ietf-tls-tls13]
               Rescorla, E., "The Transport Layer Security (TLS) Protocol
-              Version 1.3", draft-ietf-tls-tls13-08 (work in progress),
-              August 2015.
+              Version 1.3", draft-ietf-tls-tls13-10 (work in progress),
+              October 2015.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
-              RFC2119, March 1997,
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
               <http://www.rfc-editor.org/info/rfc2119>.
 
    [RFC5246]  Dierks, T. and E. Rescorla, "The Transport Layer Security
-              (TLS) Protocol Version 1.2", RFC 5246, DOI 10.17487/
-              RFC5246, August 2008,
+              (TLS) Protocol Version 1.2", RFC 5246,
+              DOI 10.17487/RFC5246, August 2008,
               <http://www.rfc-editor.org/info/rfc5246>.
 
    [RFC5746]  Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
@@ -546,26 +546,26 @@ Internet-Draft             HTTP/2 Client Certs              October 2015
               <http://www.rfc-editor.org/info/rfc5746>.
 
    [RFC7230]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
-              Protocol (HTTP/1.1): Message Syntax and Routing", RFC
-              7230, DOI 10.17487/RFC7230, June 2014,
+              Protocol (HTTP/1.1): Message Syntax and Routing",
+              RFC 7230, DOI 10.17487/RFC7230, June 2014,
               <http://www.rfc-editor.org/info/rfc7230>.
 
    [RFC7540]  Belshe, M., Peon, R., and M. Thomson, Ed., "Hypertext
-              Transfer Protocol Version 2 (HTTP/2)", RFC 7540, DOI
-              10.17487/RFC7540, May 2015,
+              Transfer Protocol Version 2 (HTTP/2)", RFC 7540,
+              DOI 10.17487/RFC7540, May 2015,
               <http://www.rfc-editor.org/info/rfc7540>.
 
 
 
-Thomson & Bishop         Expires April 19, 2016                [Page 10]
+Thomson & Bishop          Expires June 16, 2016                [Page 10]
 
-Internet-Draft             HTTP/2 Client Certs              October 2015
+Internet-Draft             HTTP/2 Client Certs             December 2015
 
 
    [RFC7627]  Bhargavan, K., Ed., Delignat-Lavaud, A., Pironti, A.,
               Langley, A., and M. Ray, "Transport Layer Security (TLS)
-              Session Hash and Extended Master Secret Extension", RFC
-              7627, DOI 10.17487/RFC7627, September 2015,
+              Session Hash and Extended Master Secret Extension",
+              RFC 7627, DOI 10.17487/RFC7627, September 2015,
               <http://www.rfc-editor.org/info/rfc7627>.
 
 Authors' Addresses
@@ -613,4 +613,4 @@ Authors' Addresses
 
 
 
-Thomson & Bishop         Expires April 19, 2016                [Page 11]
+Thomson & Bishop          Expires June 16, 2016                [Page 11]
