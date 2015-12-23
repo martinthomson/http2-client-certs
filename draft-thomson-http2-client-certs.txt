@@ -341,9 +341,10 @@ Internet-Draft             HTTP/2 Client Certs             December 2015
    a corresponding "CERTIFICATE_REQUEST" frame for each required
    certificate.
 
-   Clients provide certificate authentication by sending a "CERTIFICATE"
-   frame (see Section 2.3) on stream zero.  If the "CERTIFICATE" frame
-   is marked as both "SOLICITED" and "AUTOMATIC_USE", the provided
+   Clients provide certificate authentication by sending one or more
+   "CERTIFICATE" frames (see Section 2.3) on stream zero, followed by a
+   "CERTIFICATE_PROOF" frame.  If the "CERTIFICATE_PROOF" frame is
+   marked as both "SOLICITED" and "AUTOMATIC_USE", the provided
    certificate can be immediately applied by the server to all streams
    on which a "CERTIFICATE_REQUIRED" frame has been sent previously with
    the same identifier.  Otherwise, the client will send subsequent
@@ -351,12 +352,12 @@ Internet-Draft             HTTP/2 Client Certs             December 2015
    which it intends the certificate to be considered.
 
    Clients may also provide authentication without being asked, if
-   desired, by sending "CERTIFICATE" and "USE_CERTIFICATE" frames
-   without waiting for a server-generated "CERTIFICATE_REQUEST".  If a
-   client receives a "CERTIFICATE_REQUIRED" frame referencing parameters
-   for which it has already provided a matching certificate, it MAY
-   reply with a "USE_CERTIFICATE" frame referencing the previous
-   "CERTIFICATE" frame.
+   desired, by sending "CERTIFICATE", "CERTIFICATE_PROOF", and
+   "USE_CERTIFICATE" frames without waiting for a server-generated
+   "CERTIFICATE_REQUEST".  If a client receives a "CERTIFICATE_REQUIRED"
+   frame referencing parameters for which it has already provided a
+   matching certificate, it MAY reply with a "USE_CERTIFICATE" frame
+   referencing the previous "CERTIFICATE" frame.
 
 2.1.  The CERTIFICATE_REQUEST Frame
 
@@ -374,7 +375,6 @@ Internet-Draft             HTTP/2 Client Certs             December 2015
    The "CERTIFICATE_REQUEST" frame MUST be sent on stream zero.  A
    "CERTIFICATE_REQUEST" frame received on any other stream MUST be
    rejected with a stream error of type "PROTOCOL_ERROR".
-
 
 
 
