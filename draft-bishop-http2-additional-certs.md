@@ -2,7 +2,7 @@
 title: Secondary Server-Certificate Authentication in HTTP/2
 abbrev: HTTP/2 Additional Certs
 docname: draft-bishop-http2-additional-certs
-date: 2016
+date: 2015
 category: std
 
 ipr: trust200902
@@ -32,11 +32,10 @@ normative:
         ISO: ISO/IEC 8825-1:2002
   I-D.ietf-tls-tls13:
   I-D.thomson-http2-client-certs:
-  I-D.ietf-httpbis-alt-svc:
 
 informative:
-
-
+  I-D.nottingham-httpbis-origin-frame:
+  I-D.ietf-httpbis-alt-svc:
 
 --- abstract
 
@@ -60,7 +59,8 @@ Section 9.1.1 of [RFC7540] describes how connections may be reused as
 long as the server is authoritative for both origins. A server is 
 considered authoritative for both origins if DNS resolves both origins 
 to the IP address of the server and (for TLS) if the certificate 
-presented by the server contains both origins. 
+presented by the server contains both origins, either as the Subject
+or contained in the Subject Alternative Names field.
 
 [I-D.ietf-httpbis-alt-svc] enables a step of abstraction from the DNS 
 resolution. If both hosts have provided an Alternative Service at 
@@ -77,18 +77,19 @@ to advertise the availability of origins which do not appear in the
 server's certificate as presented in the TLS handshake. 
 
 Servers which host many origins often would prefer to have separate 
-certificates for each origin. This may be for ease of certificate 
-management (the ability to separately revoke or renew them), for legal 
-reasons (a CDN acting on behalf of multiple origins), or any other 
-factor which might drive this administrative decision. Clients 
+certificates for some sets of origins. This may be for ease of 
+certificate management (the ability to separately revoke or renew them), 
+for legal reasons (a CDN acting on behalf of multiple origins), or any 
+other factor which might drive this administrative decision. Clients 
 connecting to such origins cannot currently reuse connections, even if 
-both client and server would be willing to do so. 
+both client and server would be willing to do so.
 
 [I-D.thomson-http2-client-certs] defines certificate-related HTTP/2 
-frames, permitting a sender to offer a certificate along with proof that 
-it possesses the corresponding private key. These frames are bound to 
-the underlying TLS session, so that the certificates are as reliable as 
-those provided at the TLS layer. 
+frames, permitting a sender to offer a certificate chain along with 
+proof that it possesses the corresponding private key to the end 
+certificate. These frames are bound to the underlying TLS session, so 
+that the certificates are as reliable as those provided at the TLS 
+layer. 
 
 In this document, a mechanism for using these frames for secondary 
 server authentication via HTTP/2 frames is defined. This mechanism can 
@@ -98,10 +99,9 @@ applications above it. It primarily relaxes the one-way nature of the
 frames defined in [I-D.thomson-http2-client-certs], defining the 
 processing of these frames in the reverse direction. 
 
-
 ## Origin Discovery
 
-### Client-driven discovery {: #discovery-client}
+### Client-driven discovery {#discovery-client}
 
 As defined in [RFC7540], when a client finds that a https:// origin (or 
 Alternative Service [I-D.ietf-httpbis-alt-svc]) to which it needs to 
@@ -133,7 +133,7 @@ server MAY send an `ORIGIN` frame including origins which are not in its
 TLS certificate. This represents an explicit claim by the server to 
 possess the appropriate certificate -- a claim the client MUST verify 
 using the procedures in {{discovery-client}} before relying on the 
-server's authority for the claimed origin. 
+server's authority for the claimed origin.
 
 # Presenting Server Certificates at the HTTP/2 Framing Layer 
 {#certs-http2} 
