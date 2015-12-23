@@ -265,22 +265,37 @@ ol, ul {
   <link href="#rfc.toc" rel="Contents"/>
 <link href="#rfc.section.1" rel="Chapter" title="1 Introduction"/>
 <link href="#rfc.section.1.1" rel="Chapter" title="1.1 Reactive Certificate Authentication in HTTP/1.1"/>
-<link href="#rfc.section.1.2" rel="Chapter" title="1.2 TLS 1.3 Client Authentication"/>
-<link href="#rfc.section.1.3" rel="Chapter" title="1.3 Reactive Client Authentication in HTTP/2"/>
-<link href="#rfc.section.1.4" rel="Chapter" title="1.4 Terminology"/>
-<link href="#rfc.section.2" rel="Chapter" title="2 HTTP/2 Request Correlation in TLS 1.3"/>
-<link href="#rfc.section.3" rel="Chapter" title="3 HTTP/2 Request Correlation in TLS 1.2"/>
-<link href="#rfc.section.3.1" rel="Chapter" title="3.1 The TLS application_context_id Hello Extension"/>
-<link href="#rfc.section.3.2" rel="Chapter" title="3.2 Permitting TLS Renegotiation in HTTP/2"/>
-<link href="#rfc.section.4" rel="Chapter" title="4 Indicating Stream Dependency on Certificate Authentication"/>
-<link href="#rfc.section.5" rel="Chapter" title="5 Indicating Support for Reactive Certificate Authentication"/>
-<link href="#rfc.section.6" rel="Chapter" title="6 Security Considerations"/>
-<link href="#rfc.section.7" rel="Chapter" title="7 IANA Considerations"/>
-<link href="#rfc.section.7.1" rel="Chapter" title="7.1 TLS application_context_id Extension"/>
-<link href="#rfc.section.7.2" rel="Chapter" title="7.2 HTTP/2 SETTINGS_REACTIVE_AUTH Setting"/>
-<link href="#rfc.section.7.3" rel="Chapter" title="7.3 HTTP/2 WAITING_FOR_AUTH Frame"/>
-<link href="#rfc.section.8" rel="Chapter" title="8 Acknowledgements"/>
-<link href="#rfc.references" rel="Chapter" title="9 Normative References"/>
+<link href="#rfc.section.1.1.1" rel="Chapter" title="1.1.1 Using TLS 1.2 and previous"/>
+<link href="#rfc.section.1.1.2" rel="Chapter" title="1.1.2 Using TLS 1.3"/>
+<link href="#rfc.section.1.2" rel="Chapter" title="1.2 Reactive Client Authentication in HTTP/2"/>
+<link href="#rfc.section.1.3" rel="Chapter" title="1.3 Terminology"/>
+<link href="#rfc.section.2" rel="Chapter" title="2 Presenting Client Certificates at the HTTP/2 Framing Layer"/>
+<link href="#rfc.section.2.1" rel="Chapter" title="2.1 The CERTIFICATE_REQUEST Frame"/>
+<link href="#rfc.section.2.2" rel="Chapter" title="2.2 The CERTIFICATE_REQUIRED frame"/>
+<link href="#rfc.section.2.3" rel="Chapter" title="2.3 The CERTIFICATE frame"/>
+<link href="#rfc.section.2.3.1" rel="Chapter" title="2.3.1 The Certificate structure"/>
+<link href="#rfc.section.2.4" rel="Chapter" title="2.4 The CERTIFICATE_PROOF Frame"/>
+<link href="#rfc.section.2.5" rel="Chapter" title="2.5 The USE_CERTIFICATE Frame"/>
+<link href="#rfc.section.3" rel="Chapter" title="3 Indicating failures during HTTP-Layer Certificate Authentication"/>
+<link href="#rfc.section.4" rel="Chapter" title="4 Indicating Support for HTTP-Layer Certificate Authentication"/>
+<link href="#rfc.section.5" rel="Chapter" title="5 Security Considerations"/>
+<link href="#rfc.section.6" rel="Chapter" title="6 IANA Considerations"/>
+<link href="#rfc.section.6.1" rel="Chapter" title="6.1 HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting"/>
+<link href="#rfc.section.6.2" rel="Chapter" title="6.2 New HTTP/2 Frames"/>
+<link href="#rfc.section.6.2.1" rel="Chapter" title="6.2.1 CERTIFICATE_REQUIRED"/>
+<link href="#rfc.section.6.2.2" rel="Chapter" title="6.2.2 CERTIFICATE_REQUEST"/>
+<link href="#rfc.section.6.2.3" rel="Chapter" title="6.2.3 CERTIFICATE"/>
+<link href="#rfc.section.6.2.4" rel="Chapter" title="6.2.4 CERTIFICATE_PROOF"/>
+<link href="#rfc.section.6.2.5" rel="Chapter" title="6.2.5 USE_CERTIFICATE"/>
+<link href="#rfc.section.6.3" rel="Chapter" title="6.3 New HTTP/2 Error Codes"/>
+<link href="#rfc.section.6.3.1" rel="Chapter" title="6.3.1 BAD_CERTIFICATE"/>
+<link href="#rfc.section.6.3.2" rel="Chapter" title="6.3.2 UNSUPPORTED_CERTIFICATE"/>
+<link href="#rfc.section.6.3.3" rel="Chapter" title="6.3.3 CERTIFICATE_REVOKED"/>
+<link href="#rfc.section.6.3.4" rel="Chapter" title="6.3.4 CERTIFICATE_EXPIRED"/>
+<link href="#rfc.section.6.3.5" rel="Chapter" title="6.3.5 BAD_SIGNATURE"/>
+<link href="#rfc.section.6.3.6" rel="Chapter" title="6.3.6 CERTIFICATE_GENERAL"/>
+<link href="#rfc.section.7" rel="Chapter" title="7 Acknowledgements"/>
+<link href="#rfc.references" rel="Chapter" title="8 Normative References"/>
 <link href="#rfc.authors" rel="Chapter"/>
 
 
@@ -289,9 +304,9 @@ ol, ul {
 
   <meta name="dct.creator" content="Thomson, M. and M. Bishop" />
   <meta name="dct.identifier" content="urn:ietf:id:draft-thomson-http2-client-certs-latest" />
-  <meta name="dct.issued" scheme="ISO8601" content="2015-12-14" />
-  <meta name="dct.abstract" content="Some HTTP servers provide a subset of resources that require additional authentication to interact with.  HTTP/1.1 servers rely on TLS renegotiation that is triggered by a request to a protected resource.  HTTP/2 made this pattern impossible by forbidding the use of TLS renegotiation." />
-  <meta name="description" content="Some HTTP servers provide a subset of resources that require additional authentication to interact with.  HTTP/1.1 servers rely on TLS renegotiation that is triggered by a request to a protected resource.  HTTP/2 made this pattern impossible by forbidding the use of TLS renegotiation." />
+  <meta name="dct.issued" scheme="ISO8601" content="2015-12-23" />
+  <meta name="dct.abstract" content="Some HTTP servers provide a subset of resources that require additional authentication to interact with.  HTTP/1.1 servers rely on TLS renegotiation that is triggered by a request to a protected resource.  HTTP/2 made this pattern impossible by forbidding the use of TLS renegotiation.  While TLS 1.3 provides an alternate mechanism to obtain client certificates, this mechanism does not map well to usage in TLS 1.2." />
+  <meta name="description" content="Some HTTP servers provide a subset of resources that require additional authentication to interact with.  HTTP/1.1 servers rely on TLS renegotiation that is triggered by a request to a protected resource.  HTTP/2 made this pattern impossible by forbidding the use of TLS renegotiation.  While TLS 1.3 provides an alternate mechanism to obtain client certificates, this mechanism does not map well to usage in TLS 1.2." />
 
 </head>
 
@@ -309,16 +324,16 @@ ol, ul {
   <td class="right">Mozilla</td>
 </tr>
 <tr>
-  <td class="left">Updates: 7450 (if approved)</td>
+  <td class="left">Intended status: Standards Track</td>
   <td class="right">M. Bishop</td>
 </tr>
 <tr>
-  <td class="left">Intended status: Standards Track</td>
+  <td class="left">Expires: June 25, 2016</td>
   <td class="right">Microsoft</td>
 </tr>
 <tr>
-  <td class="left">Expires: June 16, 2016</td>
-  <td class="right">December 14, 2015</td>
+  <td class="left"></td>
+  <td class="right">December 23, 2015</td>
 </tr>
 
     	
@@ -331,15 +346,15 @@ ol, ul {
   <h1 id="rfc.abstract">
   <a href="#rfc.abstract">Abstract</a>
 </h1>
-<p>Some HTTP servers provide a subset of resources that require additional authentication to interact with.  HTTP/1.1 servers rely on TLS renegotiation that is triggered by a request to a protected resource.  HTTP/2 made this pattern impossible by forbidding the use of TLS renegotiation.</p>
-<p>This document describes a how client authentication might be requested by a server as a result of receiving a request to a protected resource.  This document updates RFC 7540 to allow TLS renegotiation in limited circumstances.</p>
+<p>Some HTTP servers provide a subset of resources that require additional authentication to interact with.  HTTP/1.1 servers rely on TLS renegotiation that is triggered by a request to a protected resource.  HTTP/2 made this pattern impossible by forbidding the use of TLS renegotiation.  While TLS 1.3 provides an alternate mechanism to obtain client certificates, this mechanism does not map well to usage in TLS 1.2.</p>
+<p>This document describes a how client authentication might be requested by a server as a result of receiving a request to a protected resource.</p>
 <h1 id="rfc.status">
   <a href="#rfc.status">Status of This Memo</a>
 </h1>
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at http://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on June 16, 2016.</p>
+<p>This Internet-Draft will expire on June 25, 2016.</p>
 <h1 id="rfc.copyrightnotice">
   <a href="#rfc.copyrightnotice">Copyright Notice</a>
 </h1>
@@ -353,22 +368,37 @@ ol, ul {
 
   	<li>1.   <a href="#rfc.section.1">Introduction</a></li>
 <ul><li>1.1.   <a href="#rfc.section.1.1">Reactive Certificate Authentication in HTTP/1.1</a></li>
-<li>1.2.   <a href="#rfc.section.1.2">TLS 1.3 Client Authentication</a></li>
-<li>1.3.   <a href="#rfc.section.1.3">Reactive Client Authentication in HTTP/2</a></li>
-<li>1.4.   <a href="#rfc.section.1.4">Terminology</a></li>
-</ul><li>2.   <a href="#rfc.section.2">HTTP/2 Request Correlation in TLS 1.3</a></li>
-<li>3.   <a href="#rfc.section.3">HTTP/2 Request Correlation in TLS 1.2</a></li>
-<ul><li>3.1.   <a href="#rfc.section.3.1">The TLS application_context_id Hello Extension</a></li>
-<li>3.2.   <a href="#rfc.section.3.2">Permitting TLS Renegotiation in HTTP/2</a></li>
-</ul><li>4.   <a href="#rfc.section.4">Indicating Stream Dependency on Certificate Authentication</a></li>
-<li>5.   <a href="#rfc.section.5">Indicating Support for Reactive Certificate Authentication</a></li>
-<li>6.   <a href="#rfc.section.6">Security Considerations</a></li>
-<li>7.   <a href="#rfc.section.7">IANA Considerations</a></li>
-<ul><li>7.1.   <a href="#rfc.section.7.1">TLS application_context_id Extension</a></li>
-<li>7.2.   <a href="#rfc.section.7.2">HTTP/2 SETTINGS_REACTIVE_AUTH Setting</a></li>
-<li>7.3.   <a href="#rfc.section.7.3">HTTP/2 WAITING_FOR_AUTH Frame</a></li>
-</ul><li>8.   <a href="#rfc.section.8">Acknowledgements</a></li>
-<li>9.   <a href="#rfc.references">Normative References</a></li>
+<ul><li>1.1.1.   <a href="#rfc.section.1.1.1">Using TLS 1.2 and previous</a></li>
+<li>1.1.2.   <a href="#rfc.section.1.1.2">Using TLS 1.3</a></li>
+</ul><li>1.2.   <a href="#rfc.section.1.2">Reactive Client Authentication in HTTP/2</a></li>
+<li>1.3.   <a href="#rfc.section.1.3">Terminology</a></li>
+</ul><li>2.   <a href="#rfc.section.2">Presenting Client Certificates at the HTTP/2 Framing Layer</a></li>
+<ul><li>2.1.   <a href="#rfc.section.2.1">The CERTIFICATE_REQUEST Frame</a></li>
+<li>2.2.   <a href="#rfc.section.2.2">The CERTIFICATE_REQUIRED frame</a></li>
+<li>2.3.   <a href="#rfc.section.2.3">The CERTIFICATE frame</a></li>
+<ul><li>2.3.1.   <a href="#rfc.section.2.3.1">The Certificate structure</a></li>
+</ul><li>2.4.   <a href="#rfc.section.2.4">The CERTIFICATE_PROOF Frame</a></li>
+<li>2.5.   <a href="#rfc.section.2.5">The USE_CERTIFICATE Frame</a></li>
+</ul><li>3.   <a href="#rfc.section.3">Indicating failures during HTTP-Layer Certificate Authentication</a></li>
+<li>4.   <a href="#rfc.section.4">Indicating Support for HTTP-Layer Certificate Authentication</a></li>
+<li>5.   <a href="#rfc.section.5">Security Considerations</a></li>
+<li>6.   <a href="#rfc.section.6">IANA Considerations</a></li>
+<ul><li>6.1.   <a href="#rfc.section.6.1">HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting</a></li>
+<li>6.2.   <a href="#rfc.section.6.2">New HTTP/2 Frames</a></li>
+<ul><li>6.2.1.   <a href="#rfc.section.6.2.1">CERTIFICATE_REQUIRED</a></li>
+<li>6.2.2.   <a href="#rfc.section.6.2.2">CERTIFICATE_REQUEST</a></li>
+<li>6.2.3.   <a href="#rfc.section.6.2.3">CERTIFICATE</a></li>
+<li>6.2.4.   <a href="#rfc.section.6.2.4">CERTIFICATE_PROOF</a></li>
+<li>6.2.5.   <a href="#rfc.section.6.2.5">USE_CERTIFICATE</a></li>
+</ul><li>6.3.   <a href="#rfc.section.6.3">New HTTP/2 Error Codes</a></li>
+<ul><li>6.3.1.   <a href="#rfc.section.6.3.1">BAD_CERTIFICATE</a></li>
+<li>6.3.2.   <a href="#rfc.section.6.3.2">UNSUPPORTED_CERTIFICATE</a></li>
+<li>6.3.3.   <a href="#rfc.section.6.3.3">CERTIFICATE_REVOKED</a></li>
+<li>6.3.4.   <a href="#rfc.section.6.3.4">CERTIFICATE_EXPIRED</a></li>
+<li>6.3.5.   <a href="#rfc.section.6.3.5">BAD_SIGNATURE</a></li>
+<li>6.3.6.   <a href="#rfc.section.6.3.6">CERTIFICATE_GENERAL</a></li>
+</ul></ul><li>7.   <a href="#rfc.section.7">Acknowledgements</a></li>
+<li>8.   <a href="#rfc.references">Normative References</a></li>
 <li><a href="#rfc.authors">Authors' Addresses</a></li>
 
 
@@ -376,17 +406,14 @@ ol, ul {
 
   <h1 id="rfc.section.1"><a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a></h1>
 <p id="rfc.section.1.p.1">Many existing HTTP <a href="#RFC7230">[RFC7230]</a> servers have different authentication requirements for the different resources they serve.  Of the bountiful authentication options available for authenticating HTTP requests, client certificates present a unique challenge for resource-specific authentication requirements because of the interaction with the underlying TLS <a href="#I-D.ietf-tls-tls13">RFC5246</a> <cite title="NONE">[I-D.ietf-tls-tls13]</cite> layer.</p>
-<p id="rfc.section.1.p.2">For servers that wish to use client certificates to authenticate users, they might request client authentication during the TLS handshake.  However, if not all users or resources need certificate-based authentication, a request for a certificate has the unfortunate consequence of triggering the client to seek a certificate.  Such a request can result in a poor experience, particular when sent to a client that does not expect the request.</p>
-<p id="rfc.section.1.p.3">The TLS CertificateRequest can be used by servers to give clients hints about which certificate to offer.  Servers that rely on certificate-based authentication might request different certificates for different resources.  Such a server cannot use contextual information about the resource to construct an appropriate TLS CertificateRequest message during the initial handshake.</p>
+<p id="rfc.section.1.p.2">For servers that wish to use client certificates to authenticate users, they might request client authentication during or immediately after the TLS handshake.  However, if not all users or resources need certificate-based authentication, a request for a certificate has the unfortunate consequence of triggering the client to seek a certificate.  Such a request can result in a poor experience, particularly when sent to a client that does not expect the request.</p>
+<p id="rfc.section.1.p.3">The TLS 1.3 CertificateRequest can be used by servers to give clients hints about which certificate to offer.  Servers that rely on certificate-based authentication might request different certificates for different resources.  Such a server cannot use contextual information about the resource to construct an appropriate TLS CertificateRequest message during the initial handshake.</p>
 <p id="rfc.section.1.p.4">Consequently, client certificates are requested at connection establishment time only in cases where all clients are expected or required to have a single certificate that is used for all resources.  Many other uses for client certificates are reactive, that is, certificates are requested in response to the client making a request.</p>
-<p/>
-
-<dl>
-  <dt>CAVEAT:</dt>
-  <dd style="margin-left: 8">As of 2015-10-02, TLS 1.3 does not include the client authentication features this draft relies on.  While these features have been agreed in the TLS working group, the exact design is still under revision.  The basic functionality shouldn&#8217;t change in a way that will affect this document, though some details such as field names are highly likely to change.</dd>
-</dl>
+<p id="rfc.section.1.p.5">In Yokohama, there was extensive working group discussion regarding why certificate authentication could not easily be done at the HTTP semantic layer.  However, in subsequent discussion, it became apparent that the HTTP <em>framing</em> layer did not suffer from the same limitation.</p>
+<p id="rfc.section.1.p.6">In this document, a mechanism for doing certificate-based client authentication via HTTP/2 frames is defined.  This mechanism can be implemented at the HTTP layer without requiring new TLS stack behavior and without breaking the existing interface between HTTP and applications which employ client certificates.</p>
 <h1 id="rfc.section.1.1"><a href="#rfc.section.1.1">1.1.</a> <a href="#reactive-certificate-authentication-in-http11" id="reactive-certificate-authentication-in-http11">Reactive Certificate Authentication in HTTP/1.1</a></h1>
-<p id="rfc.section.1.1.p.1">In HTTP/1.1, a server that relies on client authentication for a subset of users or resources does not request a certificate when the connection is established.  Instead, it only requests a client certificate when a request is made to a resource that requires a certificate.</p>
+<h1 id="rfc.section.1.1.1"><a href="#rfc.section.1.1.1">1.1.1.</a> <a href="#using-tls-12-and-previous" id="using-tls-12-and-previous">Using TLS 1.2 and previous</a></h1>
+<p id="rfc.section.1.1.1.p.1">In HTTP/1.1, a server that relies on client authentication for a subset of users or resources does not request a certificate when the connection is established.  Instead, it only requests a client certificate when a request is made to a resource that requires a certificate.  TLS 1.2 <a href="#RFC5246">[RFC5246]</a> accomodates this by permitting the server to request a new TLS handshake, in which the server will request the client&#8217;s certificate.</p>
 <p><a href="#ex-http11">Figure 1</a> shows the server initiating a TLS-layer renegotiation in response to receiving an HTTP/1.1 request to a protected resource.</p>
 <div id="rfc.figure.1"/>
 <div id="ex-http11"/>
@@ -403,12 +430,12 @@ Client                                      Server
    &lt;--------------------------- (HTTP) 200 OK -- *5
 </pre>
 <p class="figure">Figure 1: HTTP/1.1 Reactive Certificate Authentication with TLS 1.2</p>
-<p id="rfc.section.1.1.p.3">In this example, the server receives a request for a protected resource (at *1 on <a href="#ex-http11">Figure 1</a>).  Upon performing an authorization check, the server determines that the request requires authentication using a client certificate and that no such certificate has been provided.</p>
-<p id="rfc.section.1.1.p.4">The server initiates TLS renegotiation by sending a TLS HelloRequest (at *2).  The client then initiates a TLS handshake.  Note that some TLS messages are elided from the exchange for the sake of brevity.</p>
-<p id="rfc.section.1.1.p.5">The critical messages for this example are the server requesting a certificate with a TLS CertificateRequest (*3); this request might use information about the request or resource.  The client then provides a certificate and proof of possession of the private key in Certificate and CertificateVerify messages (*4).</p>
-<p id="rfc.section.1.1.p.6">When the handshake completes, the server performs any authorization checks a second time.  With the client certificate available, it then authorizes the request and provides a response (*5).</p>
-<h1 id="rfc.section.1.2"><a href="#rfc.section.1.2">1.2.</a> <a href="#tls-13-client-authentication" id="tls-13-client-authentication">TLS 1.3 Client Authentication</a></h1>
-<p id="rfc.section.1.2.p.1">TLS 1.3 <a href="#I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</a> introduces a new client authentication mechanism that allows for clients to authenticate after the handshake has been completed.  For the purposes of authenticating an HTTP request, this is functionally equivalent to renegotiation.  <a href="#ex-tls13">Figure 2</a> shows the simpler exchange this enables.</p>
+<p id="rfc.section.1.1.1.p.3">In this example, the server receives a request for a protected resource (at *1 on <a href="#ex-http11">Figure 1</a>).  Upon performing an authorization check, the server determines that the request requires authentication using a client certificate and that no such certificate has been provided.</p>
+<p id="rfc.section.1.1.1.p.4">The server initiates TLS renegotiation by sending a TLS HelloRequest (at *2).  The client then initiates a TLS handshake.  Note that some TLS messages are elided from the exchange for the sake of brevity.</p>
+<p id="rfc.section.1.1.1.p.5">The critical messages for this example are the server requesting a certificate with a TLS CertificateRequest (*3); this request might use information about the request or resource.  The client then provides a certificate and proof of possession of the private key in Certificate and CertificateVerify messages (*4).</p>
+<p id="rfc.section.1.1.1.p.6">When the handshake completes, the server performs any authorization checks a second time.  With the client certificate available, it then authorizes the request and provides a response (*5).</p>
+<h1 id="rfc.section.1.1.2"><a href="#rfc.section.1.1.2">1.1.2.</a> <a href="#using-tls-13" id="using-tls-13">Using TLS 1.3</a></h1>
+<p id="rfc.section.1.1.2.p.1">TLS 1.3 <a href="#I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</a> introduces a new client authentication mechanism that allows for clients to authenticate after the handshake has been completed.  For the purposes of authenticating an HTTP request, this is functionally equivalent to renegotiation.  <a href="#ex-tls13">Figure 2</a> shows the simpler exchange this enables.</p>
 <div id="rfc.figure.2"/>
 <div id="ex-tls13"/>
 <pre>
@@ -419,90 +446,208 @@ Client                                      Server
    &lt;--------------------------- (HTTP) 200 OK --
 </pre>
 <p class="figure">Figure 2: HTTP/1.1 Reactive Certificate Authentication with TLS 1.3</p>
-<p id="rfc.section.1.2.p.2">TLS 1.3 does not support renegotiation, instead supporting direct client authentication.  In contrast to the TLS 1.2 example, in TLS 1.3, a server can simply request a certificate.</p>
-<h1 id="rfc.section.1.3"><a href="#rfc.section.1.3">1.3.</a> <a href="#reactive-client-authentication-in-http2" id="reactive-client-authentication-in-http2">Reactive Client Authentication in HTTP/2</a></h1>
-<p id="rfc.section.1.3.p.1">An important part of the HTTP/1.1 exchange is that the client is able to easily identify the request that caused the TLS renegotiation.  The client is able to assume that the next unanswered request on the connection is responsible.  The HTTP stack in the client is then able to direct the certificate request to the application or component that initiated that request.  This ensures that the application has the right contextual information for processing the request.</p>
-<p id="rfc.section.1.3.p.2">In HTTP/2, a client can have multiple outstanding requests.  Without some sort of correlation information, a client is unable to identify which request caused the server to request a certificate.</p>
-<p id="rfc.section.1.3.p.3">Thus, the minimum necessary mechanism to support reactive certificate authentication in HTTP/2 is an identifier that can be use to correlate an HTTP request with either a TLS renegotiation or CertificateRequest.</p>
-<p><a href="#aci-13">Section 2</a> describes how the existing TLS 1.3 fields and a new HTTP/2 frame described in <a href="#frame">Section 4</a> can be used to correlate a request with a TLS CertificateRequest.  <a href="#aci-12">Section 3</a> describes how the same can be done in TLS 1.2 using TLS renegotiation and a new TLS <samp>application_context_id</samp> extension.  Finally, <a href="#setting">Section 5</a> describes how an HTTP/2 client can announce support for this feature so that a server might use these capabilities.</p>
-<h1 id="rfc.section.1.4"><a href="#rfc.section.1.4">1.4.</a> <a href="#terminology" id="terminology">Terminology</a></h1>
-<p id="rfc.section.1.4.p.1">RFC 2119 <a href="#RFC2119">[RFC2119]</a> defines the terms &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;SHOULD&#8221; and &#8220;MAY&#8221;.</p>
-<h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a> <a href="#aci-13" id="aci-13">HTTP/2 Request Correlation in TLS 1.3</a></h1>
-<p id="rfc.section.2.p.1">An HTTP/2 request from a client that has signaled support for reactive certificate authentication (see <a href="#setting">Section 5</a>) might cause a server to request client authentication.  In TLS 1.3 a server does this by sending a new TLS 1.3 CertificateRequest.</p>
-<p id="rfc.section.2.p.2">The server MUST first send a WAITING_FOR_AUTH frame (see <a href="#frame">Section 4</a>) on the stream which triggered the request for client credentials.  The certificate_request_id (name TBD) field of the TLS CertificateRequest is populated by the server with the same value in the WAITING_FOR_AUTH frame.  Subsequent WAITING_FOR_AUTH frames with the same request identifier MAY be sent on other streams while the server is awaiting client authentication with the same parameters.  This allows a client to correlate the TLS CertificateRequest with one or more outstanding requests.</p>
-<p id="rfc.section.2.p.3">A server MAY send multiple concurrent TLS CertificateRequest messages.  If a server requires that a client provide multiple certificates before authorizing a single request, it MUST send WAITING_FOR_AUTH frames with different request identifiers before sending subsequent TLS CertificateRequest messages.</p>
-<h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#aci-12" id="aci-12">HTTP/2 Request Correlation in TLS 1.2</a></h1>
-<p id="rfc.section.3.p.1">An HTTP/2 server that uses TLS 1.2 initiates client authentication by sending a an HTTP/2 WAITING_FOR_AUTH frame followed by a TLS HelloRequest.  This triggers a TLS renegotiation.</p>
-<p id="rfc.section.3.p.2">An HTTP/2 client that receives a TLS HelloRequest message MUST initiate a TLS handshake, including an empty <samp>application_context_id</samp> extension.  If the client has not indicated support for renegotiation (see <a href="#setting">Section 5</a>), the client MUST send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
-<p id="rfc.section.3.p.3">The server populates the <samp>application_context_id</samp> extension with the same value it previously sent in a WAITING_FOR_AUTH frame.</p>
-<p id="rfc.section.3.p.4">Absence of an <samp>application_context_id</samp> extension or an empty value from the server MUST be treated as a fatal error; endpoints MAY send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
-<p id="rfc.section.3.p.5">As with the TLS 1.3 solution, a server MAY request multiple client certificates, either for different requests or for the same request.  If multiple requests are waiting for authentication and require different certificates, the server SHOULD immediately send the WAITING_FOR_AUTH frames with unique values.  Only one TLS renegotiation can be in progress at a time, though a new HelloRequest can be emitted once the renegotiation has completed.</p>
-<p id="rfc.section.3.p.6">A server MAY treat all certificates presented in the same connection as cumulative, remembering multiple certificates as they are presented.  Note that the authentication information collected from the client will need to be checked after each TLS renegotiation completes, since most TLS stacks only report the presence of the client certificate presented during the last TLS handshake.</p>
-<h1 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1.</a> <a href="#extension" id="extension">The TLS application_context_id Hello Extension</a></h1>
-<p id="rfc.section.3.1.p.1">The <samp>application_context_id</samp> TLS Hello Extension is used to carry an identifier from an application context in the TLS handshake.  This is used to identify the application context that caused the TLS handshake to be initiated.  The semantics of the field depend on application protocol, and could further depend on application protocol state.</p>
-<p id="rfc.section.3.1.p.2">Either client or server can populate this field.  A client can provide an empty value to indicate that it does not know the application context, but would like the server to provide a value.  A server can provide an empty value in response to a non-empty value only.</p>
-<p id="rfc.section.3.1.p.3">In HTTP/2 clients always provide an empty <samp>application_context_id</samp> value, and servers always provide a value that will appear in a subsequent WAITING_FOR_AUTH frame.</p>
+<p id="rfc.section.1.1.2.p.2">TLS 1.3 does not support renegotiation, instead supporting direct client authentication.  In contrast to the TLS 1.2 example, in TLS 1.3, a server can simply request a certificate.</p>
+<h1 id="rfc.section.1.2"><a href="#rfc.section.1.2">1.2.</a> <a href="#reactive-client-authentication-in-http2" id="reactive-client-authentication-in-http2">Reactive Client Authentication in HTTP/2</a></h1>
+<p id="rfc.section.1.2.p.1">An important part of the HTTP/1.1 exchange is that the client is able to easily identify the request that caused the TLS renegotiation.  The client is able to assume that the next unanswered request on the connection is responsible.  The HTTP stack in the client is then able to direct the certificate request to the application or component that initiated that request.  This ensures that the application has the right contextual information for processing the request.</p>
+<p id="rfc.section.1.2.p.2">In HTTP/2, a client can have multiple outstanding requests.  Without some sort of correlation information, a client is unable to identify which request caused the server to request a certificate.</p>
+<p id="rfc.section.1.2.p.3">Thus, the minimum necessary mechanism to support reactive certificate authentication in HTTP/2 is an identifier that can be use to correlate an HTTP request with either a TLS renegotiation or CertificateRequest.</p>
+<p id="rfc.section.1.2.p.4">Such an identifier could be added to TLS 1.2 by means of an extension, but many TLS 1.2 implementations do not permit application data to continue during a renegotiation.  This is problematic for a multiplexed protocol like HTTP/2.  Instead, this draft proposes bringing the TLS 1.3 CertificateRequest and Certificate messages into HTTP/2 frames, making client certificate authentication TLS-version-agnostic.</p>
 <div id="rfc.figure.3"/>
-<div id="acid-extension"/>
+<div id="ex-http2"/>
 <pre>
-enum {
-    ...
-    application_context_id(EXTENSION-TBD),
-    (65535)
-} ExtensionType;
-
-struct {
-    opaque id&lt;0..255&gt;;
-} ApplicationContextId;
+Client                                      Server
+   -- (streams 1,3,5) GET /protected ----------&gt;
+   &lt;---- (streams 1,3,5) CERTIFICATE_REQUIRED --
+   &lt;---------- (stream 0) CERTIFICATE_REQUEST --
+   -- (stream 0) CERTIFICATE ------------------&gt;
+   -- (stream 0) CERTIFICATE_PROOF ------------&gt;
+   ------ (stream 1,3,5) USE_CERTIFICATE* -----&gt;
+   &lt;------------------ (streams 1,3,5) 200 OK --
+   
+* - Optional
 </pre>
-<p class="figure">Figure 3: The application_context_id Extension Format</p>
-<h1 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2.</a> <a href="#update" id="update">Permitting TLS Renegotiation in HTTP/2</a></h1>
-<p id="rfc.section.3.2.p.1">The prohibition from Section 9.2.1 of <a href="#RFC7540">[RFC7540]</a> against TLS renegotiation is removed, provided that the requirements of this section are adhered to.</p>
-<p id="rfc.section.3.2.p.2">TLS renegotiation MUST NOT be used to circumvent the other restrictions on TLS use from Section 9.2 of <a href="#RFC7540">[RFC7540]</a>.  Furthermore, TLS renegotiation MUST negotiate the same ALPN [RFC7301] identifier (that is, &#8220;h2&#8221;).  An endpoint MAY treat failure to comply with these requirements as a connection error (Section 5.4.1 of <a href="#RFC7540">[RFC7540]</a>) of type INADEQUATE_SECURITY.</p>
+<p class="figure">Figure 3: HTTP/2 Reactive Certificate Authentication</p>
+<p><a href="#certs-http2">Section 2</a> describes how certificates can be requested and presented at the HTTP/2 framing layer using several new frame types which parallel the TLS 1.3 message exchange.  <a href="#errors">Section 3</a> defines new error types which can be used to notify peers when the exchange has not been successful.  Finally, <a href="#setting">Section 4</a> describes how an HTTP/2 client can announce support for this feature so that a server might use these capabilities.</p>
+<h1 id="rfc.section.1.3"><a href="#rfc.section.1.3">1.3.</a> <a href="#terminology" id="terminology">Terminology</a></h1>
+<p id="rfc.section.1.3.p.1">RFC 2119 <a href="#RFC2119">[RFC2119]</a> defines the terms &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;SHOULD&#8221; and &#8220;MAY&#8221;.</p>
+<h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a> <a href="#certs-http2" id="certs-http2">Presenting Client Certificates at the HTTP/2 Framing Layer</a></h1>
+<p id="rfc.section.2.p.1">An HTTP/2 request from a client that has signaled support for reactive certificate authentication (see <a href="#setting">Section 4</a>) might cause a server to request client authentication.  In HTTP/2 a server does this by sending at least one <samp>CERTIFICATE_REQUEST</samp> frame (see <a href="#http-cert-request">Section 2.1</a>) on stream zero.</p>
+<p id="rfc.section.2.p.2">The server SHOULD first send a <samp>CERTIFICATE_REQUIRED</samp> frame (see <a href="#http-cert-required">Section 2.2</a>) on the stream which triggered the request for client credentials. The Request-ID field of the <samp>CERTIFICATE_REQUEST</samp> frame is populated by the server with the same value in the <samp>CERTIFICATE_REQUIRED</samp> frame. Subsequent <samp>CERTIFICATE_REQUIRED</samp> frames with the same request identifier MAY be sent on other streams where the server is expecting client authentication with the same parameters. This allows a client to correlate the <samp>CERTIFICATE_REQUEST</samp> with one or more outstanding HTTP requests.</p>
+<p id="rfc.section.2.p.3">A server MAY send multiple concurrent <samp>CERTIFICATE_REQUEST</samp> frames. If a server requires that a client provide multiple certificates before authorizing a single request, it MUST send a <samp>CERTIFICATE_REQUIRED</samp> frame with a different request identifier and a corresponding <samp>CERTIFICATE_REQUEST</samp> frame for each required certificate.</p>
+<p id="rfc.section.2.p.4">Clients provide certificate authentication by sending a <samp>CERTIFICATE</samp> frame (see <a href="#http-certificate">Section 2.3</a>) on stream zero.  If the <samp>CERTIFICATE</samp> frame is marked as both <samp>SOLICITED</samp> and <samp>AUTOMATIC_USE</samp>, the provided certificate can be immediately applied by the server to all streams on which a <samp>CERTIFICATE_REQUIRED</samp> frame has been sent previously with the same identifier.  Otherwise, the client will send subsequent <samp>USE_CERTIFICATE</samp> frames (see <a href="#http-use-certificate">Section 2.5</a>) to indicate the streams on which it intends the certificate to be considered.</p>
+<p id="rfc.section.2.p.5">Clients may also provide authentication without being asked, if desired, by sending <samp>CERTIFICATE</samp> and <samp>USE_CERTIFICATE</samp> frames without waiting for a server-generated <samp>CERTIFICATE_REQUEST</samp>.  If a client receives a <samp>CERTIFICATE_REQUIRED</samp> frame referencing parameters for which it has already provided a matching certificate, it MAY reply with a <samp>USE_CERTIFICATE</samp> frame referencing the previous <samp>CERTIFICATE</samp> frame.</p>
+<h1 id="rfc.section.2.1"><a href="#rfc.section.2.1">2.1.</a> <a href="#http-cert-request" id="http-cert-request">The CERTIFICATE_REQUEST Frame</a></h1>
+<p id="rfc.section.2.1.p.1">TLS 1.3 defines the <samp>CertificateRequest</samp> message, which prompts the client to provide a certificate which conforms to certain properties specified by the server.  This draft defines the <samp>CERTIFICATE_REQUEST</samp> frame (0xFRAME-TBD1), which contains the same contents as a TLS 1.3 <samp>CertificateRequest</samp> message, but can be sent over any TLS version.</p>
+<p id="rfc.section.2.1.p.2">The <samp>CERTIFICATE_REQUEST</samp> frame MUST NOT be sent by clients.  A <samp>CERTIFICATE_REQUEST</samp> frame received by a server SHOULD be rejected with a stream error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<p id="rfc.section.2.1.p.3">The <samp>CERTIFICATE_REQUEST</samp> frame MUST be sent on stream zero.  A <samp>CERTIFICATE_REQUEST</samp> frame received on any other stream MUST be rejected with a stream error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<div id="rfc.figure.4"/>
+<div id="fig-cert-request"/>
+<pre>
+  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-------------------------------+-------------------------------+
+ | ID-Length (8) |               Request-ID                    ...
+ +-------------------------------+-------------------------------+
+ |     Algorithm-Count (16)      |          Algorithms         ...
+ +---------------------------------------------------------------+
+ |       CA-Count (16)           |  Certificate-Authorities(?) ...
+ +---------------------------------------------------------------+
+ | Cert-Extension-Count (16)     |       Cert-Extensions(?)    ...
+ +---------------------------------------------------------------+
+</pre>
+<p class="figure">Figure 4: CERTIFICATE_REQUEST frame payload</p>
+<p id="rfc.section.2.1.p.4">The frame contains the following fields:</p>
 <p/>
 
 <dl>
-  <dt>Note:</dt>
-  <dd style="margin-left: 8">A client need not offer cipher suites that might otherwise be offered for compatibility reasons when renegotiating.  In particular, cipher suites on the black list from Appendix A of <a href="#RFC7540">[RFC7540]</a> can be removed from the handshake.</dd>
+  <dt>ID-Length and Request-ID:</dt>
+  <dd style="margin-left: 8"><samp>Request-ID</samp> is a variable-length opaque identifier used to correlate subsequent certificate-related frames with this request.  The identifier MUST be the output of a cryptographically-secure pseudo-random function.  The size of the <samp>Request-ID</samp> field is given by the 8-bit <samp>ID-Length</samp> field, which MUST NOT be zero.</dd>
+  <dt>Algorithm-Count and Algorithms:</dt>
+  <dd style="margin-left: 8">A list of the hash/signature algorithm pairs that the server is able to verify, listed in descending order of preference. Any certificates provided by the client MUST be signed using a hash/signature algorithm pair found in <samp>Algorithms</samp>. Each algorithm pair is encoded as a <samp>SignatureAndHashAlgorithm</samp> (see <a href="#I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</a> section 6.3.2.1), and the number of such structures is given by the 16-bit <samp>Algorithm-Count</samp> field, which MUST NOT be zero.</dd>
+  <dt>CA-Count and Certificate-Authorities:</dt>
+  <dd style="margin-left: 8"><samp>Certificate-Authorities</samp> is a series of distinguished names of acceptable certificate authorities, represented in DER-encoded <a href="#X690">[X690]</a> format.  These distinguished names may specify a desired distinguished name for a root CA or for a subordinate CA; thus, this message can be used to describe known roots as well as a desired authorization space. The number of such structures is given by the 16-bit <samp>CA-Count</samp> field, which MAY be zero. If the <samp>CA-Count</samp> field is zero, then the client MAY send any certificate that meets the rest of the selection criteria in the <samp>CERTIFICATE_REQUEST</samp>, unless there is some external arrangement to the contrary.</dd>
+  <dt>Cert-Extension-Count and Cert-Extensions:</dt>
+  <dd style="margin-left: 8">A list of certificate extension OIDs <a href="#RFC5280">[RFC5280]</a> with their allowed values, represented in a series of <samp>CertificateExtension</samp> structures (see <a href="#I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</a> section 6.3.5). The list of OIDs MUST be used in certificate selection as described in <a href="#I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</a>. The number of Cert-Extension structures is given by the 16-bit <samp>Cert-Extension-Count</samp> field, which MAY be zero.</dd>
 </dl>
-<p id="rfc.section.3.2.p.4">In addition to the requirements from <a href="#RFC7540">[RFC7540]</a>, endpoints that renegotiate MUST implement the TLS extended master secret extension <a href="#RFC7627">[RFC7627]</a> and the TLS renegotiation indication extension <a href="#RFC5746">[RFC5746]</a>.  These extensions MUST be negotiated and used to prevent serious attacks on TLS renegotiation.  If an endpoint receives a TLS ClientHello or ServerHello that does not include these extensions, it MUST respond with a fatal TLS <samp>no_renegotiation</samp> alert.</p>
-<p id="rfc.section.3.2.p.5">The TLS renegotiation handshake MUST include the <samp>application_context_id</samp> extension when used with HTTP/2.</p>
-<p id="rfc.section.3.2.p.6">A server MUST present the same certificate during TLS renegotiation it used during the initial handshake.  Clients MUST verify that the server certificate does not change.  Clients MUST verify that the server certificate has not changed; a different certificate MUST be treated as a fatal error and MAY cause a fatal <samp>handshake_failure</samp> alert to be sent.</p>
-<p id="rfc.section.3.2.p.7">Once the HTTP/2 connection preface has been received from a peer, an endpoint SHOULD treat the receipt of a TLS ClientHello or ServerHello without an <samp>application_context_id</samp> extension as a fatal error and SHOULD send a fatal TLS <samp>no_renegotiation</samp> alert.</p>
-<h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#frame" id="frame">Indicating Stream Dependency on Certificate Authentication</a></h1>
-<p id="rfc.section.4.p.1">The WAITING_FOR_AUTH frame (0xFRAME-TBD) is sent by servers to indicate that processing of a request is blocked pending authentication outside of the HTTP channel. The frame includes a request identifier which can be used to correlate the stream with challenges for authentication received at other layers, such as TLS.</p>
-<p id="rfc.section.4.p.2">The WAITING_FOR_AUTH frame contains between 1 and 255 octets, which is the authentication request identifier.  A client that receives a WAITING_FOR_AUTH of any other length MUST treat this as a stream error of type PROTOCOL_ERROR.  Frames with identical request identifiers refer to the same TLS CertificateRequest.</p>
-<p id="rfc.section.4.p.3">The WAITING_FOR_AUTH frame MUST NOT be sent by clients.  A WAITING_FOR_AUTH frame received by a server SHOULD be rejected with a stream error of type PROTOCOL_ERROR.</p>
-<p id="rfc.section.4.p.4">The server MUST NOT send a WAITING_FOR_AUTH frame on stream zero, a server-initiated stream or a stream that does not have an outstanding request.  In other words, a server can only send in the &#8220;open&#8221; or &#8220;half-closed (remote)&#8221; stream states.</p>
-<p id="rfc.section.4.p.5">A client that receives a WAITING_FOR_AUTH frame on a stream which is not in a valid state (&#8220;open&#8221; or &#8220;half-closed (local)&#8221; for clients) SHOULD treat this as a connection error of type PROTOCOL_ERROR.</p>
-<h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#setting" id="setting">Indicating Support for Reactive Certificate Authentication</a></h1>
-<p id="rfc.section.5.p.1">Clients that support reactive certificate authentication indicate this using the HTTP/2 <samp>SETTINGS_REACTIVE_AUTH</samp> (0xSETTING-TBD) setting.</p>
-<p id="rfc.section.5.p.2">The initial value for the <samp>SETTINGS_REACTIVE_AUTH</samp> setting is 0, indicating that the client does not support reactive client authentication.  A client sets the <samp>SETTINGS_REACTIVE_AUTH</samp> setting to a value of 1 to indicate support for reactive certificate authentication as defined in this document.  Any value other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of <a href="#RFC7540">[RFC7540]</a>) of type PROTOCOL_ERROR.</p>
-<h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a> <a href="#security" id="security">Security Considerations</a></h1>
-<p id="rfc.section.6.p.1">The TLS extended master secret extension <a href="#RFC7627">[RFC7627]</a> and the TLS renegotiation indication extension <a href="#RFC5746">[RFC5746]</a> MUST be used to mitigate several known attacks on TLS renegotiation.</p>
-<p id="rfc.section.6.p.2">Adding correlation between requests and TLS-layer authentication addresses the primary functional concerns with mid-session client authentication.  However, implementations need to be aware of the potential for confusion about the state of a connection.</p>
-<p id="rfc.section.6.p.3">The presence or absence of a validated client certificate can change during the processing of a request, potentially multiple times.  A server that uses reactive certificate authentication needs to be prepared to reevaluate the authorization state of a request as the set of certificates changes.</p>
-<h1 id="rfc.section.7"><a href="#rfc.section.7">7.</a> <a href="#iana" id="iana">IANA Considerations</a></h1>
-<p id="rfc.section.7.p.1">The TLS <samp>application_context_id</samp> extension is registered in <a href="#iana-extension">Section 7.1</a>.  The HTTP/2 <samp>SETTINGS_REACTIVE_AUTH</samp> setting is registered in <a href="#iana-setting">Section 7.2</a>.  The HTTP/2 <samp>WAITING_FOR_AUTH</samp> frame type is registered in <a href="#iana-frame">Section 7.3</a>.</p>
-<h1 id="rfc.section.7.1"><a href="#rfc.section.7.1">7.1.</a> <a href="#iana-extension" id="iana-extension">TLS application_context_id Extension</a></h1>
-<p id="rfc.section.7.1.p.1">The <samp>application_context_id</samp> TLS extension is registered in the &#8220;ExtensionType Values&#8221; registry established by <a href="#RFC5246">[RFC5246]</a>.</p>
+<p id="rfc.section.2.1.p.6">Some certificate extension OIDs allow multiple values (e.g. Extended Key Usage). If the sender has included a non-empty certificate_extensions list, the certificate MUST contain all of the specified extension OIDs that the recipient recognizes. For each extension OID recognized by the recipient, all of the specified values MUST be present in the certificate (but the certificate MAY have other values as well).  However, the recipient MUST ignore and skip any unrecognized certificate extension OIDs.</p>
+<p id="rfc.section.2.1.p.7">PKIX RFCs define a variety of certificate extension OIDs and their corresponding value types. Depending on the type, matching certificate extension values are not necessarily bitwise-equal. It is expected that implementations will rely on their PKI libraries to perform certificate selection using these certificate extension OIDs.</p>
+<h1 id="rfc.section.2.2"><a href="#rfc.section.2.2">2.2.</a> <a href="#http-cert-required" id="http-cert-required">The CERTIFICATE_REQUIRED frame</a></h1>
+<p id="rfc.section.2.2.p.1">The <samp>CERTIFICATE_REQUIRED</samp> frame (0xFRAME-TBD2) is sent by servers to indicate that processing of a request is blocked pending certificate authentication. The frame includes a request identifier which can be used to correlate the stream with a <samp>CERTIFICATE_REQUEST</samp> frame received on stream zero.</p>
+<p id="rfc.section.2.2.p.2">The <samp>CERTIFICATE_REQUIRED</samp> frame contains between 1 and 255 octets, which is the authentication request identifier.  A client that receives a <samp>CERTIFICATE_REQUIRED</samp> of any other length MUST treat this as a stream error of type <samp>PROTOCOL_ERROR</samp>.  Frames with identical request identifiers refer to the same <samp>CERTIFICATE_REQUEST</samp>.</p>
+<p id="rfc.section.2.2.p.3">The <samp>CERTIFICATE_REQUIRED</samp> frame MUST NOT be sent by clients.  A <samp>CERTIFICATE_REQUIRED</samp> frame received by a server SHOULD be rejected with a stream error of type PROTOCOL_ERROR.</p>
+<p id="rfc.section.2.2.p.4">The server MUST NOT send a <samp>CERTIFICATE_REQUIRED</samp> frame on stream zero, a server-initiated stream or a stream that does not have an outstanding request.  In other words, a server can only send in the &#8220;open&#8221; or &#8220;half-closed (remote)&#8221; stream states.</p>
+<p id="rfc.section.2.2.p.5">A client that receives a <samp>CERTIFICATE_REQUIRED</samp> frame on a stream which is not in a valid state (&#8220;open&#8221; or &#8220;half-closed (local)&#8221; for clients) SHOULD treat this as a connection error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<h1 id="rfc.section.2.3"><a href="#rfc.section.2.3">2.3.</a> <a href="#http-certificate" id="http-certificate">The CERTIFICATE frame</a></h1>
+<p id="rfc.section.2.3.p.1">The <samp>CERTIFICATE</samp> frame (0xFRAME-TBD3) allows the sender to provide elements of a certificate chain which can be used as authentication for previous or subsequent requests.</p>
+<p id="rfc.section.2.3.p.2">The <samp>CERTIFICATE</samp> frame defines one flag:</p>
+<p id="rfc.section.2.3.p.3">SOLICITED (0x01): : If set, indicates that the <samp>CERTIFICATE</samp> (and possibly <samp>CERTIFICATE_PROOF</samp>) frame(s) are being sent in response to a <samp>CERTIFICATE_REQUEST</samp> frame.</p>
+<p id="rfc.section.2.3.p.4">The payload of a <samp>CERTIFICATE</samp> frame contains elements of a certificate chain, terminating in an end certificate. Multiple <samp>CERTIFICATE</samp> frames MAY be sent with the same Certificate-ID, to accomodate certificate chains which are too large to fit in a single HTTP/2 frame (see <a href="#RFC7540">[RFC7540]</a> section 4.2). The flag values MUST be identical for each <samp>CERTIFICATE</samp> frame sent with the same Certificate-ID.</p>
+<p id="rfc.section.2.3.p.5">Particularly when a certificate contains a large number of Subject Alternative Names, it might not fit into a single <samp>CERTIFICATE</samp> frame even as the only provided certificate.  Senders unable to transfer a requested certificate due to the recipient&#8217;s <samp>SETTINGS_MAX_FRAME_SIZE</samp> value SHOULD increase their own <samp>SETTINGS_MAX_FRAME_SIZE</samp> to a size that would accomodate their certificate, then terminate affected streams with <samp>CERTIFICATE_TOO_LARGE</samp>.</p>
+<p id="rfc.section.2.3.p.6">Use of the <samp>CERTIFICATE</samp> frame by servers is not defined by this document. A <samp>CERTIFICATE</samp> frame received by a client MUST be ignored.</p>
+<p id="rfc.section.2.3.p.7">The <samp>CERTIFICATE</samp> frame MUST be sent on stream zero.  A <samp>CERTIFICATE</samp> frame received on any other stream MUST be rejected with a stream error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<div id="rfc.figure.5"/>
+<div id="fig-cert-frame"/>
+<pre>
+  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-------------------------------+-------------------------------+
+ | ID-Length (8) |              Certificate-ID (*)             ...
+ +-------------------------------+-------------------------------+
+ | Cert-Count(8) |             Certificate-List (*)            ...
+ +---------------------------------------------------------------+
+ 
+</pre>
+<p class="figure">Figure 5: CERTIFICATE frame payload</p>
+<p id="rfc.section.2.3.p.8">The fields defined by the <samp>CERTIFICATE</samp> frame are:</p>
 <p/>
 
 <dl>
-  <dt>Value:</dt>
-  <dd style="margin-left: 8">EXTENSION-TBD</dd>
-  <dt>Extension name:</dt>
-  <dd style="margin-left: 8">application_context_id</dd>
-  <dt>Reference:</dt>
-  <dd style="margin-left: 8">This document.</dd>
+  <dt>ID-Length and Certificate-ID:</dt>
+  <dd style="margin-left: 8">If the <samp>CERTIFICATE</samp> frame is in response to a <samp>CERTIFICATE_REQUEST</samp> from the server, the ID of that request.  Otherwise, a client-selected identifier for this certificate.  The identifier MUST be the output of a cryptographically-secure pseudo-random function.</dd>
+  <dt>Cert-Count and Certificate-List:</dt>
+  <dd style="margin-left: 8">A sequence of Certificate objects (see <a href="#cert-cert">Section 2.3.1</a>), each representing one certificate in the sender&#8217;s certificate chain. For the first or only <samp>CERTIFICATE</samp> frame with a given Certificate-ID, the sender&#8217;s certificate MUST be the first in the list. Each subsequent certificate SHOULD directly certify the certificate immediately preceding it. A certificate which specifies a trust anchor MAY be omitted, provided that the recipient is known to already possess the relevant certificate. (For example, because it was included in a <samp>CERTIFICATE_REQUEST</samp>&#8217;s Certificate-Authorities list.) <samp>Cert-Count</samp> describes the number of certificates provided.</dd>
 </dl>
-<h1 id="rfc.section.7.2"><a href="#rfc.section.7.2">7.2.</a> <a href="#iana-setting" id="iana-setting">HTTP/2 SETTINGS_REACTIVE_AUTH Setting</a></h1>
-<p id="rfc.section.7.2.p.1">The SETTINGS_REACTIVE_AUTH setting is registered in the &#8220;HTTP/2 Settings&#8221; registry established in <a href="#RFC7540">[RFC7540]</a>.</p>
+<p id="rfc.section.2.3.p.10">A <samp>CERTIFICATE</samp> frame with a <samp>Cert-Count</samp> of zero indicates a refusal of a <samp>CERTIFICATE_REQUEST</samp> &#8211; the sender either does not have or does not wish to provide a matching certificate. Servers SHOULD process all corresponding requests as unauthenticated, likely returning an authentication-related error at the HTTP level (e.g. 403).</p>
+<p id="rfc.section.2.3.p.11">If the <samp>CERTIFICATE</samp> frame is sent without being requested, the <samp>SOLICITED</samp> flag MUST NOT be set. When the <samp>CERTIFICATE</samp> frame is sent in response to a <samp>CERTIFICATE_REQUEST</samp> frame, the <samp>SOLICITED</samp> flag MUST be set, and the <samp>Request-ID</samp> field MUST contain the same value as the corresponding <samp>CERTIFICATE_REQUEST</samp> frame. In this case, the provided certificate chain MUST conform to the requirements expressed in the <samp>CERTIFICATE_REQUEST</samp> to the best of the client&#8217;s ability. Specifically:</p>
+<p/>
+
+<ul>
+  <li>If the <samp>CERTIFICATE_REQUEST</samp> contained a non-empty <samp>Certificate-Authorities</samp> element, one of the certificates in the chain SHOULD be signed by one of the listed CAs.</li>
+  <li>If the <samp>CERTIFICATE_REQUEST</samp> contained a non-empty <samp>Cert-Extensions</samp> element, the first certificate MUST match with regard to the extension OIDs recognized by the client.</li>
+  <li>Each certificate that is not self-signed MUST be signed using a hash/signature algorithm listed in the <samp>Algorithms</samp> element.</li>
+</ul>
+<p id="rfc.section.2.3.p.13">If these requirements are not satisfied, the server MAY at its discretion either process the request without client authentication, or respond with a stream error <a href="#RFC7540">[RFC7540]</a> on any stream where the certificate is used.  <a href="#errors">Section 3</a> defines certificate-related error codes which might be applicable.</p>
+<h1 id="rfc.section.2.3.1"><a href="#rfc.section.2.3.1">2.3.1.</a> <a href="#cert-cert" id="cert-cert">The Certificate structure</a></h1>
+<div id="rfc.figure.6"/>
+<div id="fig-cert-cert"/>
+<pre>
+  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-------------------------------+-------------------------------+
+ |                    Cert-Length (24)           |    Cert (*) ...
+ +---------------------------------------------------------------+
+</pre>
+<p class="figure">Figure 6: Certificate structure</p>
+<p id="rfc.section.2.3.1.p.1">The Certificate structure is a length-prefixed X.509v3 <a href="#RFC5280">[RFC5280]</a> certificate.  The certificate MUST be signed with an acceptable hash/signature algorithm pair, if the recipient&#8217;s list of acceptable pairs is known.</p>
+<h1 id="rfc.section.2.4"><a href="#rfc.section.2.4">2.4.</a> <a href="#cert-proof" id="cert-proof">The CERTIFICATE_PROOF Frame</a></h1>
+<p id="rfc.section.2.4.p.1">The <samp>CERTIFICATE_PROOF</samp> frame proves possession of the private key corresponding to an end certificate previously shown in a <samp>CERTIFICATE</samp> frame, along with its certificate chain in the same or other <samp>CERTIFICATE</samp> frames.</p>
+<p id="rfc.section.2.4.p.2">The <samp>CERTIFICATE_PROOF</samp> frame defines two flags:</p>
+<p/>
+
+<dl>
+  <dt>SOLICITED (0x01):</dt>
+  <dd style="margin-left: 8">If set, indicates that the <samp>CERTIFICATE</samp> and <samp>CERTIFICATE_PROOF</samp> frames are being sent in response to a <samp>CERTIFICATE_REQUEST</samp> frame.</dd>
+  <dt>AUTOMATIC_USE (0x02):</dt>
+  <dd style="margin-left: 8">If set, the recipient SHOULD consider the certificate when authenticating future requests. Otherwise, the certificate MUST only be considered for requests on streams where a <samp>USE_CERTIFICATE</samp> frame (see <a href="#http-use-certificate">Section 2.5</a>) has been sent.</dd>
+</dl>
+<div id="rfc.figure.7"/>
+<div id="fig-proof-frame"/>
+<pre>
+  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-------------------------------+-------------------------------+
+ | ID-Length (8) |              Certificate-ID (*)             ...
+ +-------------------------------+-------------------------------+
+ |         Algorithm (16)        |         Sig-Length (16)       |
+ +---------------------------------------------------------------+
+ |                         Signature (*)                       ...
+ +---------------------------------------------------------------+
+ 
+</pre>
+<p class="figure">Figure 7: CERTIFICATE_PROOF frame payload</p>
+<p id="rfc.section.2.4.p.4">The <samp>CERTIFICATE_PROOF</samp> frame (0xFRAME-TBD4) contains an <samp>Algorithm</samp> field (a <samp>SignatureAndHashAlgorithm</samp>, from <a href="#I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</a> section 6.3.2.1), describing the hash/signature algorithm pair being used. The signature is performed as described in <a href="#I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</a>, with the following values being used:</p>
+<p/>
+
+<ul>
+  <li>The context string for the signature is &#8220;HTTP/2 CERTIFICATE&#8221;</li>
+  <li>The &#8220;specified content&#8221; is an <a href="#RFC5705">[RFC5705]</a> exported value, with the following parameters: <ul><li>Disambiguating label string: &#8220;EXPORTER HTTP/2 CERTIFICATE&#8221;</li><li>Context: The Certificate-ID chosen by the application</li><li>Length:  1024 bytes</li></ul></li>
+</ul>
+<p id="rfc.section.2.4.p.6">Because the exported value can be independently calculated by both sides of the TLS connection, the value to be signed is not sent on the wire at any time.</p>
+<p id="rfc.section.2.4.p.7">A <samp>CERTIFICATE_PROOF</samp> frame MUST be sent only after all <samp>CERTIFICATE</samp> frames with the same Certificate-ID have been sent, and MUST correspond to the first certificate presented in the first <samp>CERTIFICATE</samp> frame with that Certificate-ID. Receipt of multiple <samp>CERTIFICATE_PROOF</samp> frames for the same Certificate-ID, receipt of a <samp>CERTIFICATE_PROOF</samp> frame without a corresponding <samp>CERTIFICATE</samp> frame, or receipt of a <samp>CERTIFICATE</samp> frame after a corresponding <samp>CERTIFICATE_PROOF</samp> MUST be treated as a session error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<p id="rfc.section.2.4.p.8">Use of the <samp>CERTIFICATE_PROOF</samp> frame by servers is not defined by this document. A <samp>CERTIFICATE_PROOF</samp> frame received by a client MUST be ignored.</p>
+<h1 id="rfc.section.2.5"><a href="#rfc.section.2.5">2.5.</a> <a href="#http-use-certificate" id="http-use-certificate">The USE_CERTIFICATE Frame</a></h1>
+<p id="rfc.section.2.5.p.1">The <samp>USE_CERTIFICATE</samp> frame (0xFRAME-TBD5) is sent by clients to indicate that processing of a request should use a certificate provided in a previous <samp>CERTIFICATE</samp> frame and proved by a preceding <samp>CERTIFICATE_PROOF</samp> frame. The frame includes a certificate identifier which can be used to correlate the stream with a <samp>CERTIFICATE</samp> frame received on stream zero.</p>
+<p id="rfc.section.2.5.p.2">A <samp>USE_CERTIFICATE</samp> frame with no payload expresses the client&#8217;s choice to proceed without providing a certificate.  Servers SHOULD process the request as unauthenticated, likely returning an authentication-related error at the HTTP level (e.g. 403).</p>
+<p id="rfc.section.2.5.p.3">Otherwise, the <samp>USE_CERTIFICATE</samp> frame contains between 1 and 255 octets, which is the authentication request identifier.  A server that receives a <samp>USE_CERTIFICATE</samp> of any other length MUST treat this as a stream error of type <samp>PROTOCOL_ERROR</samp>.  Frames with identical request identifiers refer to the same <samp>CERTIFICATE</samp>.</p>
+<p id="rfc.section.2.5.p.4">Use of the <samp>USE_CERTIFICATE</samp> frame by servers is not defined by this document. A <samp>USE_CERTIFICATE</samp> frame received by a client MUST be ignored.</p>
+<p id="rfc.section.2.5.p.5">The client MUST NOT send a <samp>USE_CERTIFICATE</samp> frame on stream zero, a server-initiated stream or a stream that does not have an outstanding request.  In other words, a client can only send in the &#8220;open&#8221; or &#8220;half-closed (local)&#8221; stream states.</p>
+<p id="rfc.section.2.5.p.6">A server that receives a <samp>USE_CERTIFICATE</samp> frame on a stream which is not in a valid state (&#8220;open&#8221; or &#8220;half-closed (remote)&#8221; for servers) SHOULD treat this as a connection error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#errors" id="errors">Indicating failures during HTTP-Layer Certificate Authentication</a></h1>
+<p id="rfc.section.3.p.1">Because this draft permits client certificates to be exchanged at the HTTP framing layer instead of the TLS layer, several certificate-related errors which are defined at the TLS layer might now occur at the HTTP framing layer. In this section, those errors are restated and added to the HTTP/2 error code registry.</p>
+<p/>
+
+<dl>
+  <dt>BAD_CERTIFICATE (0xERROR-TBD1):</dt>
+  <dd style="margin-left: 8">A certificate was corrupt, contained signatures that did not verify correctly, etc.</dd>
+  <dt>UNSUPPORTED_CERTIFICATE (0xERROR-TBD2):</dt>
+  <dd style="margin-left: 8">A certificate was of an unsupported type</dd>
+  <dt>CERTIFICATE_REVOKED (0xERROR-TBD3):</dt>
+  <dd style="margin-left: 8">A certificate was revoked by its signer</dd>
+  <dt>CERTIFICATE_EXPIRED (0xERROR-TBD4):</dt>
+  <dd style="margin-left: 8">A certificate has expired or is not currently valid</dd>
+  <dt>BAD_SIGNATURE (0xERROR-TBD5):</dt>
+  <dd style="margin-left: 8">The digital signature provided did not match</dd>
+  <dt>CERTIFICATE_TOO_LARGE (0xERROR-TBD6):</dt>
+  <dd style="margin-left: 8">The certificate cannot be transferred due to the recipient&#8217;s <samp>SETTINGS_MAX_FRAME_SIZE</samp></dd>
+  <dt>CERTIFICATE_GENERAL (0xERROR-TBD7):</dt>
+  <dd style="margin-left: 8">Any other certificate-related error</dd>
+</dl>
+<p id="rfc.section.3.p.3">As described in <a href="#RFC7540">[RFC7540]</a>, implementations MAY choose to treat a stream error as a connection error at any time.  Of particular note, a stream error cannot occur on stream 0, which means that implementations cannot send non-session errors in response to <samp>CERTIFICATE_REQUEST</samp> and <samp>CERTIFICATE</samp> frames.  Implementations which do not wish to terminate the connection MAY either send relevant errors on any stream which references the failing certificate in question or process the requests as unauthenticated and provide error information at the HTTP semantic layer.</p>
+<h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#setting" id="setting">Indicating Support for HTTP-Layer Certificate Authentication</a></h1>
+<p id="rfc.section.4.p.1">Clients that support HTTP-layer certificate authentication indicate this using the HTTP/2 <samp>SETTINGS_HTTP_CERT_AUTH</samp> (0xSETTING-TBD) setting.</p>
+<p id="rfc.section.4.p.2">The initial value for the <samp>SETTINGS_HTTP_CERT_AUTH</samp> setting is 0, indicating that the client does not support reactive certificate authentication.  A client sets the <samp>SETTINGS_HTTP_CERT_AUTH</samp> setting to a value of 1 to indicate support for HTTP-layer certificate authentication as defined in this document.  Any value other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of <a href="#RFC7540">[RFC7540]</a>) of type <samp>PROTOCOL_ERROR</samp>.</p>
+<h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#security" id="security">Security Considerations</a></h1>
+<p id="rfc.section.5.p.1">Implementations need to be aware of the potential for confusion about the state of a connection.  Because a client&#8217;s unsolicited certificate might race with the server&#8217;s request for a certificate, failure to answer a <samp>CERTIFICATE_REQUEST</samp> is not necessarily an attack.  At the same time, failure to provide a certificate on a stream after receiving <samp>CERTIFICATE_REQUIRED</samp> blocks server processing, and SHOULD be subject to standard timeouts used to guard against unresponsive peers.</p>
+<p id="rfc.section.5.p.2">The presence or absence of a validated client certificate can change during the processing of a request, potentially multiple times.  A server that uses reactive certificate authentication needs to be prepared to reevaluate the authorization state of a request as the set of certificates changes.  This might occur without frames on-stream, if a <samp>CERTIFICATE</samp> frame with the <samp>AUTOMATIC_USE</samp> flag is received.</p>
+<h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a> <a href="#iana" id="iana">IANA Considerations</a></h1>
+<p id="rfc.section.6.p.1">The HTTP/2 <samp>SETTINGS_HTTP_CERT_AUTH</samp> setting is registered in <a href="#iana-setting">Section 6.1</a>.  Four frame types are registered in <a href="#iana-frame">Section 6.2</a>.  Five error codes are registered in <a href="#iana-errors">Section 6.3</a>.</p>
+<h1 id="rfc.section.6.1"><a href="#rfc.section.6.1">6.1.</a> <a href="#iana-setting" id="iana-setting">HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting</a></h1>
+<p id="rfc.section.6.1.p.1">The SETTINGS_HTTP_CERT_AUTH setting is registered in the &#8220;HTTP/2 Settings&#8221; registry established in <a href="#RFC7540">[RFC7540]</a>.</p>
 <p/>
 
 <dl>
   <dt>Name:</dt>
-  <dd style="margin-left: 8">SETTINGS_REACTIVE_AUTH</dd>
+  <dd style="margin-left: 8">SETTINGS_HTTP_CERT_AUTH</dd>
   <dt>Code:</dt>
   <dd style="margin-left: 8">0xSETTING-TBD</dd>
   <dt>Initial Value:</dt>
@@ -510,21 +655,134 @@ struct {
   <dt>Specification:</dt>
   <dd style="margin-left: 8">This document.</dd>
 </dl>
-<h1 id="rfc.section.7.3"><a href="#rfc.section.7.3">7.3.</a> <a href="#iana-frame" id="iana-frame">HTTP/2 WAITING_FOR_AUTH Frame</a></h1>
-<p id="rfc.section.7.3.p.1">The WAITING_FOR_AUTH frame type is registered in the &#8220;HTTP/2 Frame Types&#8221; registry established in <a href="#RFC7540">[RFC7540]</a>.</p>
+<h1 id="rfc.section.6.2"><a href="#rfc.section.6.2">6.2.</a> <a href="#iana-frame" id="iana-frame">New HTTP/2 Frames</a></h1>
+<p id="rfc.section.6.2.p.1">Four new frame types are registered in the &#8220;HTTP/2 Frame Types&#8221; registry established in <a href="#RFC7540">[RFC7540]</a>.</p>
+<h1 id="rfc.section.6.2.1"><a href="#rfc.section.6.2.1">6.2.1.</a> <a href="#certificaterequired" id="certificaterequired">CERTIFICATE_REQUIRED</a></h1>
 <p/>
 
 <dl>
   <dt>Frame Type:</dt>
-  <dd style="margin-left: 8">WAITING_FOR_AUTH</dd>
+  <dd style="margin-left: 8">CERTIFICATE_REQUIRED</dd>
   <dt>Code:</dt>
-  <dd style="margin-left: 8">0xFRAME-TBD</dd>
+  <dd style="margin-left: 8">0xFRAME-TBD1</dd>
   <dt>Specification:</dt>
   <dd style="margin-left: 8">This document.</dd>
 </dl>
-<h1 id="rfc.section.8"><a href="#rfc.section.8">8.</a> <a href="#ack" id="ack">Acknowledgements</a></h1>
-<p id="rfc.section.8.p.1">Eric Rescorla pointed out several failings in an earlier revision.</p>
-<h1 id="rfc.references"><a href="#rfc.references">9.</a> Normative References</h1>
+<h1 id="rfc.section.6.2.2"><a href="#rfc.section.6.2.2">6.2.2.</a> <a href="#certificaterequest" id="certificaterequest">CERTIFICATE_REQUEST</a></h1>
+<p/>
+
+<dl>
+  <dt>Frame Type:</dt>
+  <dd style="margin-left: 8">CERTIFICATE_REQUEST</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xFRAME-TBD2</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.2.3"><a href="#rfc.section.6.2.3">6.2.3.</a> <a href="#certificate" id="certificate">CERTIFICATE</a></h1>
+<p/>
+
+<dl>
+  <dt>Frame Type:</dt>
+  <dd style="margin-left: 8">CERTIFICATE</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xFRAME-TBD3</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.2.4"><a href="#rfc.section.6.2.4">6.2.4.</a> <a href="#certificateproof" id="certificateproof">CERTIFICATE_PROOF</a></h1>
+<p/>
+
+<dl>
+  <dt>Frame Type:</dt>
+  <dd style="margin-left: 8">CERTIFICATE_PROOF</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xFRAME-TBD4</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.2.5"><a href="#rfc.section.6.2.5">6.2.5.</a> <a href="#usecertificate" id="usecertificate">USE_CERTIFICATE</a></h1>
+<p/>
+
+<dl>
+  <dt>Frame Type:</dt>
+  <dd style="margin-left: 8">USE_CERTIFICATE</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xFRAME-TBD5</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.3"><a href="#rfc.section.6.3">6.3.</a> <a href="#iana-errors" id="iana-errors">New HTTP/2 Error Codes</a></h1>
+<p id="rfc.section.6.3.p.1">Five new error codes are registered in the &#8220;HTTP/2 Error Code&#8221; registry established in <a href="#RFC7540">[RFC7540]</a>.</p>
+<h1 id="rfc.section.6.3.1"><a href="#rfc.section.6.3.1">6.3.1.</a> <a href="#badcertificate" id="badcertificate">BAD_CERTIFICATE</a></h1>
+<p/>
+
+<dl>
+  <dt>Name:</dt>
+  <dd style="margin-left: 8">BAD_CERTIFICATE</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xERROR-TBD1</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.3.2"><a href="#rfc.section.6.3.2">6.3.2.</a> <a href="#unsupportedcertificate" id="unsupportedcertificate">UNSUPPORTED_CERTIFICATE</a></h1>
+<p/>
+
+<dl>
+  <dt>Name:</dt>
+  <dd style="margin-left: 8">UNSUPPORTED_CERTIFICATE</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xERROR-TBD2</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.3.3"><a href="#rfc.section.6.3.3">6.3.3.</a> <a href="#certificaterevoked" id="certificaterevoked">CERTIFICATE_REVOKED</a></h1>
+<p/>
+
+<dl>
+  <dt>Name:</dt>
+  <dd style="margin-left: 8">CERTIFICATE_REVOKED</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xERROR-TBD3</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.3.4"><a href="#rfc.section.6.3.4">6.3.4.</a> <a href="#certificateexpired" id="certificateexpired">CERTIFICATE_EXPIRED</a></h1>
+<p/>
+
+<dl>
+  <dt>Name:</dt>
+  <dd style="margin-left: 8">CERTIFICATE_EXPIRED</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xERROR-TBD4</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.3.5"><a href="#rfc.section.6.3.5">6.3.5.</a> <a href="#badsignature" id="badsignature">BAD_SIGNATURE</a></h1>
+<p/>
+
+<dl>
+  <dt>Name:</dt>
+  <dd style="margin-left: 8">BAD_SIGNATURE</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xERROR-TBD5</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.6.3.6"><a href="#rfc.section.6.3.6">6.3.6.</a> <a href="#certificategeneral" id="certificategeneral">CERTIFICATE_GENERAL</a></h1>
+<p/>
+
+<dl>
+  <dt>Name:</dt>
+  <dd style="margin-left: 8">CERTIFICATE_GENERAL</dd>
+  <dt>Code:</dt>
+  <dd style="margin-left: 8">0xERROR-TBD6</dd>
+  <dt>Specification:</dt>
+  <dd style="margin-left: 8">This document.</dd>
+</dl>
+<h1 id="rfc.section.7"><a href="#rfc.section.7">7.</a> <a href="#ack" id="ack">Acknowledgements</a></h1>
+<p id="rfc.section.7.p.1">Eric Rescorla pointed out several failings in an earlier revision.  Andrei Popov contributed to the TLS considerations.</p>
+<h1 id="rfc.references"><a href="#rfc.references">8.</a> Normative References</h1>
 <table>
   <tbody>
     <tr>
@@ -547,9 +805,15 @@ struct {
     </tr>
     <tr>
       <td class="reference">
-        <b id="RFC5746">[RFC5746]</b>
+        <b id="RFC5280">[RFC5280]</b>
       </td>
-      <td class="top"><a>Rescorla, E.</a>, <a>Ray, M.</a>, <a>Dispensa, S.</a> and <a>N. Oskov</a>, "<a href="http://tools.ietf.org/html/rfc5746">Transport Layer Security (TLS) Renegotiation Indication Extension</a>", RFC 5746, DOI 10.17487/RFC5746, February 2010.</td>
+      <td class="top"><a>Cooper, D.</a>, <a>Santesson, S.</a>, <a>Farrell, S.</a>, <a>Boeyen, S.</a>, <a>Housley, R.</a> and <a>W. Polk</a>, "<a href="http://tools.ietf.org/html/rfc5280">Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</a>", RFC 5280, DOI 10.17487/RFC5280, May 2008.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="RFC5705">[RFC5705]</b>
+      </td>
+      <td class="top"><a>Rescorla, E.</a>, "<a href="http://tools.ietf.org/html/rfc5705">Keying Material Exporters for Transport Layer Security (TLS)</a>", RFC 5705, DOI 10.17487/RFC5705, March 2010.</td>
     </tr>
     <tr>
       <td class="reference">
@@ -565,9 +829,9 @@ struct {
     </tr>
     <tr>
       <td class="reference">
-        <b id="RFC7627">[RFC7627]</b>
+        <b id="X690">[X690]</b>
       </td>
-      <td class="top"><a>Bhargavan, K.</a>, <a>Delignat-Lavaud, A.</a>, <a>Pironti, A.</a>, <a>Langley, A.</a> and <a>M. Ray</a>, "<a href="http://tools.ietf.org/html/rfc7627">Transport Layer Security (TLS) Session Hash and Extended Master Secret Extension</a>", RFC 7627, DOI 10.17487/RFC7627, September 2015.</td>
+      <td class="top"><a>ITU-T</a>, "<a href="http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf">Information technology - ASN.1 encoding Rules: Specification of Basic Encoding Rules (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules (DER)</a>", ISO ISO/IEC 8825-1:2002, 2002.</td>
     </tr>
   </tbody>
 </table>
