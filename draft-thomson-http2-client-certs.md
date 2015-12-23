@@ -238,19 +238,23 @@ authorizing a single request, it MUST send a `CERTIFICATE_REQUIRED`
 frame with a different request identifier and a corresponding 
 `CERTIFICATE_REQUEST` frame for each required certificate. 
 
-Clients provide certificate authentication by sending a `CERTIFICATE` frame (see
-{{http-certificate}}) on stream zero.  If the `CERTIFICATE` frame is marked as
-both `SOLICITED` and `AUTOMATIC_USE`, the provided certificate can be immediately
-applied by the server to all streams on which a `CERTIFICATE_REQUIRED` frame has
-been sent previously with the same identifier.  Otherwise, the client will send
-subsequent `USE_CERTIFICATE` frames (see {{http-use-certificate}}) to indicate
-the streams on which it intends the certificate to be considered.
+Clients provide certificate authentication by sending one or more 
+`CERTIFICATE` frames (see {{http-certificate}}) on stream zero, followed 
+by a `CERTIFICATE_PROOF` frame. If the `CERTIFICATE_PROOF` frame is 
+marked as both `SOLICITED` and `AUTOMATIC_USE`, the provided certificate 
+can be immediately applied by the server to all streams on which a 
+`CERTIFICATE_REQUIRED` frame has been sent previously with the same 
+identifier. Otherwise, the client will send subsequent `USE_CERTIFICATE` 
+frames (see {{http-use-certificate}}) to indicate the streams on which 
+it intends the certificate to be considered. 
 
-Clients may also provide authentication without being asked, if desired, by sending
-`CERTIFICATE` and `USE_CERTIFICATE` frames without waiting for a server-generated
-`CERTIFICATE_REQUEST`.  If a client receives a `CERTIFICATE_REQUIRED` frame referencing
-parameters for which it has already provided a matching certificate, it MAY reply with
-a `USE_CERTIFICATE` frame referencing the previous `CERTIFICATE` frame.
+Clients may also provide authentication without being asked, if desired, 
+by sending `CERTIFICATE`, `CERTIFICATE_PROOF`, and `USE_CERTIFICATE` 
+frames without waiting for a server-generated `CERTIFICATE_REQUEST`. If 
+a client receives a `CERTIFICATE_REQUIRED` frame referencing parameters 
+for which it has already provided a matching certificate, it MAY reply 
+with a `USE_CERTIFICATE` frame referencing the previous `CERTIFICATE` 
+frame.
 
 ## The CERTIFICATE_REQUEST Frame {#http-cert-request}
 
