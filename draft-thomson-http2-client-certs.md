@@ -416,8 +416,8 @@ The payload of a `CERTIFICATE` frame contains a certificate chain, terminating
 in an end certificate, and proof of possession of the private key corresponding
 to that end certificate.
 
-The `CERTIFICATE` frame MUST NOT be sent by servers.  A `CERTIFICATE` frame received
-by a client SHOULD be rejected with a stream error of type `PROTOCOL_ERROR`.
+Use of the `CERTIFICATE` frame by servers is not defined by this 
+document. A `CERTIFICATE` frame received by a client MUST be ignored. 
 
 The `CERTIFICATE` frame MUST be sent on stream zero.  A `CERTIFICATE` frame received
 on any other stream MUST be rejected with a stream error of type `PROTOCOL_ERROR`.
@@ -447,18 +447,28 @@ ID-Length and Certificate-ID:
     the output of a cryptographically-secure pseudo-random function.
 
 Cert-Count and Certificate-List:
-:   A sequence of Certificate objects (see {{cert-cert}}), each representing one
-    certificate in the sender's certificate chain.  The sender's certificate MUST
-    be the first in the list, and each subsequent certificate SHOULD directly
-    certify the certificate immediately preceding it.  A certificate which specifies 
-    a trust anchor MAY be omitted, provided that the recipient is known to already 
-    possess the relevant certificate.  (For example, because it was included in a
-    `CERTIFICATE_REQUEST`'s Certificate-Authorities list.)
+:   A sequence of Certificate objects (see {{cert-cert}}), each 
+    representing one certificate in the sender's certificate chain. The 
+    sender's certificate MUST be the first in the list, and each subsequent 
+    certificate SHOULD directly certify the certificate immediately 
+    preceding it. A certificate which specifies a trust anchor MAY be 
+    omitted, provided that the recipient is known to already possess the 
+    relevant certificate. (For example, because it was included in a 
+    `CERTIFICATE_REQUEST`'s Certificate-Authorities list.) `Cert-Count` 
+    describes the number of certificates provided. 
 
 DigitalSignature:
-:   A DigitalSignature object (see {{cert-signature}}) proving possession of the
-    private key for the first certificate listed in Certificate-List.
+:   A DigitalSignature object (see {{cert-signature}}) proving possession 
+    of the private key for the first certificate listed in Certificate-List. 
+    Only present if `Cert-Count` is non-zero. 
 
+A `CERTIFICATE` frame with a `Cert-Count` of zero indicates a refusal
+of a `CERTIFICATE_REQUEST` -- the sender either does not have or does
+not wish to provide a matching certificate.  Such a frame SHOULD have
+the `AUTOMATIC_USE` flag set.  Servers SHOULD process all corresponding
+requests as unauthenticated, likely returning an authentication-related
+error at the HTTP level (e.g. 403).
+    
 If the `CERTIFICATE` frame is sent without being requested, the `SOLICITED` flag
 MUST NOT be set.  When the `CERTIFICATE` frame is sent in response to a
 `CERTIFICATE_REQUEST` frame, the `SOLICITED` flag MUST be set, and the
@@ -545,9 +555,9 @@ the authentication request identifier.  A server that receives a `USE_CERTIFICAT
 of any other length MUST treat this as a stream error of type `PROTOCOL_ERROR`.
 Frames with identical request identifiers refer to the same `CERTIFICATE`.
 
-The `USE_CERTIFICATE` frame MUST NOT be sent by servers.  A `USE_CERTIFICATE`
-frame received by a client SHOULD be rejected with a stream error of type
-`PROTOCOL_ERROR`.
+Use of the `USE_CERTIFICATE` frame by servers is not defined by this 
+document. A `USE_CERTIFICATE` frame received by a client MUST be 
+ignored. 
 
 The client MUST NOT send a `USE_CERTIFICATE` frame on stream zero, a
 server-initiated stream or a stream that does not have an outstanding request.
@@ -558,7 +568,7 @@ A server that receives a `USE_CERTIFICATE` frame on a stream which is not in a
 valid state ("open" or "half-closed (remote)" for servers) SHOULD treat this as a
 connection error of type `PROTOCOL_ERROR`.
 
-# Indicating failures during Reactive Certifiate Authentication {#errors}
+# Indicating failures during HTTP-Layer Certifiate Authentication {#errors}
 
 Because this draft permits client certificates to be exchanged at the HTTP framing
 layer instead of the TLS layer, several certificate-related errors which are defined
@@ -586,16 +596,16 @@ response to `CERTIFICATE_REQUEST` and `CERTIFICATE` frames.  Implementations whi
 not wish to terminate the connection MAY either send relevant errors on any stream
 which references the failing certificate in question or process the requests as
 unauthenticated and provide error information at the HTTP semantic layer.
-  
-# Indicating Support for Reactive Certificate Authentication {#setting}
 
-Clients that support reactive certificate authentication indicate
-this using the HTTP/2 `SETTINGS_REACTIVE_AUTH` (0xSETTING-TBD) setting.
+# Indicating Support for HTTP-Layer Certificate Authentication {#setting}
 
-The initial value for the `SETTINGS_REACTIVE_AUTH` setting is 0, indicating that
+Clients that support HTTP-layer certificate authentication indicate
+this using the HTTP/2 `SETTINGS_HTTP_CERT_AUTH` (0xSETTING-TBD) setting.
+
+The initial value for the `SETTINGS_HTTP_CERT_AUTH` setting is 0, indicating that
 the client does not support reactive certificate authentication.  A client sets the
-`SETTINGS_REACTIVE_AUTH` setting to a value of 1 to indicate support for
-reactive certificate authentication as defined in this document.  Any value
+`SETTINGS_HTTP_CERT_AUTH` setting to a value of 1 to indicate support for
+HTTP-layer certificate authentication as defined in this document.  Any value
 other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of
 [RFC7540]) of type `PROTOCOL_ERROR`.
 
@@ -617,17 +627,17 @@ flag is received.
 
 # IANA Considerations {#iana}
 
-The HTTP/2 `SETTINGS_REACTIVE_AUTH` setting is registered in {{iana-setting}}.
+The HTTP/2 `SETTINGS_HTTP_CERT_AUTH` setting is registered in {{iana-setting}}.
 Four frame types are registered in {{iana-frame}}.  Five error codes are registered
 in {{iana-errors}}.
 
-## HTTP/2 SETTINGS_REACTIVE_AUTH Setting {#iana-setting}
+## HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting {#iana-setting}
 
-The SETTINGS_REACTIVE_AUTH setting is registered in the "HTTP/2 Settings"
+The SETTINGS_HTTP_CERT_AUTH setting is registered in the "HTTP/2 Settings"
 registry established in [RFC7540].
 
 Name:
-: SETTINGS_REACTIVE_AUTH
+: SETTINGS_HTTP_CERT_AUTH
 
 Code:
 : 0xSETTING-TBD
