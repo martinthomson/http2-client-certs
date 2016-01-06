@@ -133,7 +133,7 @@ and that no such certificate has been provided.
 
 The server initiates TLS renegotiation by sending a TLS HelloRequest (at \*2).
 The client then initiates a TLS handshake.  Note that some TLS messages are
-elided from the exchange for the sake of brevity.
+elided from the figure for the sake of brevity.
 
 The critical messages for this example are the server requesting a certificate
 with a TLS CertificateRequest (\*3); this request might use information about
@@ -224,10 +224,10 @@ client authentication.  In HTTP/2 a server does this by sending at least one
 
 The server SHOULD first send a `CERTIFICATE_REQUIRED` frame (see 
 {{http-cert-required}}) on the stream which triggered the request for 
-client credentials. The Request-ID field of the `CERTIFICATE_REQUEST` 
+client credentials. The Cert-ID field of the `CERTIFICATE_REQUEST` 
 frame is populated by the server with the same value in the 
 `CERTIFICATE_REQUIRED` frame. Subsequent `CERTIFICATE_REQUIRED` frames 
-with the same request identifier MAY be sent on other streams where the 
+with the same Cert-ID MAY be sent on other streams where the 
 server is expecting client authentication with the same parameters. This 
 allows a client to correlate the `CERTIFICATE_REQUEST` with one or more 
 outstanding HTTP requests. 
@@ -241,20 +241,12 @@ frame with a different request identifier and a corresponding
 Clients provide certificate authentication by sending one or more 
 `CERTIFICATE` frames (see {{http-certificate}}) on stream zero, followed 
 by a `CERTIFICATE_PROOF` frame. If the `CERTIFICATE_PROOF` frame is 
-marked as both `SOLICITED` and `AUTOMATIC_USE`, the provided certificate 
+marked as `AUTOMATIC_USE`, the provided certificate 
 can be immediately applied by the server to all streams on which a 
 `CERTIFICATE_REQUIRED` frame has been sent previously with the same 
 identifier. Otherwise, the client will send subsequent `USE_CERTIFICATE` 
 frames (see {{http-use-certificate}}) to indicate the streams on which 
-it intends the certificate to be considered. 
-
-Clients may also provide authentication without being asked, if desired, 
-by sending `CERTIFICATE`, `CERTIFICATE_PROOF`, and `USE_CERTIFICATE` 
-frames without waiting for a server-generated `CERTIFICATE_REQUEST`. If 
-a client receives a `CERTIFICATE_REQUIRED` frame referencing parameters 
-for which it has already provided a matching certificate, it MAY reply 
-with a `USE_CERTIFICATE` frame referencing the previous `CERTIFICATE` 
-frame.
+it intends the certificate to be considered.
 
 ## The CERTIFICATE_REQUEST Frame {#http-cert-request}
 
@@ -276,9 +268,7 @@ frame received on any other stream MUST be rejected with a stream error of type
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- | ID-Length (8) |               Request-ID                    ...
- +-------------------------------+-------------------------------+
- |     Algorithm-Count (16)      |          Algorithms         ...
+ | Cert-ID (8)   |     Algorithm-Count (16)      |  Algorithms  ...
  +---------------------------------------------------------------+
  |       CA-Count (16)           |  Certificate-Authorities(?) ...
  +---------------------------------------------------------------+
@@ -289,12 +279,10 @@ frame received on any other stream MUST be rejected with a stream error of type
 
 The frame contains the following fields:
 
-ID-Length and Request-ID:
-: `Request-ID` is a variable-length opaque identifier used to correlate
+Cert-ID:
+: `Cert-ID` is an 8-bit opaque identifier used to correlate
 subsequent certificate-related frames with this request.  The identifier
-MUST be the output of a cryptographically-secure pseudo-random function.
-The size of the `Request-ID` field is given by the 8-bit `ID-Length` field,
-which MUST NOT be zero.
+MUST be unique in the session.
     
 Algorithm-Count and Algorithms:
 : A list of the hash/signature algorithm pairs that the server is able 
@@ -370,18 +358,13 @@ The `CERTIFICATE` frame (0xFRAME-TBD3) allows the sender to provide elements of 
 certificate chain which can be used as authentication for previous or subsequent
 requests.
 
-The `CERTIFICATE` frame defines one flag:
-
-SOLICITED (0x01): : If set, indicates that the `CERTIFICATE` (and 
-possibly `CERTIFICATE_PROOF`) frame(s) are being sent in response to a 
-`CERTIFICATE_REQUEST` frame. 
+The `CERTIFICATE` frame defines no flags. 
  
 The payload of a `CERTIFICATE` frame contains elements of a certificate 
 chain, terminating in an end certificate. Multiple `CERTIFICATE` frames 
-MAY be sent with the same Certificate-ID, to accomodate certificate 
+MAY be sent with the same Cert-ID, to accomodate certificate 
 chains which are too large to fit in a single HTTP/2 frame (see 
-[RFC7540] section 4.2). The flag values MUST be identical for each 
-`CERTIFICATE` frame sent with the same Certificate-ID. 
+[RFC7540] section 4.2).
 
 Particularly when a certificate contains a large number of Subject
 Alternative Names, it might not fit into a single `CERTIFICATE` frame
@@ -401,9 +384,7 @@ on any other stream MUST be rejected with a stream error of type `PROTOCOL_ERROR
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- | ID-Length (8) |              Certificate-ID (*)             ...
- +-------------------------------+-------------------------------+
- | Cert-Count(8) |             Certificate-List (*)            ...
+ |  Cert-ID (8)  | Cert-Count(8) |     Certificate-List (*)    ...
  +---------------------------------------------------------------+
  
 ~~~~~~~~~~~~~~~
@@ -411,16 +392,13 @@ on any other stream MUST be rejected with a stream error of type `PROTOCOL_ERROR
 
 The fields defined by the `CERTIFICATE` frame are:
 
-ID-Length and Certificate-ID:
-:   If the `CERTIFICATE` frame is in response to
-    a `CERTIFICATE_REQUEST` from the server, the ID of that request.  Otherwise,
-    a client-selected identifier for this certificate.  The identifier MUST be
-    the output of a cryptographically-secure pseudo-random function.
+Cert-ID:
+:   The ID of the `CERTIFICATE_REQUEST` to which this frame responds.
 
 Cert-Count and Certificate-List:
 :   A sequence of Certificate objects (see {{cert-cert}}), each 
     representing one certificate in the sender's certificate chain. For the 
-    first or only `CERTIFICATE` frame with a given Certificate-ID, the 
+    first or only `CERTIFICATE` frame with a given Cert-ID, the 
     sender's certificate MUST be the first in the list. Each subsequent 
     certificate SHOULD directly certify the certificate immediately 
     preceding it. A certificate which specifies a trust anchor MAY be 
@@ -430,18 +408,15 @@ Cert-Count and Certificate-List:
     describes the number of certificates provided.
 
 A `CERTIFICATE` frame with a `Cert-Count` of zero indicates a refusal of 
-a `CERTIFICATE_REQUEST` -- the sender either does not have or does not 
-wish to provide a matching certificate. Servers SHOULD process all 
-corresponding requests as unauthenticated, likely returning an 
-authentication-related error at the HTTP level (e.g. 403).
+the corresponding `CERTIFICATE_REQUEST` -- the sender either does not 
+have or does not wish to provide a matching certificate. Servers SHOULD 
+process all corresponding requests as unauthenticated, likely returning 
+an authentication-related error at the HTTP level (e.g. 403). 
 
-If the `CERTIFICATE` frame is sent without being requested, the 
-`SOLICITED` flag MUST NOT be set. When the `CERTIFICATE` frame is sent 
-in response to a `CERTIFICATE_REQUEST` frame, the `SOLICITED` flag MUST 
-be set, and the `Request-ID` field MUST contain the same value as the 
-corresponding `CERTIFICATE_REQUEST` frame. In this case, the provided 
-certificate chain MUST conform to the requirements expressed in the 
-`CERTIFICATE_REQUEST` to the best of the client's ability. Specifically: 
+The `Cert-ID` field MUST contain the same value as the corresponding 
+`CERTIFICATE_REQUEST` frame, and the provided certificate chain MUST 
+conform to the requirements expressed in the `CERTIFICATE_REQUEST` to 
+the best of the client's ability. Specifically: 
 
   - If the `CERTIFICATE_REQUEST` contained a non-empty `Certificate-Authorities`
     element, one of the certificates in the chain SHOULD be signed by one of the
@@ -481,13 +456,9 @@ The `CERTIFICATE_PROOF` frame proves possession of the private key corresponding
 to an end certificate previously shown in a `CERTIFICATE` frame, along with
 its certificate chain in the same or other `CERTIFICATE` frames.
 
-The `CERTIFICATE_PROOF` frame defines two flags:
+The `CERTIFICATE_PROOF` frame defines one flag:
 
-SOLICITED (0x01):
-: If set, indicates that the `CERTIFICATE` and `CERTIFICATE_PROOF` 
-frames are being sent in response to a `CERTIFICATE_REQUEST` frame. 
- 
-AUTOMATIC_USE (0x02):
+AUTOMATIC_USE (0x01):
 : If set, the recipient SHOULD consider the certificate when authenticating 
 future requests. Otherwise, the certificate MUST only be considered for 
 requests on streams where a `USE_CERTIFICATE` frame (see 
@@ -497,7 +468,7 @@ requests on streams where a `USE_CERTIFICATE` frame (see
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- | ID-Length (8) |              Certificate-ID (*)             ...
+ | Cert-ID (8) |
  +-------------------------------+-------------------------------+
  |         Algorithm (16)        |         Sig-Length (16)       |
  +---------------------------------------------------------------+
@@ -516,17 +487,18 @@ values being used:
   - The context string for the signature is "HTTP/2 CERTIFICATE"
   - The "specified content" is an [RFC5705] exported value, with the following parameters:
     - Disambiguating label string: "EXPORTER HTTP/2 CERTIFICATE"
-    - Context: The Certificate-ID chosen by the application
     - Length:  1024 bytes
 
 Because the exported value can be independently calculated by both sides of the
 TLS connection, the value to be signed is not sent on the wire at any time.
+The same signed value is used for all `CERTIFICATE_PROOF` frames in a single
+HTTP/2 connection.
 
 A `CERTIFICATE_PROOF` frame MUST be sent only after all `CERTIFICATE` 
-frames with the same Certificate-ID have been sent, and MUST correspond 
+frames with the same Cert-ID have been sent, and MUST correspond 
 to the first certificate presented in the first `CERTIFICATE` frame with 
-that Certificate-ID. Receipt of multiple `CERTIFICATE_PROOF` frames for 
-the same Certificate-ID, receipt of a `CERTIFICATE_PROOF` frame 
+that Cert-ID. Receipt of multiple `CERTIFICATE_PROOF` frames for 
+the same Cert-ID, receipt of a `CERTIFICATE_PROOF` frame 
 without a corresponding `CERTIFICATE` frame, or receipt of a `CERTIFICATE`
 frame after a corresponding `CERTIFICATE_PROOF` MUST be treated as a session 
 error of type `PROTOCOL_ERROR`. 
@@ -538,7 +510,7 @@ document. A `CERTIFICATE_PROOF` frame received by a client MUST be ignored.
 
 The `USE_CERTIFICATE` frame (0xFRAME-TBD5) is sent by clients to 
 indicate that processing of a request should use a certificate provided 
-in a previous `CERTIFICATE` frame and proved by a preceding 
+in a previous `CERTIFICATE` frame and proved by a previous 
 `CERTIFICATE_PROOF` frame. The frame includes a certificate identifier 
 which can be used to correlate the stream with a `CERTIFICATE` frame 
 received on stream zero. 
@@ -547,7 +519,7 @@ A `USE_CERTIFICATE` frame with no payload expresses the client's choice to proce
 without providing a certificate.  Servers SHOULD process the request as unauthenticated,
 likely returning an authentication-related error at the HTTP level (e.g. 403).
 
-Otherwise, the `USE_CERTIFICATE` frame contains between 1 and 255 octets, which is
+Otherwise, the `USE_CERTIFICATE` frame contains a single octet, which is
 the authentication request identifier.  A server that receives a `USE_CERTIFICATE`
 of any other length MUST treat this as a stream error of type `PROTOCOL_ERROR`.
 Frames with identical request identifiers refer to the same `CERTIFICATE`.
@@ -618,16 +590,15 @@ other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of
 
 # Security Considerations {#security}
 
-Implementations need to be aware of the potential for confusion about the state
-of a connection.  Because a client's unsolicited certificate might race with
-the server's request for a certificate, failure to answer a `CERTIFICATE_REQUEST`
-is not necessarily an attack.  At the same time, failure to provide a certificate
-on a stream after receiving `CERTIFICATE_REQUIRED` blocks server processing, and
-SHOULD be subject to standard timeouts used to guard against unresponsive peers.
+Implementations need to be aware of the potential for confusion about 
+the state of a connection. Failure to provide a certificate on a stream 
+after receiving `CERTIFICATE_REQUIRED` blocks server processing, and 
+SHOULD be subject to standard timeouts used to guard against 
+unresponsive peers. 
 
 The presence or absence of a validated client certificate can change during the
 processing of a request, potentially multiple times.  A server that uses
-reactive certificate authentication needs to be prepared to reevaluate the
+certificate authentication needs to be prepared to reevaluate the
 authorization state of a request as the set of certificates changes.  This might
 occur without frames on-stream, if a `CERTIFICATE` frame with the `AUTOMATIC_USE`
 flag is received.
@@ -635,7 +606,7 @@ flag is received.
 # IANA Considerations {#iana}
 
 The HTTP/2 `SETTINGS_HTTP_CERT_AUTH` setting is registered in {{iana-setting}}.
-Four frame types are registered in {{iana-frame}}.  Five error codes are registered
+Five frame types are registered in {{iana-frame}}.  Five error codes are registered
 in {{iana-errors}}.
 
 ## HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting {#iana-setting}
