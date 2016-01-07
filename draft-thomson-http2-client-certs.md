@@ -334,7 +334,7 @@ processing of a request is blocked pending certificate authentication. The frame
 includes a request identifier which can be used to correlate the stream with
 a `CERTIFICATE_REQUEST` frame received on stream zero.
 
-The `CERTIFICATE_REQUIRED` frame contains between 1 and 255 octets, which is the
+The `CERTIFICATE_REQUIRED` frame contains 1 octet, which is the
 authentication request identifier.  A client that receives a `CERTIFICATE_REQUIRED` of
 any other length MUST treat this as a stream error of type `PROTOCOL_ERROR`.
 Frames with identical request identifiers refer to the same `CERTIFICATE_REQUEST`.
