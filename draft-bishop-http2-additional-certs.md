@@ -126,14 +126,18 @@ alert clients to certificates they possess. Servers might also wish to
 proactively prove their authority for an origin for which it intends to 
 deliver pushed resources. 
 
-First, the server MAY send an unsolicited `CERTIFICATE` frame for other 
-certificates it believes will be relevant. Alternatively, if the server 
-does not wish to perform multiple digital signatures speculatively, the 
-server MAY send an `ORIGIN` frame including origins which are not in its 
-TLS certificate. This represents an explicit claim by the server to 
+The server MAY send an `ORIGIN` frame including origins which are not in 
+its TLS certificate. This represents an explicit claim by the server to 
 possess the appropriate certificate -- a claim the client MUST verify 
 using the procedures in {{discovery-client}} before relying on the 
 server's authority for the claimed origin.
+
+The server MAY alternatively push resources from the relevant origin.
+In this case, the client SHOULD verify the server's possession of an
+appropriate certificate by sending a `CERTIFICATE_REQUIRED` frame
+on the pushed stream and a `CERTIFICATE_REQUEST` on stream zero.
+The client MUST NOT use the pushed resource until an appropriate
+certificate has been received and validated.
 
 # Presenting Server Certificates at the HTTP/2 Framing Layer 
 {#certs-http2} 
@@ -142,65 +146,35 @@ When a client wishes to obtain additional certificates from a server
 that has signaled support for HTTP certificate authentication (see 
 {{setting}}), it does this by sending at least one `CERTIFICATE_REQUEST` 
 frame (see {{http-cert-request}}) on stream zero. A client MAY send 
-multiple concurrent `CERTIFICATE_REQUEST` frames. 
+multiple concurrent `CERTIFICATE_REQUEST` frames.  If server-initiated
+streams are blocked until the `CERTIFICATE_REQUEST` has been answered,
+the client SHOULD send `CERTIFICATE_REQUIRED` frames on those streams
+to inform the server.
 
-Servers provide certificate authentication by sending a `CERTIFICATE` 
-frame (see {{http-certificate}}) on stream zero. Servers may also 
-provide authentication without being asked, if desired, by sending 
-`CERTIFICATE` frames without waiting for a client-generated 
-`CERTIFICATE_REQUEST`. If a server receives a `CERTIFICATE_REQUIRED` 
-frame referencing parameters for which it has already provided a 
-matching certificate, it MAY reply with a `USE_CERTIFICATE` frame 
-referencing the previous `CERTIFICATE` frame. 
+Servers respond to certificate authentication requests by sending one or 
+more `CERTIFICATE` frames (see {{http-certificate}}) followed by a 
+`CERTIFICATE_PROOF` frame, on stream zero. 
 
 ## The CERTIFICATE_REQUEST Frame {#http-cert-request} 
 
 When the server has advertised support for HTTP certificate 
 authentication (see {{setting}}), clients MAY send the 
 `CERTIFICATE_REQUEST` frame. A server that has advertised support MUST 
-NOT treat receipt of such a frame as a stream error of type 
-`PROTOCOL_ERROR`. 
+NOT treat receipt of such a frame as a session error of type 
+`PROTOCOL_ERROR`.
 
 The `CERTIFICATE_REQUEST` frame MUST be sent on stream zero. A 
 `CERTIFICATE_REQUEST` frame received on any other stream MUST be 
 rejected with a stream error of type `PROTOCOL_ERROR`. 
 
 When sent from client to server, the `CERTIFICATE_REQUEST` frame has the 
-same layout, with one change to the field definitions: 
-
-
-~~~~~~~~~~~~~~~
-  0                   1                   2                   3
-  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- +-------------------------------+-------------------------------+
- | ID-Length (8) |               Request-ID                    ...
- +-------------------------------+-------------------------------+
- |     Algorithm-Count (16)      |          Algorithms         ...
- +---------------------------------------------------------------+
- |      Origin-Count (16)        |          Origins(?)         ...
- +---------------------------------------------------------------+
- | Cert-Extension-Count (16)     |       Cert-Extensions(?)    ...
- +---------------------------------------------------------------+
-~~~~~~~~~~~~~~~
-{: #fig-cert-request title="CERTIFICATE_REQUEST frame payload"}
-
-The frame contains the following fields:
-
-ID-Length and Request-ID:
-: Unmodified from [I-D.thomson-http2-client-certs].
-    
-Algorithm-Count and Algorithms:
-: Unmodified from [I-D.thomson-http2-client-certs].
-
-Origin-Count and Origins:
-: `Origins` is the distinguished name of the origin for which the client 
-wishes to obtain a certificate, represented in DER-encoded [X690] 
-format. The number of such structures is given by the 16-bit 
-`Origin-Count` field, which MUST be one (0x01). 
-    
-Cert-Extension-Count and Cert-Extensions:
-: Unmodified from [I-D.thomson-http2-client-certs].
-
+same layout, with one change to the field definitions. The `CA-Count` 
+and `Certificate-Authorities` fields are replaced by `Origin-Count` and 
+`Origins` fields, with the same length and format. `Origins` is the 
+distinguished name of the origin for which the client wishes to obtain a 
+certificate, represented in DER-encoded [X690] format. The number of 
+such structures is given by the 16-bit `Origin-Count` field, which MUST 
+be one (0x01).
 
 ## The CERTIFICATE_REQUIRED frame {#http-cert-required}
 
@@ -224,43 +198,52 @@ this as a connection error of type `PROTOCOL_ERROR`.
 
 ## The CERTIFICATE frame {#http-certificate}
 
-The `CERTIFICATE` frame allows the sender to prove possession of a 
+The `CERTIFICATE` frame allows the sender to present a certificate which 
+should be used as authentication for previous or subsequent requests. 
+
+The payload of a `CERTIFICATE` frame contains elements of a certificate 
+chain, terminating in an end certificate. The layout, fields, and 
+processing are unmodified from [I-D.thomson-http2-client-certs]. 
+
+## The CERTIFICATE_PROOF Frame {#http-cert-proof}
+
+The `CERTIFICATE_PROOF` frame allows the sender to prove possession of a 
 certificate which should be used as authentication for previous or 
-subsequent requests.
+subsequent requests. The payload of a `CERTIFICATE_PROOF` frame contains 
+proof of possession of the private key corresponding to an end 
+certificate previously presented in a `CERTIFICATE` frame. The layout, 
+fields, and processing are unmodified from 
+[I-D.thomson-http2-client-certs]. 
 
-The payload of a `CERTIFICATE` frame contains a certificate chain, 
-terminating in an end certificate, and proof of possession of the 
-private key corresponding to that end certificate. The layout, fields, 
-and processing are unmodified from [I-D.thomson-http2-client-certs]. 
-
-Servers MUST set the `AUTOMATIC_USE` flag when sending a `CERTIFICATE` 
-frame.
+Servers MUST set the `AUTOMATIC_USE` flag when sending a 
+`CERTIFICATE_PROOF` frame. 
 
 ## The USE_CERTIFICATE Frame {#http-use-certificate}
 
 The `USE_CERTIFICATE` frame is sent by servers to indicate that 
 processing of a server-initiated stream should use a certificate 
-provided in a previous `CERTIFICATE` frame. The frame includes a 
-certificate identifier which can be used to correlate the stream with a 
-`CERTIFICATE` frame received on stream zero. 
+provided in a previous series of `CERTIFICATE` and `CERTIFICATE_PROOF` 
+frames. The frame includes a certificate identifier which can be used to 
+correlate the stream with a certificate received on stream zero. 
 
 A `USE_CERTIFICATE` frame with no payload expresses the server's choice 
 to proceed without providing a certificate. Clients SHOULD process the 
 request as authenticated solely by the certificate provided at the TLS 
-layer, likely by discarding the pushed resource.
+layer, likely by discarding the pushed resource and terminating the 
+stream.
 
-Otherwise, the `USE_CERTIFICATE` frame contains between 1 and 255 
-octets, which is the authentication request identifier. A server that 
-receives a `USE_CERTIFICATE` of any other length MUST treat this as a 
-stream error of type `PROTOCOL_ERROR`. Frames with identical request 
-identifiers refer to the same `CERTIFICATE`. 
+Otherwise, the `USE_CERTIFICATE` frame contains a single octet, which is 
+the authentication request identifier. A server that receives a 
+`USE_CERTIFICATE` of any other length MUST treat this as a stream error 
+of type `PROTOCOL_ERROR`. Frames with identical request identifiers 
+refer to the same `CERTIFICATE`.
 
 The server MUST NOT send a `USE_CERTIFICATE` frame on stream zero or a 
 client-initiated stream. A client that receives a `USE_CERTIFICATE` 
 frame on an inappropriate stream SHOULD treat this as a connection error 
 of type `PROTOCOL_ERROR`. 
 
-# Indicating failures during Reactive Certificate Authentication {#errors}
+# Indicating failures during Certificate Authentication {#errors}
 
 The errors defined by [I-D.thomson-http2-client-certs] MAY be used by
 either clients or servers, as appropriate.
@@ -291,7 +274,7 @@ This draft defines a mechanism which could be used to probe servers for
 origins they support, but opens no new attack versus making repeat TLS 
 connections with different SNI values. Servers SHOULD impose similar 
 denial-of-service mitigations (e.g. request rate limits) to 
-`CERTIFICATE_REQUEST` frames as to new TLS connections. 
+`CERTIFICATE_REQUEST` frames as to new TLS connections.
 
 
 # IANA Considerations {#iana}

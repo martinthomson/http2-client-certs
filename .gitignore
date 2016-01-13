@@ -8,4 +8,4 @@
 .refcache
 venv/
 issues.json
-draft-thomson-http2-client-certs.xml
+draft-*.xml
