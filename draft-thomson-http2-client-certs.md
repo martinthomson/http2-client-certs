@@ -638,7 +638,19 @@ to standard timeouts used to guard against unresponsive peers.
 In order to protect the privacy of the connection against 
 triple-handshake attacks, this feature of HTTP/2 MUST be used only over 
 TLS 1.3, or over a previous TLS version in combination with the Extended 
-Master Secret extension defined in [RFC7627]. 
+Master Secret extension defined in [RFC7627].
+
+Client implementations need to carefully consider the impact of setting 
+the `AUTOMATIC_USE` flag. This flag is a performance optimization, 
+permitting the client to avoid a round-trip on each request where the 
+server checks for certificate authentication. However, once this flag 
+has been sent, the client has zero knowledge about whether the server 
+will use the referenced cert for any future request, or even for an 
+existing request which has not yet completed. Clients MUST NOT set this 
+flag on any certificate which is not appropriate for currently-in-flight 
+requests, and MUST NOT make any future requests on the same connection 
+which they do not intend to have associated with the provided 
+certificate.
 
 Implementations need to be aware of the potential for confusion about 
 the state of a connection. The presence or absence of a validated client 
