@@ -548,10 +548,10 @@ describing the hash/signature algorithm pair being used. The signature
 is performed as described in [I-D.ietf-tls-tls13], with the following 
 values being used: 
 
-  - The context string for the signature is "HTTP/2 CERTIFICATE"
+  - The context string for the signature is "HTTP/2 CERTIFICATE_PROOF"
   - The "specified content" is an [RFC5705] exported value, with the following parameters:
-    - Disambiguating label string: "EXPORTER HTTP/2 CERTIFICATE"
-    - Length:  1024 bytes
+    - Disambiguating label string: "EXPORTER HTTP/2 CERTIFICATE_PROOF"
+    - Length:  64 bytes
 
 Because the exported value can be independently calculated by both sides of the
 TLS connection, the value to be signed is not sent on the wire at any time.
