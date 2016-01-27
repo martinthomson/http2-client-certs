@@ -33,6 +33,7 @@ normative:
   RFC5280:
   RFC7230:
   RFC7540:
+  RFC7627:
   X690:
     target: http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf
     title: "Information technology - ASN.1 encoding Rules: Specification of Basic Encoding Rules (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules (DER)"
@@ -632,7 +633,12 @@ other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of
 
 Failure to provide a certificate on a stream after receiving 
 `CERTIFICATE_REQUIRED` blocks server processing, and SHOULD be subject 
-to standard timeouts used to guard against unresponsive peers. 
+to standard timeouts used to guard against unresponsive peers.
+
+In order to protect the privacy of the connection against 
+triple-handshake attacks, this feature of HTTP/2 MUST be used only over 
+TLS 1.3, or over a previous TLS version in combination with the Extended 
+Master Secret extension defined in [RFC7627]. 
 
 Implementations need to be aware of the potential for confusion about 
 the state of a connection. The presence or absence of a validated client 
