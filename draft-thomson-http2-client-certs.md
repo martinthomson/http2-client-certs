@@ -467,7 +467,7 @@ Request-ID:
 Cert-Count and Cert-List:
 : A sequence of Certificate objects (see {{cert-cert}}), each 
 representing one certificate in the sender's certificate chain. For the 
-first or only `CERTIFICATE` frame with a given Request-ID and Cert-ID, 
+first or only `CERTIFICATE` frame with a given Request-ID, 
 the sender's certificate MUST be the first in the list. Each subsequent 
 certificate SHOULD directly certify the certificate immediately 
 preceding it. A certificate which specifies a trust anchor MAY be 
@@ -558,10 +558,10 @@ The same signed value is used for all `CERTIFICATE_PROOF` frames in a single
 HTTP/2 connection.
 
 A `CERTIFICATE_PROOF` frame MUST be sent only after all `CERTIFICATE` 
-frames with the same Request-ID and Cert-ID have been sent, and MUST correspond 
+frames with the same Request-ID have been sent, and MUST correspond 
 to the first certificate presented in the first `CERTIFICATE` frame with 
-that Request-ID and Cert-ID. Receipt of multiple `CERTIFICATE_PROOF` frames for 
-the same Request-ID and Cert-ID, receipt of a `CERTIFICATE_PROOF` frame 
+that Request-ID. Receipt of multiple `CERTIFICATE_PROOF` frames for 
+the same Request-ID, receipt of a `CERTIFICATE_PROOF` frame 
 without a corresponding `CERTIFICATE` frame, or receipt of a `CERTIFICATE`
 frame after a corresponding `CERTIFICATE_PROOF` MUST be treated as a session 
 error of type `PROTOCOL_ERROR`.
