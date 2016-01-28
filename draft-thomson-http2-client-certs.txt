@@ -5,8 +5,8 @@
 HTTP                                                          M. Thomson
 Internet-Draft                                                   Mozilla
 Intended status: Standards Track                               M. Bishop
-Expires: July 25, 2016                                         Microsoft
-                                                        January 22, 2016
+Expires: July 31, 2016                                         Microsoft
+                                                        January 28, 2016
 
 
        Reactive Certificate-Based Client Authentication in HTTP/2
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on July 25, 2016.
+   This Internet-Draft will expire on July 31, 2016.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 1]
+Thomson & Bishop          Expires July 31, 2016                 [Page 1]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -80,25 +80,25 @@ Table of Contents
      2.3.  The CERTIFICATE_REQUEST Frame . . . . . . . . . . . . . .   9
      2.4.  The CERTIFICATE frame . . . . . . . . . . . . . . . . . .  10
        2.4.1.  The Certificate structure . . . . . . . . . . . . . .  12
-     2.5.  The CERTIFICATE_PROOF Frame . . . . . . . . . . . . . . .  13
+     2.5.  The CERTIFICATE_PROOF Frame . . . . . . . . . . . . . . .  12
    3.  Indicating failures during HTTP-Layer Certificate
        Authentication  . . . . . . . . . . . . . . . . . . . . . . .  14
-   4.  Indicating Support for HTTP-Layer Certificate Authentication   15
+   4.  Indicating Support for HTTP-Layer Certificate Authentication   14
    5.  Security Considerations . . . . . . . . . . . . . . . . . . .  15
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  15
-     6.1.  HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting  . . . . . . . . .  15
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  16
+     6.1.  HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting  . . . . . . . . .  16
      6.2.  New HTTP/2 Frames . . . . . . . . . . . . . . . . . . . .  16
        6.2.1.  CERTIFICATE_REQUIRED  . . . . . . . . . . . . . . . .  16
        6.2.2.  CERTIFICATE_REQUEST . . . . . . . . . . . . . . . . .  16
-       6.2.3.  CERTIFICATE . . . . . . . . . . . . . . . . . . . . .  16
-       6.2.4.  CERTIFICATE_PROOF . . . . . . . . . . . . . . . . . .  16
-       6.2.5.  USE_CERTIFICATE . . . . . . . . . . . . . . . . . . .  16
+       6.2.3.  CERTIFICATE . . . . . . . . . . . . . . . . . . . . .  17
+       6.2.4.  CERTIFICATE_PROOF . . . . . . . . . . . . . . . . . .  17
+       6.2.5.  USE_CERTIFICATE . . . . . . . . . . . . . . . . . . .  17
      6.3.  New HTTP/2 Error Codes  . . . . . . . . . . . . . . . . .  17
        6.3.1.  BAD_CERTIFICATE . . . . . . . . . . . . . . . . . . .  17
        6.3.2.  UNSUPPORTED_CERTIFICATE . . . . . . . . . . . . . . .  17
-       6.3.3.  CERTIFICATE_REVOKED . . . . . . . . . . . . . . . . .  17
-       6.3.4.  CERTIFICATE_EXPIRED . . . . . . . . . . . . . . . . .  17
-       6.3.5.  BAD_SIGNATURE . . . . . . . . . . . . . . . . . . . .  17
+       6.3.3.  CERTIFICATE_REVOKED . . . . . . . . . . . . . . . . .  18
+       6.3.4.  CERTIFICATE_EXPIRED . . . . . . . . . . . . . . . . .  18
+       6.3.5.  BAD_SIGNATURE . . . . . . . . . . . . . . . . . . . .  18
        6.3.6.  CERTIFICATE_GENERAL . . . . . . . . . . . . . . . . .  18
    7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  18
    8.  Normative References  . . . . . . . . . . . . . . . . . . . .  18
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 2]
+Thomson & Bishop          Expires July 31, 2016                 [Page 2]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -165,7 +165,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 3]
+Thomson & Bishop          Expires July 31, 2016                 [Page 3]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -221,7 +221,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 4]
+Thomson & Bishop          Expires July 31, 2016                 [Page 4]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -277,7 +277,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 5]
+Thomson & Bishop          Expires July 31, 2016                 [Page 5]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -333,7 +333,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 6]
+Thomson & Bishop          Expires July 31, 2016                 [Page 6]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -389,7 +389,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 7]
+Thomson & Bishop          Expires July 31, 2016                 [Page 7]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -445,7 +445,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 8]
+Thomson & Bishop          Expires July 31, 2016                 [Page 8]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -501,7 +501,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
 
-Thomson & Bishop          Expires July 25, 2016                 [Page 9]
+Thomson & Bishop          Expires July 31, 2016                 [Page 9]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
@@ -550,34 +550,25 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
 2.4.  The CERTIFICATE frame
 
-   The "CERTIFICATE" frame (0xFRAME-TBD3) allows the sender to provide
-   elements of a certificate chain which can be used as authentication
-   for previous or subsequent requests.
+   A certificate chain is transferred as a series of "CERTIFICATE"
+   frames (0xFRAME-TBD3) with the same Request-ID, each containing a
+   single certificate in the chain.  The end certificate of the chain
+   can be used as authentication for previous or subsequent requests.
 
 
 
-
-Thomson & Bishop          Expires July 25, 2016                [Page 10]
+Thomson & Bishop          Expires July 31, 2016                [Page 10]
 
 Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
    The "CERTIFICATE" frame defines no flags.
 
-   The payload of a "CERTIFICATE" frame contains elements of a
-   certificate chain, terminating in an end certificate.  Multiple
-   "CERTIFICATE" frames MAY be sent with the same Request-ID, to
-   accomodate certificate chains which are too large to fit in a single
-   HTTP/2 frame (see [RFC7540] section 4.2).
-
-   Particularly when a certificate contains a large number of Subject
-   Alternative Names, it might not fit into a single "CERTIFICATE" frame
-   even as the only provided certificate.  Senders unable to transfer a
-   requested certificate due to the recipient's
-   "SETTINGS_MAX_FRAME_SIZE" value SHOULD increase their own
-   "SETTINGS_MAX_FRAME_SIZE" to a size that would accomodate their
-   certificate, then terminate affected streams with
-   "CERTIFICATE_TOO_LARGE".
+   While unlikely, it is possible that an exceptionally large
+   certificate might be too large to fit in a single HTTP/2 frame (see
+   [RFC7540] section 4.2).  Senders unable to transfer a requested
+   certificate due to the recipient's "SETTINGS_MAX_FRAME_SIZE" value
+   SHOULD terminate affected streams with "CERTIFICATE_TOO_LARGE".
 
    Use of the "CERTIFICATE" frame by servers is not defined by this
    document.  A "CERTIFICATE" frame received by a client MUST be
@@ -590,7 +581,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
      0                   1                   2                   3
      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     +-------------------------------+-------------------------------+
-    | Request-ID (8)| Cert-Count(8) |          Cert-List (*)      ...
+    | Request-ID (8)|                Certificate (*)              ...
     +---------------------------------------------------------------+
 
 
@@ -601,31 +592,31 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    Request-ID:  The ID of the "CERTIFICATE_REQUEST" to which this frame
       responds.
 
-   Cert-Count and Cert-List:  A sequence of Certificate objects (see
-      Section 2.4.1), each representing one certificate in the sender's
-      certificate chain.  For the first or only "CERTIFICATE" frame with
-      a given Request-ID and Cert-ID, the sender's certificate MUST be
-      the first in the list.  Each subsequent certificate SHOULD
-      directly certify the certificate immediately preceding it.  A
-      certificate which specifies a trust anchor MAY be omitted,
-      provided that the recipient is known to already possess the
-      relevant certificate.  (For example, because it was included in a
-
-
-
-Thomson & Bishop          Expires July 25, 2016                [Page 11]
-
-Internet-Draft             HTTP/2 Client Certs              January 2016
-
-
-      "CERTIFICATE_REQUEST"'s Certificate-Authorities list.)  "Cert-
-      Count" describes the number of certificates provided.
+   Certificate:  A Certificate object (see Section 2.4.1) representing
+      one certificate in the sender's certificate chain.  The first or
+      only "CERTIFICATE" frame with a given Request-ID MUST contain the
+      sender's certificate.  Each subsequent certificate SHOULD directly
+      certify the certificate immediately preceding it.  A certificate
+      which specifies a trust anchor MAY be omitted, provided that the
+      recipient is known to already possess the relevant certificate.
+      (For example, because it was included in a "CERTIFICATE_REQUEST"'s
+      Certificate-Authorities list.)
 
    The "Request-ID" field MUST contain the same value as the
    corresponding "CERTIFICATE_REQUEST" frame, and the provided
    certificate chain MUST conform to the requirements expressed in the
    "CERTIFICATE_REQUEST" to the best of the client's ability.
    Specifically:
+
+
+
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 11]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
+
 
    o  If the "CERTIFICATE_REQUEST" contained a non-empty "Certificate-
       Authorities" element, one of the certificates in the chain SHOULD
@@ -665,15 +656,6 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    signature algorithm pair, if the recipient's list of acceptable pairs
    is known.
 
-
-
-
-
-Thomson & Bishop          Expires July 25, 2016                [Page 12]
-
-Internet-Draft             HTTP/2 Client Certs              January 2016
-
-
 2.5.  The CERTIFICATE_PROOF Frame
 
    The "CERTIFICATE_PROOF" frame proves possession of the private key
@@ -682,6 +664,15 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    other "CERTIFICATE" frames.
 
    The "CERTIFICATE_PROOF" frame defines one flag:
+
+
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 12]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
+
 
    AUTOMATIC_USE (0x01):  Indicates that the certificate can be used
       automatically on future requests.
@@ -701,14 +692,15 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    used.  The signature is performed as described in
    [I-D.ietf-tls-tls13], with the following values being used:
 
-   o  The context string for the signature is "HTTP/2 CERTIFICATE"
+   o  The context string for the signature is "HTTP/2 CERTIFICATE_PROOF"
 
    o  The "specified content" is an [RFC5705] exported value, with the
       following parameters:
 
-      *  Disambiguating label string: "EXPORTER HTTP/2 CERTIFICATE"
+      *  Disambiguating label string: "EXPORTER HTTP/2
+         CERTIFICATE_PROOF"
 
-      *  Length: 1024 bytes
+      *  Length: 64 bytes
 
    Because the exported value can be independently calculated by both
    sides of the TLS connection, the value to be signed is not sent on
@@ -716,22 +708,13 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    "CERTIFICATE_PROOF" frames in a single HTTP/2 connection.
 
    A "CERTIFICATE_PROOF" frame MUST be sent only after all "CERTIFICATE"
-   frames with the same Request-ID and Cert-ID have been sent, and MUST
-   correspond to the first certificate presented in the first
-   "CERTIFICATE" frame with that Request-ID and Cert-ID.  Receipt of
-   multiple "CERTIFICATE_PROOF" frames for the same Request-ID and Cert-
-   ID, receipt of a "CERTIFICATE_PROOF" frame without a corresponding
-   "CERTIFICATE" frame, or receipt of a "CERTIFICATE" frame after a
-
-
-
-Thomson & Bishop          Expires July 25, 2016                [Page 13]
-
-Internet-Draft             HTTP/2 Client Certs              January 2016
-
-
-   corresponding "CERTIFICATE_PROOF" MUST be treated as a session error
-   of type "PROTOCOL_ERROR".
+   frames with the same Request-ID have been sent, and MUST correspond
+   to the first certificate presented in the first "CERTIFICATE" frame
+   with that Request-ID.  Receipt of multiple "CERTIFICATE_PROOF" frames
+   for the same Request-ID, receipt of a "CERTIFICATE_PROOF" frame
+   without a corresponding "CERTIFICATE" frame, or receipt of a
+   "CERTIFICATE" frame after a corresponding "CERTIFICATE_PROOF" MUST be
+   treated as a session error of type "PROTOCOL_ERROR".
 
    If the "AUTOMATIC_USE" flag is set, the server MAY omit sending
    "CERTIFICATE_REQUIRED" frames on future streams associated with this
@@ -739,6 +722,13 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    further notice to the client.  This behavior is optional, and receipt
    of a "CERTIFICATE_REQUIRED" frame does not imply that previously-
    presented certificates were unacceptable to the server.
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 13]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
+
 
    Use of the "CERTIFICATE_PROOF" frame by servers is not defined by
    this document.  A "CERTIFICATE_PROOF" frame received by a client MUST
@@ -778,14 +768,6 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    a stream error cannot occur on stream 0, which means that
    implementations cannot send non-session errors in response to
    "CERTIFICATE_REQUEST" and "CERTIFICATE" frames.  Implementations
-
-
-
-Thomson & Bishop          Expires July 25, 2016                [Page 14]
-
-Internet-Draft             HTTP/2 Client Certs              January 2016
-
-
    which do not wish to terminate the connection MAY either send
    relevant errors on any stream which references the failing
    certificate in question or process the requests as unauthenticated
@@ -796,6 +778,13 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    Clients that support HTTP-layer certificate authentication indicate
    this using the HTTP/2 "SETTINGS_HTTP_CERT_AUTH" (0xSETTING-TBD)
    setting.
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 14]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
+
 
    The initial value for the "SETTINGS_HTTP_CERT_AUTH" setting is 0,
    indicating that the client does not support reactive certificate
@@ -812,6 +801,47 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    subject to standard timeouts used to guard against unresponsive
    peers.
 
+   In order to protect the privacy of the connection against triple-
+   handshake attacks, this feature of HTTP/2 MUST be used only over TLS
+   1.3 or greater, or over TLS 1.2 in combination with the Extended
+   Master Secret extension defined in [RFC7627].  Because this feature
+   is intended to operate with equivalent security to the TLS
+   connection, hash and signature algorithms not permitted by the
+   version of TLS in use MUST NOT be used.  Additionally, the following
+   algorithms MUST NOT be used, even if permitted by the underlying TLS
+   version:
+
+   o  MD5
+
+   o  SHA1
+
+   o  SHA224
+
+   o  DSA
+
+   o  ECDSA with curves on prime fields that are less than 240 bits wide
+
+   o  RSA with a prime modulus less than 2048 bits
+
+   Client implementations need to carefully consider the impact of
+   setting the "AUTOMATIC_USE" flag.  This flag is a performance
+   optimization, permitting the client to avoid a round-trip on each
+   request where the server checks for certificate authentication.
+   However, once this flag has been sent, the client has zero knowledge
+   about whether the server will use the referenced cert for any future
+   request, or even for an existing request which has not yet completed.
+   Clients MUST NOT set this flag on any certificate which is not
+   appropriate for currently-in-flight requests, and MUST NOT make any
+   future requests on the same connection which they do not intend to
+   have associated with the provided certificate.
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 15]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
+
+
    Implementations need to be aware of the potential for confusion about
    the state of a connection.  The presence or absence of a validated
    client certificate can change during the processing of a request,
@@ -823,7 +853,7 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 6.  IANA Considerations
 
    The HTTP/2 "SETTINGS_HTTP_CERT_AUTH" setting is registered in
-   Section 6.1.  Five frame types are registered in Section 6.2.  Five
+   Section 6.1.  Five frame types are registered in Section 6.2.  Six
    error codes are registered in Section 6.3.
 
 6.1.  HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting
@@ -834,13 +864,6 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    Name:  SETTINGS_HTTP_CERT_AUTH
 
    Code:  0xSETTING-TBD
-
-
-
-Thomson & Bishop          Expires July 25, 2016                [Page 15]
-
-Internet-Draft             HTTP/2 Client Certs              January 2016
-
 
    Initial Value:  0
 
@@ -867,6 +890,14 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
    Specification:  This document.
 
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 16]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
+
+
 6.2.3.  CERTIFICATE
 
    Frame Type:  CERTIFICATE
@@ -891,13 +922,6 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
 
    Specification:  This document.
 
-
-
-Thomson & Bishop          Expires July 25, 2016                [Page 16]
-
-Internet-Draft             HTTP/2 Client Certs              January 2016
-
-
 6.3.  New HTTP/2 Error Codes
 
    Five new error codes are registered in the "HTTP/2 Error Code"
@@ -918,6 +942,17 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    Code:  0xERROR-TBD2
 
    Specification:  This document.
+
+
+
+
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 17]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
+
 
 6.3.3.  CERTIFICATE_REVOKED
 
@@ -942,17 +977,6 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
    Code:  0xERROR-TBD5
 
    Specification:  This document.
-
-
-
-
-
-
-
-Thomson & Bishop          Expires July 25, 2016                [Page 17]
-
-Internet-Draft             HTTP/2 Client Certs              January 2016
-
 
 6.3.6.  CERTIFICATE_GENERAL
 
@@ -979,6 +1003,13 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
               DOI 10.17487/RFC2119, March 1997,
               <http://www.rfc-editor.org/info/rfc2119>.
 
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 18]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
+
+
    [RFC5246]  Dierks, T. and E. Rescorla, "The Transport Layer Security
               (TLS) Protocol Version 1.2", RFC 5246,
               DOI 10.17487/RFC5246, August 2008,
@@ -999,21 +1030,16 @@ Internet-Draft             HTTP/2 Client Certs              January 2016
               RFC 7230, DOI 10.17487/RFC7230, June 2014,
               <http://www.rfc-editor.org/info/rfc7230>.
 
-
-
-
-
-
-
-Thomson & Bishop          Expires July 25, 2016                [Page 18]
-
-Internet-Draft             HTTP/2 Client Certs              January 2016
-
-
    [RFC7540]  Belshe, M., Peon, R., and M. Thomson, Ed., "Hypertext
               Transfer Protocol Version 2 (HTTP/2)", RFC 7540,
               DOI 10.17487/RFC7540, May 2015,
               <http://www.rfc-editor.org/info/rfc7540>.
+
+   [RFC7627]  Bhargavan, K., Ed., Delignat-Lavaud, A., Pironti, A.,
+              Langley, A., and M. Ray, "Transport Layer Security (TLS)
+              Session Hash and Extended Master Secret Extension",
+              RFC 7627, DOI 10.17487/RFC7627, September 2015,
+              <http://www.rfc-editor.org/info/rfc7627>.
 
    [X690]     ITU-T, "Information technology - ASN.1 encoding Rules:
               Specification of Basic Encoding Rules (BER), Canonical
@@ -1028,6 +1054,16 @@ Authors' Addresses
    Mozilla
 
    Email: martin.thomson@gmail.com
+
+
+
+
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 19]
+
+Internet-Draft             HTTP/2 Client Certs              January 2016
 
 
    Mike Bishop
@@ -1061,4 +1097,24 @@ Authors' Addresses
 
 
 
-Thomson & Bishop          Expires July 25, 2016                [Page 19]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Thomson & Bishop          Expires July 31, 2016                [Page 20]
