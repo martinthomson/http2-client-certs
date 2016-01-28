@@ -630,7 +630,7 @@ In order to protect the privacy of the connection against
 triple-handshake attacks, this feature of HTTP/2 MUST be used only over 
 TLS 1.3 or greater, or over TLS 1.2 in combination with the Extended 
 Master Secret extension defined in [RFC7627]. Because this feature is 
-intended to operate with equivalent security to TLS connection, hash and 
+intended to operate with equivalent security to the TLS connection, hash and 
 signature algorithms not permitted by the version of TLS in use MUST NOT 
 be used. Additionally, the following algorithms MUST NOT be used, even 
 if permitted by the underlying TLS version:
@@ -664,7 +664,7 @@ authorization state of a request as the set of certificates changes.
 # IANA Considerations {#iana}
 
 The HTTP/2 `SETTINGS_HTTP_CERT_AUTH` setting is registered in {{iana-setting}}.
-Five frame types are registered in {{iana-frame}}.  Five error codes are registered
+Five frame types are registered in {{iana-frame}}.  Six error codes are registered
 in {{iana-errors}}.
 
 ## HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting {#iana-setting}
