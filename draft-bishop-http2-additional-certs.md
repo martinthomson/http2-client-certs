@@ -112,10 +112,10 @@ contains the new origin as well, and if so, reuse the connection.
 If not, but the server has advertised support for HTTP-layer 
 certificates, the client MAY also send a `CERTIFICATE_REQUEST` frame 
 {{http-cert-request}} on stream zero requesting a certificate for the 
-desired origin. The server responds with a `CERTIFICATE` frame 
-containing the relevant certificate chain, if it possesses such a 
+desired origin. The server responds with a series of `CERTIFICATE` 
+frames containing the relevant certificate chain, if it possesses such a 
 certificate. If not, the server responds with an empty `CERTIFICATE` 
-frame. 
+frame.
 
 ### Server-driven discovery
 
@@ -132,12 +132,13 @@ possess the appropriate certificate -- a claim the client MUST verify
 using the procedures in {{discovery-client}} before relying on the 
 server's authority for the claimed origin.
 
-The server MAY alternatively push resources from the relevant origin.
-In this case, the client SHOULD verify the server's possession of an
-appropriate certificate by sending a `CERTIFICATE_REQUIRED` frame
-on the pushed stream and a `CERTIFICATE_REQUEST` on stream zero.
-The client MUST NOT use the pushed resource until an appropriate
-certificate has been received and validated.
+The server might push resources from an origin for which it is 
+authoritative but for which the client has not received the certificate. 
+In this case, the client SHOULD verify the server's possession of an 
+appropriate certificate by sending a `CERTIFICATE_REQUIRED` frame on the 
+pushed stream and a `CERTIFICATE_REQUEST` on stream zero. The client 
+MUST NOT use the pushed resource until an appropriate certificate has 
+been received and validated.
 
 # Presenting Server Certificates at the HTTP/2 Framing Layer 
 {#certs-http2} 
@@ -211,9 +212,9 @@ The `CERTIFICATE_PROOF` frame allows the sender to prove possession of a
 certificate which should be used as authentication for previous or 
 subsequent requests. The payload of a `CERTIFICATE_PROOF` frame contains 
 proof of possession of the private key corresponding to an end 
-certificate previously presented in a `CERTIFICATE` frame. The layout, 
-fields, and processing are unmodified from 
-[I-D.thomson-http2-client-certs]. 
+certificate previously presented in a series of `CERTIFICATE` frames. 
+The layout, fields, and processing are unmodified from 
+[I-D.thomson-http2-client-certs].
 
 Servers MUST set the `AUTOMATIC_USE` flag when sending a 
 `CERTIFICATE_PROOF` frame. 
@@ -236,7 +237,7 @@ Otherwise, the `USE_CERTIFICATE` frame contains a single octet, which is
 the authentication request identifier. A server that receives a 
 `USE_CERTIFICATE` of any other length MUST treat this as a stream error 
 of type `PROTOCOL_ERROR`. Frames with identical request identifiers 
-refer to the same `CERTIFICATE`.
+refer to the same certificate chain.
 
 The server MUST NOT send a `USE_CERTIFICATE` frame on stream zero or a 
 client-initiated stream. A client that receives a `USE_CERTIFICATE` 
