@@ -628,8 +628,19 @@ to standard timeouts used to guard against unresponsive peers.
 
 In order to protect the privacy of the connection against 
 triple-handshake attacks, this feature of HTTP/2 MUST be used only over 
-TLS 1.3, or over a previous TLS version in combination with the Extended 
-Master Secret extension defined in [RFC7627].
+TLS 1.3 or greater, or over TLS 1.2 in combination with the Extended 
+Master Secret extension defined in [RFC7627]. Because this feature is 
+intended to operate with equivalent security to TLS connection, hash and 
+signature algorithms not permitted by the version of TLS in use MUST NOT 
+be used. Additionally, the following algorithms MUST NOT be used, even 
+if permitted by the underlying TLS version:
+
+  - MD5
+  - SHA1
+  - SHA224
+  - DSA
+  - ECDSA with curves on prime fields that are less than 240 bits wide
+  - RSA with a prime modulus less than 2048 bits
 
 Client implementations need to carefully consider the impact of setting 
 the `AUTOMATIC_USE` flag. This flag is a performance optimization, 
