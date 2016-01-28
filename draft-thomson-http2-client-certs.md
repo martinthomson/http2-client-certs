@@ -33,6 +33,7 @@ normative:
   RFC5280:
   RFC7230:
   RFC7540:
+  RFC7627:
   X690:
     target: http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf
     title: "Information technology - ASN.1 encoding Rules: Specification of Basic Encoding Rules (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules (DER)"
@@ -421,28 +422,20 @@ extension values are not necessarily bitwise-equal. It is expected that
 implementations will rely on their PKI libraries to perform certificate 
 selection using these certificate extension OIDs. 
 
-
 ## The CERTIFICATE frame {#http-certificate}
 
-The `CERTIFICATE` frame (0xFRAME-TBD3) allows the sender to provide elements of a
-certificate chain which can be used as authentication for previous or subsequent
-requests.
+A certificate chain is transferred as a series of `CERTIFICATE` frames 
+(0xFRAME-TBD3) with the same Request-ID, each containing a single 
+certificate in the chain. The end certificate of the chain can be used 
+as authentication for previous or subsequent requests. 
 
 The `CERTIFICATE` frame defines no flags. 
  
-The payload of a `CERTIFICATE` frame contains elements of a certificate 
-chain, terminating in an end certificate. Multiple `CERTIFICATE` frames 
-MAY be sent with the same Request-ID, to accomodate certificate 
-chains which are too large to fit in a single HTTP/2 frame (see 
-[RFC7540] section 4.2).
-
-Particularly when a certificate contains a large number of Subject
-Alternative Names, it might not fit into a single `CERTIFICATE` frame
-even as the only provided certificate.  Senders unable to transfer a
-requested certificate due to the recipient's `SETTINGS_MAX_FRAME_SIZE`
-value SHOULD increase their own `SETTINGS_MAX_FRAME_SIZE` to a size
-that would accomodate their certificate, then terminate affected
-streams with `CERTIFICATE_TOO_LARGE`.
+While unlikely, it is possible that an exceptionally large certificate 
+might be too large to fit in a single HTTP/2 frame (see [RFC7540] 
+section 4.2). Senders unable to transfer a requested certificate due to 
+the recipient's `SETTINGS_MAX_FRAME_SIZE` value SHOULD terminate 
+affected streams with `CERTIFICATE_TOO_LARGE`.
 
 Use of the `CERTIFICATE` frame by servers is not defined by this 
 document. A `CERTIFICATE` frame received by a client MUST be ignored. 
@@ -454,7 +447,7 @@ on any other stream MUST be rejected with a stream error of type `PROTOCOL_ERROR
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- | Request-ID (8)| Cert-Count(8) |          Cert-List (*)      ...
+ | Request-ID (8)|                Certificate (*)              ...
  +---------------------------------------------------------------+
  
 ~~~~~~~~~~~~~~~
@@ -465,17 +458,15 @@ The fields defined by the `CERTIFICATE` frame are:
 Request-ID:
 :   The ID of the `CERTIFICATE_REQUEST` to which this frame responds.
 
-Cert-Count and Cert-List:
-: A sequence of Certificate objects (see {{cert-cert}}), each 
-representing one certificate in the sender's certificate chain. For the 
-first or only `CERTIFICATE` frame with a given Request-ID and Cert-ID, 
-the sender's certificate MUST be the first in the list. Each subsequent 
-certificate SHOULD directly certify the certificate immediately 
-preceding it. A certificate which specifies a trust anchor MAY be 
-omitted, provided that the recipient is known to already possess the 
-relevant certificate. (For example, because it was included in a 
-`CERTIFICATE_REQUEST`'s Certificate-Authorities list.) `Cert-Count` 
-describes the number of certificates provided. 
+Certificate:
+: A Certificate object (see {{cert-cert}}) representing one certificate 
+in the sender's certificate chain. The first or only `CERTIFICATE` frame 
+with a given Request-ID MUST contain the sender's certificate. Each 
+subsequent certificate SHOULD directly certify the certificate 
+immediately preceding it. A certificate which specifies a trust anchor 
+MAY be omitted, provided that the recipient is known to already possess 
+the relevant certificate. (For example, because it was included in a 
+`CERTIFICATE_REQUEST`'s Certificate-Authorities list.) 
 
 The `Request-ID` field MUST contain the same value as the corresponding 
 `CERTIFICATE_REQUEST` frame, and the provided certificate chain MUST 
@@ -548,10 +539,10 @@ describing the hash/signature algorithm pair being used. The signature
 is performed as described in [I-D.ietf-tls-tls13], with the following 
 values being used: 
 
-  - The context string for the signature is "HTTP/2 CERTIFICATE"
+  - The context string for the signature is "HTTP/2 CERTIFICATE_PROOF"
   - The "specified content" is an [RFC5705] exported value, with the following parameters:
-    - Disambiguating label string: "EXPORTER HTTP/2 CERTIFICATE"
-    - Length:  1024 bytes
+    - Disambiguating label string: "EXPORTER HTTP/2 CERTIFICATE_PROOF"
+    - Length:  64 bytes
 
 Because the exported value can be independently calculated by both sides of the
 TLS connection, the value to be signed is not sent on the wire at any time.
@@ -559,10 +550,10 @@ The same signed value is used for all `CERTIFICATE_PROOF` frames in a single
 HTTP/2 connection.
 
 A `CERTIFICATE_PROOF` frame MUST be sent only after all `CERTIFICATE` 
-frames with the same Request-ID and Cert-ID have been sent, and MUST correspond 
+frames with the same Request-ID have been sent, and MUST correspond 
 to the first certificate presented in the first `CERTIFICATE` frame with 
-that Request-ID and Cert-ID. Receipt of multiple `CERTIFICATE_PROOF` frames for 
-the same Request-ID and Cert-ID, receipt of a `CERTIFICATE_PROOF` frame 
+that Request-ID. Receipt of multiple `CERTIFICATE_PROOF` frames for 
+the same Request-ID, receipt of a `CERTIFICATE_PROOF` frame 
 without a corresponding `CERTIFICATE` frame, or receipt of a `CERTIFICATE`
 frame after a corresponding `CERTIFICATE_PROOF` MUST be treated as a session 
 error of type `PROTOCOL_ERROR`.
@@ -633,7 +624,35 @@ other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of
 
 Failure to provide a certificate on a stream after receiving 
 `CERTIFICATE_REQUIRED` blocks server processing, and SHOULD be subject 
-to standard timeouts used to guard against unresponsive peers. 
+to standard timeouts used to guard against unresponsive peers.
+
+In order to protect the privacy of the connection against 
+triple-handshake attacks, this feature of HTTP/2 MUST be used only over 
+TLS 1.3 or greater, or over TLS 1.2 in combination with the Extended 
+Master Secret extension defined in [RFC7627]. Because this feature is 
+intended to operate with equivalent security to the TLS connection, hash and 
+signature algorithms not permitted by the version of TLS in use MUST NOT 
+be used. Additionally, the following algorithms MUST NOT be used, even 
+if permitted by the underlying TLS version:
+
+  - MD5
+  - SHA1
+  - SHA224
+  - DSA
+  - ECDSA with curves on prime fields that are less than 240 bits wide
+  - RSA with a prime modulus less than 2048 bits
+
+Client implementations need to carefully consider the impact of setting 
+the `AUTOMATIC_USE` flag. This flag is a performance optimization, 
+permitting the client to avoid a round-trip on each request where the 
+server checks for certificate authentication. However, once this flag 
+has been sent, the client has zero knowledge about whether the server 
+will use the referenced cert for any future request, or even for an 
+existing request which has not yet completed. Clients MUST NOT set this 
+flag on any certificate which is not appropriate for currently-in-flight 
+requests, and MUST NOT make any future requests on the same connection 
+which they do not intend to have associated with the provided 
+certificate.
 
 Implementations need to be aware of the potential for confusion about 
 the state of a connection. The presence or absence of a validated client 
@@ -645,7 +664,7 @@ authorization state of a request as the set of certificates changes.
 # IANA Considerations {#iana}
 
 The HTTP/2 `SETTINGS_HTTP_CERT_AUTH` setting is registered in {{iana-setting}}.
-Five frame types are registered in {{iana-frame}}.  Five error codes are registered
+Five frame types are registered in {{iana-frame}}.  Six error codes are registered
 in {{iana-errors}}.
 
 ## HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting {#iana-setting}
