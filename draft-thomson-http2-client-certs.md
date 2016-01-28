@@ -424,25 +424,18 @@ selection using these certificate extension OIDs.
 
 ## The CERTIFICATE frame {#http-certificate}
 
-The `CERTIFICATE` frame (0xFRAME-TBD3) allows the sender to provide elements of a
-certificate chain which can be used as authentication for previous or subsequent
-requests.
+A certificate chain is transferred as a series of `CERTIFICATE` frames 
+(0xFRAME-TBD3) with the same Request-ID, each containing a single 
+certificate in the chain. The end certificate of the chain can be used 
+as authentication for previous or subsequent requests. 
 
 The `CERTIFICATE` frame defines no flags. 
  
-The payload of a `CERTIFICATE` frame contains elements of a certificate 
-chain, terminating in an end certificate. Multiple `CERTIFICATE` frames 
-MAY be sent with the same Request-ID, to accomodate certificate 
-chains which are too large to fit in a single HTTP/2 frame (see 
-[RFC7540] section 4.2).
-
-Particularly when a certificate contains a large number of Subject
-Alternative Names, it might not fit into a single `CERTIFICATE` frame
-even as the only provided certificate.  Senders unable to transfer a
-requested certificate due to the recipient's `SETTINGS_MAX_FRAME_SIZE`
-value SHOULD increase their own `SETTINGS_MAX_FRAME_SIZE` to a size
-that would accomodate their certificate, then terminate affected
-streams with `CERTIFICATE_TOO_LARGE`.
+While unlikely, it is possible that an exceptionally large certificate 
+might be too large to fit in a single HTTP/2 frame (see [RFC7540] 
+section 4.2). Senders unable to transfer a requested certificate due to 
+the recipient's `SETTINGS_MAX_FRAME_SIZE` value SHOULD terminate 
+affected streams with `CERTIFICATE_TOO_LARGE`.
 
 Use of the `CERTIFICATE` frame by servers is not defined by this 
 document. A `CERTIFICATE` frame received by a client MUST be ignored. 
@@ -454,7 +447,7 @@ on any other stream MUST be rejected with a stream error of type `PROTOCOL_ERROR
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- | Request-ID (8)| Cert-Count(8) |          Cert-List (*)      ...
+ | Request-ID (8)|                Certificate (*)              ...
  +---------------------------------------------------------------+
  
 ~~~~~~~~~~~~~~~
@@ -465,17 +458,15 @@ The fields defined by the `CERTIFICATE` frame are:
 Request-ID:
 :   The ID of the `CERTIFICATE_REQUEST` to which this frame responds.
 
-Cert-Count and Cert-List:
-: A sequence of Certificate objects (see {{cert-cert}}), each 
-representing one certificate in the sender's certificate chain. For the 
-first or only `CERTIFICATE` frame with a given Request-ID, 
-the sender's certificate MUST be the first in the list. Each subsequent 
-certificate SHOULD directly certify the certificate immediately 
-preceding it. A certificate which specifies a trust anchor MAY be 
-omitted, provided that the recipient is known to already possess the 
-relevant certificate. (For example, because it was included in a 
-`CERTIFICATE_REQUEST`'s Certificate-Authorities list.) `Cert-Count` 
-describes the number of certificates provided. 
+Certificate:
+: A Certificate object (see {{cert-cert}}) representing one certificate 
+in the sender's certificate chain. The first or only `CERTIFICATE` frame 
+with a given Request-ID MUST contain the sender's certificate. Each 
+subsequent certificate SHOULD directly certify the certificate 
+immediately preceding it. A certificate which specifies a trust anchor 
+MAY be omitted, provided that the recipient is known to already possess 
+the relevant certificate. (For example, because it was included in a 
+`CERTIFICATE_REQUEST`'s Certificate-Authorities list.) 
 
 The `Request-ID` field MUST contain the same value as the corresponding 
 `CERTIFICATE_REQUEST` frame, and the provided certificate chain MUST 
