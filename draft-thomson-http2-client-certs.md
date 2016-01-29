@@ -459,14 +459,15 @@ Request-ID:
 :   The ID of the `CERTIFICATE_REQUEST` to which this frame responds.
 
 Certificate:
-: A Certificate object (see {{cert-cert}}) representing one certificate 
-in the sender's certificate chain. The first or only `CERTIFICATE` frame 
-with a given Request-ID MUST contain the sender's certificate. Each 
-subsequent certificate SHOULD directly certify the certificate 
-immediately preceding it. A certificate which specifies a trust anchor 
-MAY be omitted, provided that the recipient is known to already possess 
-the relevant certificate. (For example, because it was included in a 
-`CERTIFICATE_REQUEST`'s Certificate-Authorities list.) 
+: An X.509v3 [RFC5280] certificate in the sender's certificate chain.
+
+The first or only `CERTIFICATE` frame with a given Request-ID MUST 
+contain the sender's certificate. Each subsequent certificate SHOULD 
+directly certify the certificate immediately preceding it. A certificate 
+which specifies a trust anchor MAY be omitted, provided that the 
+recipient is known to already possess the relevant certificate. (For 
+example, because it was included in a `CERTIFICATE_REQUEST`'s 
+Certificate-Authorities list.) 
 
 The `Request-ID` field MUST contain the same value as the corresponding 
 `CERTIFICATE_REQUEST` frame, and the provided certificate chain MUST 
@@ -494,22 +495,6 @@ A client cannot provide different certificates in response to the same
 already sent and proven a certificate, but does not wish to use it on
 a particular stream SHOULD send an empty `USE_CERTIFICATE` frame,
 refusing to use that certificate on that stream.
-
-### The Certificate structure {#cert-cert}
-
-~~~~~~~~~~~~~~~
-  0                   1                   2                   3
-  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- +-------------------------------+-------------------------------+
- |                    Cert-Length (24)           |    Cert (*) ...
- +---------------------------------------------------------------+
-~~~~~~~~~~~~~~~
-{: #fig-cert-cert title="Certificate structure"}
-
-The Certificate structure is a length-prefixed X.509v3 [RFC5280]
-certificate.  The certificate MUST be signed with an acceptable
-hash/signature algorithm pair, if the recipient's list of acceptable
-pairs is known.
 
 ## The CERTIFICATE_PROOF Frame {#cert-proof}
 
