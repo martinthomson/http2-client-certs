@@ -499,8 +499,7 @@ refusing to use that certificate on that stream.
 ## The CERTIFICATE_PROOF Frame {#cert-proof}
 
 The `CERTIFICATE_PROOF` frame proves possession of the private key corresponding
-to an end certificate previously shown in a `CERTIFICATE` frame, along with
-its certificate chain in the same or other `CERTIFICATE` frames.
+to an end certificate previously shown in a `CERTIFICATE` frame.
 
 The `CERTIFICATE_PROOF` frame defines one flag:
 
