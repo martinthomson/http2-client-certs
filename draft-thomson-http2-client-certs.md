@@ -2,7 +2,7 @@
 title: Reactive Certificate-Based Client Authentication in HTTP/2
 abbrev: HTTP/2 Client Certs
 docname: draft-thomson-http2-client-certs-latest
-date: 2016-01
+date: 2016-03
 category: std
 
 ipr: trust200902
