@@ -5,8 +5,8 @@
 HTTP                                                          M. Thomson
 Internet-Draft                                                   Mozilla
 Intended status: Standards Track                               M. Bishop
-Expires: September 15, 2016                                    Microsoft
-                                                          March 14, 2016
+Expires: September 16, 2016                                    Microsoft
+                                                          March 15, 2016
 
 
        Reactive Certificate-Based Client Authentication in HTTP/2
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 15, 2016.
+   This Internet-Draft will expire on September 16, 2016.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 1]
+Thomson & Bishop       Expires September 16, 2016               [Page 1]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 2]
+Thomson & Bishop       Expires September 16, 2016               [Page 2]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -165,7 +165,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 3]
+Thomson & Bishop       Expires September 16, 2016               [Page 3]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -221,7 +221,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 4]
+Thomson & Bishop       Expires September 16, 2016               [Page 4]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -277,7 +277,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 5]
+Thomson & Bishop       Expires September 16, 2016               [Page 5]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -333,7 +333,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 6]
+Thomson & Bishop       Expires September 16, 2016               [Page 6]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -389,7 +389,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 7]
+Thomson & Bishop       Expires September 16, 2016               [Page 7]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -445,7 +445,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 8]
+Thomson & Bishop       Expires September 16, 2016               [Page 8]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -501,7 +501,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016               [Page 9]
+Thomson & Bishop       Expires September 16, 2016               [Page 9]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -557,7 +557,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 10]
+Thomson & Bishop       Expires September 16, 2016              [Page 10]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -613,7 +613,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 11]
+Thomson & Bishop       Expires September 16, 2016              [Page 11]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -669,7 +669,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 12]
+Thomson & Bishop       Expires September 16, 2016              [Page 12]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -725,7 +725,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 13]
+Thomson & Bishop       Expires September 16, 2016              [Page 13]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -781,7 +781,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 14]
+Thomson & Bishop       Expires September 16, 2016              [Page 14]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -837,7 +837,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 15]
+Thomson & Bishop       Expires September 16, 2016              [Page 15]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -893,7 +893,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 16]
+Thomson & Bishop       Expires September 16, 2016              [Page 16]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -949,7 +949,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 17]
+Thomson & Bishop       Expires September 16, 2016              [Page 17]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -1005,7 +1005,7 @@ Internet-Draft             HTTP/2 Client Certs                March 2016
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 18]
+Thomson & Bishop       Expires September 16, 2016              [Page 18]
 
 Internet-Draft             HTTP/2 Client Certs                March 2016
 
@@ -1061,4 +1061,4 @@ Authors' Addresses
 
 
 
-Thomson & Bishop       Expires September 15, 2016              [Page 19]
+Thomson & Bishop       Expires September 16, 2016              [Page 19]

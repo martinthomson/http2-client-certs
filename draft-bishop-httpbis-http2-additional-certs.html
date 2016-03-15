@@ -1,0 +1,497 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head profile="http://www.w3.org/2006/03/hcard http://dublincore.org/documents/2008/08/04/dc-html/">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+
+  <title>Secondary Server-Certificate Authentication in HTTP/2</title>
+
+  <style type="text/css">/*<![CDATA[*/
+@viewport {
+  zoom: 1.0;
+  width: extend-to-zoom;
+}
+@-ms-viewport {
+  width: extend-to-zoom;
+  zoom: 1.0;
+}
+
+@media screen and (min-width: 1000px) {
+  ul.toc, #rfc\.toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 500px);
+    width: 300px;
+    padding: 0 1em;
+    z-index: 1;
+  }
+  #rfc\.toc {
+    top: 16px;
+  }
+  ul.toc {
+    top: 80px;
+    overflow: auto;
+  }
+
+  body {
+    padding-left: 1.5em;
+    padding-right: 29em;
+  }
+}
+
+body {
+  font: 15px "Helvetica Neue",Helvetica,Arial,sans-serif;
+  color: #333;
+  font-size-adjust: 0.5;
+  line-height: 130%;
+  margin: 2.5em auto;
+  max-width: 700px;
+}
+
+.title, .filename, h1, h2, h3, h4 {
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size-adjust: 0.5;
+  font-weight: 500;
+  color: #333;
+  line-height: 100%;
+  margin: 0.8em 0 0.3em;
+}
+.title { font-size: 36px; }
+h1 { font-size: 30px; }
+h2 { font-size: 24px; }
+h3, h4 { font-size: 18px; }
+h1 a:link, h2 a:link, h3 a:link, h4 a:link {
+  color: #333;
+}
+
+ul.toc li {
+  list-style: none;
+  text-indent: -2.5em;
+  padding-left: 2.5em;
+  padding-bottom: 5px;
+}
+ul.toc, ul.toc ul {
+  margin: 0 0 0 1.5em;
+}
+
+table {
+  margin-left: 0em;
+  border-collapse: collapse;
+}
+table > thead > th {
+  border-bottom: 2px solid #ddd;
+}
+table > tbody > tr > td, table > tbody > tr > th {
+  border-top: 1px solid #ddd;
+}
+table > tbody > tr:nth-child(2n+1) > td,
+table > tbody > tr:nth-child(2n+1) > th {
+  background-color: #f9f9f9;
+}
+td.right {
+  text-align: right;
+}
+td.reference {
+  max-width: 200px;
+}
+td.right, td.left, td.reference, td.top {
+  border-top: none;
+}
+
+
+table.header {
+  width: 100%;
+}
+table.header > tbody > tr > td {
+  background-color: transparent;
+  color: black;
+}
+.filename {
+  color: rgb(119, 119, 119);
+  font-size: 23px;
+  font-weight: normal;
+  height: auto;
+  line-height: 100%;
+}
+#rfc\.abstract+p, #rfc\.abstract +p {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 130%;
+}
+
+samp, tt, code, pre {
+  font: 11pt consolas, monospace;
+  font-size-adjust: none;
+}
+pre {
+  background-color: #eee;
+  border: 1px solid #ddd;
+}
+
+pre.text, pre.text2 {
+  width: 90%;
+}
+
+address {
+  margin: 10px 0 0;
+}
+.vcard {
+  font-style: normal;
+}
+.vcardline {
+  display: block;
+}
+.vcardline .fn {
+  font-weight: bold;
+}
+.vcardline .hidden {
+  display: none;
+}
+
+dl {
+  margin-left: 1em;
+}
+dl.dl-horizontal: {
+  margin-left: 0;
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.nohang > dt {
+  float: none;
+}
+dl > dd {
+  margin-bottom: .5em;
+}
+dl.compact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+ul.empty {
+  list-style-type: none;
+}
+ul.empty li {
+  margin-top: .5em;
+}
+td.reference {
+  padding-right: 1em;
+  vertical-align: top;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+a {
+  text-decoration: none;
+}
+a:link {
+  color: #2a6496;
+}
+a:link:hover {
+  background-color: #eee;
+}
+
+ol, ul {
+  padding: 0;
+  margin: 0.5em 0 0.5em 2em;
+}
+
+.github-fork-ribbon-wrapper {
+  display: none;
+}
+@media screen and (min-width: 800px) {
+  /* "Fork me on GitHub" CSS ribbon based on
+   * https://github.com/simonwhitaker/github-fork-ribbon-css
+   */
+  .github-fork-ribbon {
+    position: absolute;
+    padding: 2px 0;
+    background-color: #a00;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+    box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);
+    font: 700 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+    pointer-events: auto;
+
+    top: 38px;
+    right: -45px;
+
+    transform: rotate(45deg);
+  }
+
+  .github-fork-ribbon a[href],
+  .github-fork-ribbon a[href]:hover {
+    color: #fff;
+    background-color: transparent;
+    text-decoration: none;
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+
+    width: 190px;
+    line-height: 18px;
+
+    display: inline-block;
+    padding: 2px 0;
+
+    border: 1.5px dotted #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .github-fork-ribbon-wrapper {
+    display: block;
+    width: 130px;
+    height: 130px;
+    position: absolute;
+    overflow: hidden;
+    top: 0; right: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+}
+@media screen and (min-width: 1000px) {
+  .github-fork-ribbon-wrapper {
+    position: fixed;
+  }
+  /*]]>*/</style>
+
+  <link href="#rfc.toc" rel="Contents"/>
+<link href="#rfc.section.1" rel="Chapter" title="1 Introduction"/>
+<link href="#rfc.section.1.1" rel="Chapter" title="1.1 Origin Discovery"/>
+<link href="#rfc.section.1.1.1" rel="Chapter" title="1.1.1 Client-driven discovery"/>
+<link href="#rfc.section.1.1.2" rel="Chapter" title="1.1.2 Server-driven discovery"/>
+<link href="#rfc.section.2" rel="Chapter" title="2 Presenting Server Certificates at the HTTP/2 Framing Layer"/>
+<link href="#rfc.section.2.1" rel="Chapter" title="2.1 The CERTIFICATE_REQUEST Frame"/>
+<link href="#rfc.section.2.2" rel="Chapter" title="2.2 The CERTIFICATE_REQUIRED frame"/>
+<link href="#rfc.section.2.3" rel="Chapter" title="2.3 The CERTIFICATE frame"/>
+<link href="#rfc.section.2.4" rel="Chapter" title="2.4 The CERTIFICATE_PROOF Frame"/>
+<link href="#rfc.section.2.5" rel="Chapter" title="2.5 The USE_CERTIFICATE Frame"/>
+<link href="#rfc.section.3" rel="Chapter" title="3 Indicating failures during Certificate Authentication"/>
+<link href="#rfc.section.4" rel="Chapter" title="4 Indicating Support for HTTP-Layer Certificate Authentication"/>
+<link href="#rfc.section.5" rel="Chapter" title="5 Security Considerations"/>
+<link href="#rfc.section.6" rel="Chapter" title="6 IANA Considerations"/>
+<link href="#rfc.section.7" rel="Chapter" title="7 Acknowledgements"/>
+<link href="#rfc.references" rel="Chapter" title="8 References"/>
+<link href="#rfc.references.1" rel="Chapter" title="8.1 Normative References"/>
+<link href="#rfc.references.2" rel="Chapter" title="8.2 Informative References"/>
+<link href="#rfc.authors" rel="Chapter"/>
+
+
+  <meta name="generator" content="xml2rfc version 2.5.1 - http://tools.ietf.org/tools/xml2rfc" />
+  <link rel="schema.dct" href="http://purl.org/dc/terms/" />
+
+  <meta name="dct.creator" content="Bishop, M." />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-bishop-httpbis-http2-additional-certs-latest" />
+  <meta name="dct.issued" scheme="ISO8601" content="2016-3-15" />
+  <meta name="dct.abstract" content="Many HTTP servers host content from several origins. HTTP/2 " />
+  <meta name="description" content="Many HTTP servers host content from several origins. HTTP/2 " />
+
+</head>
+
+<body>
+
+  <table class="header">
+    <tbody>
+    
+    	<tr>
+  <td class="left">HTTP</td>
+  <td class="right">M. Bishop</td>
+</tr>
+<tr>
+  <td class="left">Internet-Draft</td>
+  <td class="right">Microsoft</td>
+</tr>
+<tr>
+  <td class="left">Intended status: Standards Track</td>
+  <td class="right">March 15, 2016</td>
+</tr>
+<tr>
+  <td class="left">Expires: September 16, 2016</td>
+  <td class="right"></td>
+</tr>
+
+    	
+    </tbody>
+  </table>
+
+  <p class="title">Secondary Server-Certificate Authentication in HTTP/2<br />
+  <span class="filename">draft-bishop-httpbis-http2-additional-certs-latest</span></p>
+  
+  <h1 id="rfc.abstract">
+  <a href="#rfc.abstract">Abstract</a>
+</h1>
+<p>Many HTTP servers host content from several origins. HTTP/2 <a href="#RFC7540">[RFC7540]</a> permits clients to reuse an existing HTTP connection to a server provided that certain conditions are satisfied. One of these conditions is the inclusion of the secondary origin in the certificate provided during the TLS <a href="#I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</a> handshake.</p>
+<p>In many cases, origins will wish to maintain separate certificates for different origins but still desire the benefits of a shared HTTP connection. This draft describes how frames which were defined to transfer client certificates might be used to provide additional server certificates as well.</p>
+<h1 id="rfc.status">
+  <a href="#rfc.status">Status of This Memo</a>
+</h1>
+<p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
+<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at http://datatracker.ietf.org/drafts/current/.</p>
+<p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
+<p>This Internet-Draft will expire on September 16, 2016.</p>
+<h1 id="rfc.copyrightnotice">
+  <a href="#rfc.copyrightnotice">Copyright Notice</a>
+</h1>
+<p>Copyright (c) 2016 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
+<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (http://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
+
+  
+  <hr class="noprint" />
+  <h1 class="np" id="rfc.toc"><a href="#rfc.toc">Table of Contents</a></h1>
+  <ul class="toc">
+
+  	<li>1.   <a href="#rfc.section.1">Introduction</a></li>
+<ul><li>1.1.   <a href="#rfc.section.1.1">Origin Discovery</a></li>
+<ul><li>1.1.1.   <a href="#rfc.section.1.1.1">Client-driven discovery</a></li>
+<li>1.1.2.   <a href="#rfc.section.1.1.2">Server-driven discovery</a></li>
+</ul></ul><li>2.   <a href="#rfc.section.2">Presenting Server Certificates at the HTTP/2 Framing Layer</a></li>
+<ul><li>2.1.   <a href="#rfc.section.2.1">The CERTIFICATE_REQUEST Frame</a></li>
+<li>2.2.   <a href="#rfc.section.2.2">The CERTIFICATE_REQUIRED frame</a></li>
+<li>2.3.   <a href="#rfc.section.2.3">The CERTIFICATE frame</a></li>
+<li>2.4.   <a href="#rfc.section.2.4">The CERTIFICATE_PROOF Frame</a></li>
+<li>2.5.   <a href="#rfc.section.2.5">The USE_CERTIFICATE Frame</a></li>
+</ul><li>3.   <a href="#rfc.section.3">Indicating failures during Certificate Authentication</a></li>
+<li>4.   <a href="#rfc.section.4">Indicating Support for HTTP-Layer Certificate Authentication</a></li>
+<li>5.   <a href="#rfc.section.5">Security Considerations</a></li>
+<li>6.   <a href="#rfc.section.6">IANA Considerations</a></li>
+<li>7.   <a href="#rfc.section.7">Acknowledgements</a></li>
+<li>8.   <a href="#rfc.references">References</a></li>
+<ul><li>8.1.   <a href="#rfc.references.1">Normative References</a></li>
+<li>8.2.   <a href="#rfc.references.2">Informative References</a></li>
+</ul><li><a href="#rfc.authors">Author's Address</a></li>
+
+
+  </ul>
+
+  <h1 id="rfc.section.1"><a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a></h1>
+<p id="rfc.section.1.p.1">Section 9.1.1 of <a href="#RFC7540">[RFC7540]</a> describes how connections may be reused as long as the server is authoritative for both origins. A server is considered authoritative for both origins if DNS resolves both origins to the IP address of the server and (for TLS) if the certificate presented by the server contains both origins, either as the Subject or contained in the Subject Alternative Names field.</p>
+<p><a href="#I-D.ietf-httpbis-alt-svc">[I-D.ietf-httpbis-alt-svc]</a> enables a step of abstraction from the DNS resolution. If both hosts have provided an Alternative Service at hostnames which resolve to the IP address of the server, they are considered authoritative just as if DNS resolved the origin itself to that address.</p>
+<p id="rfc.section.1.p.3">The ORIGIN extension frame, defined in <a href="#I-D.nottingham-httpbis-origin-frame">[I-D.nottingham-httpbis-origin-frame]</a>, provides a negative coalescing feature &#8211; a way for a server to request that a client <em>not</em> reuse a connection for an origin, even when it might otherwise appear to be supported. However, the ORIGIN frame does not currently permit a server to advertise the availability of origins which do not appear in the server&#8217;s certificate as presented in the TLS handshake.</p>
+<p id="rfc.section.1.p.4">Servers which host many origins often would prefer to have separate certificates for some sets of origins. This may be for ease of certificate management (the ability to separately revoke or renew them), for legal reasons (a CDN acting on behalf of multiple origins), or any other factor which might drive this administrative decision. Clients connecting to such origins cannot currently reuse connections, even if both client and server would be willing to do so.</p>
+<p><a href="#I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</a> defines certificate-related HTTP/2 frames, permitting a sender to offer a certificate chain along with proof that it possesses the corresponding private key to the end certificate. These frames are bound to the underlying TLS session, so that the certificates are as reliable as those provided at the TLS layer.</p>
+<p id="rfc.section.1.p.6">In this document, a mechanism for using these frames for secondary server authentication via HTTP/2 frames is defined. This mechanism can be implemented at the HTTP layer without requiring new TLS stack behavior and without breaking the existing interface between HTTP and applications above it. It primarily relaxes the one-way nature of the frames defined in <a href="#I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</a>, defining the processing of these frames in the reverse direction.</p>
+<h1 id="rfc.section.1.1"><a href="#rfc.section.1.1">1.1.</a> <a href="#origin-discovery" id="origin-discovery">Origin Discovery</a></h1>
+<h1 id="rfc.section.1.1.1"><a href="#rfc.section.1.1.1">1.1.1.</a> <a href="#discovery-client" id="discovery-client">Client-driven discovery</a></h1>
+<p id="rfc.section.1.1.1.p.1">As defined in <a href="#RFC7540">[RFC7540]</a>, when a client finds that a https:// origin (or Alternative Service <a href="#I-D.ietf-httpbis-alt-svc">[I-D.ietf-httpbis-alt-svc]</a>) to which it needs to make a request has the same IP address as a server to which it is already connected, it MAY check whether the TLS certificate provided contains the new origin as well, and if so, reuse the connection.</p>
+<p id="rfc.section.1.1.1.p.2">If not, but the server has advertised support for HTTP-layer certificates, the client MAY also send a <samp>CERTIFICATE_REQUEST</samp> frame <a href="#http-cert-request">Section 2.1</a> on stream zero requesting a certificate for the desired origin. The server responds with a series of <samp>CERTIFICATE</samp> frames containing the relevant certificate chain, if it possesses such a certificate. If not, the server responds with an empty <samp>CERTIFICATE</samp> frame.</p>
+<h1 id="rfc.section.1.1.2"><a href="#rfc.section.1.1.2">1.1.2.</a> <a href="#server-driven-discovery" id="server-driven-discovery">Server-driven discovery</a></h1>
+<p id="rfc.section.1.1.2.p.1">Because the approach in <a href="#discovery-client">Section 1.1.1</a> requires an extra round-trip to the server before the client can determine whether a new TCP connection will be required, some origins will wish to proactively alert clients to certificates they possess. Servers might also wish to proactively prove their authority for an origin for which it intends to deliver pushed resources.</p>
+<p id="rfc.section.1.1.2.p.2">The server MAY send an <samp>ORIGIN</samp> frame including origins which are not in its TLS certificate. This represents an explicit claim by the server to possess the appropriate certificate &#8211; a claim the client MUST verify using the procedures in <a href="#discovery-client">Section 1.1.1</a> before relying on the server&#8217;s authority for the claimed origin.</p>
+<p id="rfc.section.1.1.2.p.3">The server might push resources from an origin for which it is authoritative but for which the client has not received the certificate.  In this case, the client SHOULD verify the server&#8217;s possession of an appropriate certificate by sending a <samp>CERTIFICATE_REQUIRED</samp> frame on the pushed stream and a <samp>CERTIFICATE_REQUEST</samp> on stream zero. The client MUST NOT use the pushed resource until an appropriate certificate has been received and validated.</p>
+<h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a> <a href="#presenting-server-certificates-at-the-http2-framing-layer" id="presenting-server-certificates-at-the-http2-framing-layer">Presenting Server Certificates at the HTTP/2 Framing Layer</a></h1>
+<p id="rfc.section.2.p.1">{#certs-http2}</p>
+<p id="rfc.section.2.p.2">When a client wishes to obtain additional certificates from a server that has signaled support for HTTP certificate authentication (see <a href="#setting">Section 4</a>), it does this by sending at least one <samp>CERTIFICATE_REQUEST</samp> frame (see <a href="#http-cert-request">Section 2.1</a>) on stream zero. A client MAY send multiple concurrent <samp>CERTIFICATE_REQUEST</samp> frames.  If server-initiated streams are blocked until the <samp>CERTIFICATE_REQUEST</samp> has been answered, the client SHOULD send <samp>CERTIFICATE_REQUIRED</samp> frames on those streams to inform the server.</p>
+<p id="rfc.section.2.p.3">Servers respond to certificate authentication requests by sending one or more <samp>CERTIFICATE</samp> frames (see <a href="#http-certificate">Section 2.3</a>) followed by a <samp>CERTIFICATE_PROOF</samp> frame, on stream zero.</p>
+<h1 id="rfc.section.2.1"><a href="#rfc.section.2.1">2.1.</a> <a href="#http-cert-request" id="http-cert-request">The CERTIFICATE_REQUEST Frame</a></h1>
+<p id="rfc.section.2.1.p.1">When the server has advertised support for HTTP certificate authentication (see <a href="#setting">Section 4</a>), clients MAY send the <samp>CERTIFICATE_REQUEST</samp> frame. A server that has advertised support MUST NOT treat receipt of such a frame as a session error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<p id="rfc.section.2.1.p.2">The <samp>CERTIFICATE_REQUEST</samp> frame MUST be sent on stream zero. A <samp>CERTIFICATE_REQUEST</samp> frame received on any other stream MUST be rejected with a stream error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<p id="rfc.section.2.1.p.3">When sent from client to server, the <samp>CERTIFICATE_REQUEST</samp> frame has the same layout, with one change to the field definitions. The <samp>CA-Count</samp> and <samp>Certificate-Authorities</samp> fields are replaced by <samp>Origin-Count</samp> and <samp>Origins</samp> fields, with the same length and format. <samp>Origins</samp> is the distinguished name of the origin for which the client wishes to obtain a certificate, represented in DER-encoded <a href="#X690">[X690]</a> format. The number of such structures is given by the 16-bit <samp>Origin-Count</samp> field, which MUST be one (0x01).</p>
+<h1 id="rfc.section.2.2"><a href="#rfc.section.2.2">2.2.</a> <a href="#http-cert-required" id="http-cert-required">The CERTIFICATE_REQUIRED frame</a></h1>
+<p id="rfc.section.2.2.p.1">The <samp>CERTIFICATE_REQUIRED</samp> frame is sent by clients to indicate that processing of a server-initiated stream (for example, a pushed resource) is blocked pending certificate authentication. The frame includes a request identifier which can be used to correlate the stream with a <samp>CERTIFICATE_REQUEST</samp> frame received on stream zero. The layout and fields are unmodified from <a href="#I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</a>.</p>
+<p id="rfc.section.2.2.p.2">When the server has advertised support for HTTP certificate authentication (see <a href="#setting">Section 4</a>), clients MAY send the <samp>CERTIFICATE_REQUIRED</samp> frame. A server that has advertised support MUST NOT treat receipt of such a frame as a stream error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<p id="rfc.section.2.2.p.3">The client MUST NOT send a <samp>CERTIFICATE_REQUIRED</samp> frame on stream zero or a client-initiated stream. A server that receives a <samp>CERTIFICATE_REQUIRED</samp> frame on an inappropriate stream SHOULD treat this as a connection error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<h1 id="rfc.section.2.3"><a href="#rfc.section.2.3">2.3.</a> <a href="#http-certificate" id="http-certificate">The CERTIFICATE frame</a></h1>
+<p id="rfc.section.2.3.p.1">The <samp>CERTIFICATE</samp> frame allows the sender to present a certificate which should be used as authentication for previous or subsequent requests.</p>
+<p id="rfc.section.2.3.p.2">The payload of a <samp>CERTIFICATE</samp> frame contains elements of a certificate chain, terminating in an end certificate. The layout, fields, and processing are unmodified from <a href="#I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</a>.</p>
+<h1 id="rfc.section.2.4"><a href="#rfc.section.2.4">2.4.</a> <a href="#http-cert-proof" id="http-cert-proof">The CERTIFICATE_PROOF Frame</a></h1>
+<p id="rfc.section.2.4.p.1">The <samp>CERTIFICATE_PROOF</samp> frame allows the sender to prove possession of a certificate which should be used as authentication for previous or subsequent requests. The payload of a <samp>CERTIFICATE_PROOF</samp> frame contains proof of possession of the private key corresponding to an end certificate previously presented in a series of <samp>CERTIFICATE</samp> frames.  The layout, fields, and processing are unmodified from <a href="#I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</a>.</p>
+<p id="rfc.section.2.4.p.2">Servers MUST set the <samp>AUTOMATIC_USE</samp> flag when sending a <samp>CERTIFICATE_PROOF</samp> frame.</p>
+<h1 id="rfc.section.2.5"><a href="#rfc.section.2.5">2.5.</a> <a href="#http-use-certificate" id="http-use-certificate">The USE_CERTIFICATE Frame</a></h1>
+<p id="rfc.section.2.5.p.1">The <samp>USE_CERTIFICATE</samp> frame is sent by servers to indicate that processing of a server-initiated stream should use a certificate provided in a previous series of <samp>CERTIFICATE</samp> and <samp>CERTIFICATE_PROOF</samp> frames. The frame includes a certificate identifier which can be used to correlate the stream with a certificate received on stream zero.</p>
+<p id="rfc.section.2.5.p.2">A <samp>USE_CERTIFICATE</samp> frame with no payload expresses the server&#8217;s choice to proceed without providing a certificate. Clients SHOULD process the request as authenticated solely by the certificate provided at the TLS layer, likely by discarding the pushed resource and terminating the stream.</p>
+<p id="rfc.section.2.5.p.3">Otherwise, the <samp>USE_CERTIFICATE</samp> frame contains a single octet, which is the authentication request identifier. A server that receives a <samp>USE_CERTIFICATE</samp> of any other length MUST treat this as a stream error of type <samp>PROTOCOL_ERROR</samp>. Frames with identical request identifiers refer to the same certificate chain.</p>
+<p id="rfc.section.2.5.p.4">The server MUST NOT send a <samp>USE_CERTIFICATE</samp> frame on stream zero or a client-initiated stream. A client that receives a <samp>USE_CERTIFICATE</samp> frame on an inappropriate stream SHOULD treat this as a connection error of type <samp>PROTOCOL_ERROR</samp>.</p>
+<h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#errors" id="errors">Indicating failures during Certificate Authentication</a></h1>
+<p id="rfc.section.3.p.1">The errors defined by <a href="#I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</a> MAY be used by either clients or servers, as appropriate.</p>
+<h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#setting" id="setting">Indicating Support for HTTP-Layer Certificate Authentication</a></h1>
+<p id="rfc.section.4.p.1">Servers that support HTTP-layer certificate authentication indicate this using the HTTP/2 <samp>SETTINGS_HTTP_CERT_AUTH</samp> setting defined in <a href="#I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</a>.</p>
+<p id="rfc.section.4.p.2">The initial value for the <samp>SETTINGS_HTTP_CERT_AUTH</samp> setting is 0, indicating that the server does not support HTTP-layer certificate authentication. A server sets the <samp>SETTINGS_HTTP_CERT_AUTH</samp> setting to a value of 1 to indicate support for HTTP-layer certificate authentication as defined in this document. Any value other than 0 or 1 MUST be treated as a connection error (Section 5.4.1 of <a href="#RFC7540">[RFC7540]</a>) of type <samp>PROTOCOL_ERROR</samp>.</p>
+<h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#security" id="security">Security Considerations</a></h1>
+<p id="rfc.section.5.p.1">This mechanism defines an alternate way to obtain server certificates other than the TLS handshake.  While the signature of exporter values is expected to be equally secure, it is important to recognize that a vulnerability in this code path is equal to a vulnerability in the TLS handshake.</p>
+<p id="rfc.section.5.p.2">This draft defines a mechanism which could be used to probe servers for origins they support, but opens no new attack versus making repeat TLS connections with different SNI values. Servers SHOULD impose similar denial-of-service mitigations (e.g. request rate limits) to <samp>CERTIFICATE_REQUEST</samp> frames as to new TLS connections.</p>
+<h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a> <a href="#iana" id="iana">IANA Considerations</a></h1>
+<p id="rfc.section.6.p.1">No changes are made to the registrations in <a href="#I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</a>.</p>
+<h1 id="rfc.section.7"><a href="#rfc.section.7">7.</a> <a href="#ack" id="ack">Acknowledgements</a></h1>
+<h1 id="rfc.references"><a href="#rfc.references">8.</a> References</h1>
+<h1 id="rfc.references.1"><a href="#rfc.references.1">8.1.</a> Normative References</h1>
+<table>
+  <tbody>
+    <tr>
+      <td class="reference">
+        <b id="I-D.thomson-http2-client-certs">[I-D.thomson-http2-client-certs]</b>
+      </td>
+      <td class="top"><a>Thomson, M.</a> and <a>M. Bishop</a>, "<a href="http://tools.ietf.org/html/draft-thomson-http2-client-certs-01">Reactive Certificate-Based Client Authentication in HTTP/2</a>", Internet-Draft draft-thomson-http2-client-certs-01, January 2016.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="RFC7540">[RFC7540]</b>
+      </td>
+      <td class="top"><a>Belshe, M.</a>, <a>Peon, R.</a> and <a>M. Thomson</a>, "<a href="http://tools.ietf.org/html/rfc7540">Hypertext Transfer Protocol Version 2 (HTTP/2)</a>", RFC 7540, DOI 10.17487/RFC7540, May 2015.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="X690">[X690]</b>
+      </td>
+      <td class="top"><a>ITU-T</a>, "<a href="http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf">Information technology - ASN.1 encoding Rules: Specification of Basic Encoding Rules (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules (DER)</a>", ISO ISO/IEC 8825-1:2002, 2002.</td>
+    </tr>
+  </tbody>
+</table>
+<h1 id="rfc.references.2"><a href="#rfc.references.2">8.2.</a> Informative References</h1>
+<table>
+  <tbody>
+    <tr>
+      <td class="reference">
+        <b id="I-D.ietf-httpbis-alt-svc">[I-D.ietf-httpbis-alt-svc]</b>
+      </td>
+      <td class="top"><a>mnot, m.</a>, <a>McManus, P.</a> and <a>J. Reschke</a>, "<a href="http://tools.ietf.org/html/draft-ietf-httpbis-alt-svc-12">HTTP Alternative Services</a>", Internet-Draft draft-ietf-httpbis-alt-svc-12, February 2016.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</b>
+      </td>
+      <td class="top"><a>Rescorla, E.</a>, "<a href="http://tools.ietf.org/html/draft-ietf-tls-tls13-11">The Transport Layer Security (TLS) Protocol Version 1.3</a>", Internet-Draft draft-ietf-tls-tls13-11, December 2015.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="I-D.nottingham-httpbis-origin-frame">[I-D.nottingham-httpbis-origin-frame]</b>
+      </td>
+      <td class="top"><a>mnot, m.</a> and <a>E. Nygren</a>, "<a href="http://tools.ietf.org/html/draft-nottingham-httpbis-origin-frame-01">The ORIGIN HTTP/2 Frame</a>", Internet-Draft draft-nottingham-httpbis-origin-frame-01, January 2016.</td>
+    </tr>
+  </tbody>
+</table>
+<h1 id="rfc.authors">
+  <a href="#rfc.authors">Author's Address</a>
+</h1>
+<div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">Mike Bishop</span> 
+	  <span class="n hidden">
+		<span class="family-name">Bishop</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Microsoft</span>
+	<span class="adr">
+	  
+	  <span class="vcardline">
+		<span class="locality"></span> 
+		<span class="region"></span>
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline"></span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:michael.bishop@microsoft.com">michael.bishop@microsoft.com</a></span>
+
+  </address>
+</div>
+
+  <div class="github-fork-ribbon-wrapper"><div class="github-fork-ribbon"><a href="https://github.com/martinthomson/http2-client-certs">Fork me on GitHub</a></div></div>
+</body>
+</html>
