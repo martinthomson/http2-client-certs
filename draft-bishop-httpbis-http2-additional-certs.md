@@ -1,7 +1,7 @@
 ---
 title: Secondary Server-Certificate Authentication in HTTP/2
 abbrev: HTTP/2 Additional Certs
-docname: draft-bishop-http2-additional-certs
+docname: draft-bishop-httpbis-http2-additional-certs
 date: 2016
 category: std
 
