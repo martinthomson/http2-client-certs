@@ -2,7 +2,7 @@
 title: Secondary Server-Certificate Authentication in HTTP/2
 abbrev: HTTP/2 Additional Certs
 docname: draft-bishop-http2-additional-certs
-date: 2015
+date: 2016
 category: std
 
 ipr: trust200902
@@ -30,10 +30,10 @@ normative:
     date: 2002
     seriesinfo:
         ISO: ISO/IEC 8825-1:2002
-  I-D.ietf-tls-tls13:
   I-D.thomson-http2-client-certs:
 
 informative:
+  I-D.ietf-tls-tls13:
   I-D.nottingham-httpbis-origin-frame:
   I-D.ietf-httpbis-alt-svc:
 
