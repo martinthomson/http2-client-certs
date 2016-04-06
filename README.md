@@ -5,7 +5,6 @@ This is the working area for the Individual internet-draft, "Reactive Certificat
 * [Editor's copy](https://martinthomson.github.io/http2-client-certs/)
 * [Individual Draft] (https://tools.ietf.org/html/draft-thomson-http2-client-certs)
 
-
 ## Building the Draft
 
 Formatted text and HTML versions of the draft can be built using `make`.
