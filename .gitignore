@@ -9,3 +9,4 @@
 venv/
 issues.json
 draft-*.xml
+lib
