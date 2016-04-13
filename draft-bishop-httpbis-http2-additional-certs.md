@@ -1,7 +1,7 @@
 ---
 title: Secondary Certificate Authentication in HTTP/2
 abbrev: Secondary Cert Auth in HTTP/2
-docname: draft-thomson-http2-client-certs-latest
+docname: draft-bishop-httpbis-http2-additional-certs-latest
 date: 2016-04
 category: std
 
@@ -15,17 +15,17 @@ pi: [toc, sortrefs, symrefs]
 
 author:
  -
-    ins: M. Thomson
-    name: Martin Thomson
-    organization: Mozilla
-    email: martin.thomson@gmail.com
-
- -
     ins: M. Bishop
     name: Mike Bishop
     organization: Microsoft
     email: michael.bishop@microsoft.com
     
+ -
+    ins: M. Thomson
+    name: Martin Thomson
+    organization: Mozilla
+    email: martin.thomson@gmail.com
+
 
 normative:
   RFC2119:
@@ -96,19 +96,19 @@ provided.
 
 ## Server Certificate Authentication
 
-Section 9.1.1 of [RFC7540] describes how connections may be reused as 
-long as the server is authoritative for both origins. A server is 
-considered authoritative for both origins if DNS resolves both origins 
-to the IP address of the server and (for TLS) if the certificate 
-presented by the server contains both origins, either as the Subject
-or contained in the Subject Alternative Names field.
+Section 9.1.1 of [RFC7540] describes how connections may be used to make 
+requests from multiple origins as long as the server is authoritative 
+for both. A server is considered authoritative for an origin if DNS 
+resolves the origin to the IP address of the server and (for TLS) if the 
+certificate presented by the server contains the origin in the Subject 
+Alternative Names field.
 
 [I-D.ietf-httpbis-alt-svc] enables a step of abstraction from the DNS 
 resolution. If both hosts have provided an Alternative Service at 
 hostnames which resolve to the IP address of the server, they are 
 considered authoritative just as if DNS resolved the origin itself to 
 that address. However, the server's one TLS certificate is still
-required to contain the name of the origin in question.
+required to contain the name of each origin in question.
 
 Servers which host many origins often would prefer to have separate 
 certificates for some sets of origins. This may be for ease of 
@@ -264,10 +264,10 @@ not been successful.
 
 ### Server authentication {#intro-server-auth}
 
-When a client wishes to obtain additional certificates from a server 
-that has signaled support for HTTP certificate authentication (see 
-{{setting}}), it does this by sending at least one `CERTIFICATE_REQUEST` 
-frame (see {{http-cert-request}}) on stream zero.
+When a client discovers that a server has additional certificates (for 
+example, via an ORIGIN frame; see {{discovery}}) and wishes to examine 
+them, it does this by sending at least one `CERTIFICATE_REQUEST` frame 
+(see {{http-cert-request}}) on stream zero.
 
 Servers respond to certificate authentication requests by sending one or 
 more `CERTIFICATE` frames (see {{http-certificate}}) followed by a 
@@ -325,7 +325,8 @@ Client                                      Server
 To avoid the extra round-trip per stream required for a challenge and 
 response, the `AUTOMATIC_USE` flag enables a certificate to be 
 automatically used by the recipient on subsequent requests without sending 
-a `CERTIFICATE_REQUIRED` exchange.
+a `CERTIFICATE_REQUIRED` exchange.  This flag is always set by servers,
+but optional for clients.
 
 ## Terminology
 
@@ -363,20 +364,19 @@ make a request has the same IP address as a server to which it is
 already connected, it MAY check whether the TLS certificate provided 
 contains the new origin as well, and if so, reuse the connection. 
 
-If not, but the server has advertised support for HTTP-layer 
-certificates (see {{setting}}, the client MAY also send a 
-`CERTIFICATE_REQUEST` frame {{http-cert-request}} on stream zero 
-requesting a certificate for the desired origin. A client MAY send 
-multiple concurrent `CERTIFICATE_REQUEST` frames for different origins. 
-The server responds to each with a series of `CERTIFICATE` frames 
-containing the relevant certificate chain, if it possesses such a 
+If the TLS certificate does not contain the new origin, but the server 
+has advertised support for HTTP-layer certificates (see {{setting}}, the 
+client MAY also send a `CERTIFICATE_REQUEST` frame {{http-cert-request}} 
+on stream zero requesting a certificate for the desired origin. A client 
+MAY send multiple concurrent `CERTIFICATE_REQUEST` frames for different 
+origins. The server responds to each with a series of `CERTIFICATE` 
+frames containing the relevant certificate chain, if it possesses such a 
 certificate. If not, the server responds with an empty `CERTIFICATE` 
-frame.
+frame. 
 
-In this case, or if the server has not advertised support for
-HTTP-layer certificates, the client MUST establish a new TCP connection
-to the desired origin, requesting an appropriate certificate at the
-TLS layer, before sending any requests for resources in that origin.
+In this case, or if the server has not advertised support for HTTP-layer 
+certificates, the client MUST NOT send any requests for resources in 
+that origin on the current connection. 
 
 ## Server announcement of additional certificates
 
