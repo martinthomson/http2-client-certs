@@ -2,7 +2,7 @@
 title: Secondary Certificate Authentication in HTTP/2
 abbrev: Secondary Cert Auth in HTTP/2
 docname: draft-bishop-httpbis-http2-additional-certs-latest
-date: 2016-04
+date: 2016
 category: std
 
 ipr: trust200902
@@ -30,7 +30,6 @@ author:
 normative:
   RFC2119:
   RFC2459:
-  RFC2560:
   RFC5705:
   RFC5246:
   RFC5280:
@@ -50,7 +49,18 @@ normative:
 informative:
   I-D.nottingham-httpbis-origin-frame:
   I-D.ietf-httpbis-alt-svc:
-
+  RFC2560:
+  RFC6962:
+  FIPS-186-4:
+    target: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
+    title: "Digital Signature Standard (DSS)"
+    author:
+        org: National Institute of Standards and Technology
+    date: 2013-07
+    seriesinfo:
+        FIPS: 186-4
+  I-D.josefsson-eddsa-ed25519:
+  PKCS.1.1991:
 
 
 --- abstract
@@ -67,7 +77,7 @@ permits clients to reuse an existing HTTP connection to a server
 provided that the secondary origin is also in the certificate provided 
 during the TLS [I-D.ietf-tls-tls13] handshake. 
 
-In many cases, origins will wish to maintain separate certificates for 
+In many cases, servers will wish to maintain separate certificates for 
 different origins but still desire the benefits of a shared HTTP 
 connection. Similarly, servers may require clients to present 
 authentication, but have different requirements based on the content the 
@@ -312,34 +322,47 @@ indicating that the peer does not support HTTP-layer certificate authentication.
 If a peer does support HTTP-layer certificate authentication, it uses
 the setting to communicate its acceptable hash and signature algorithm.
 
-The setting value is a bitmap, with each set bit reflecting an acceptable
-signing algorithm for provided certificates.  Each bit MUST NOT be set
-if a proof signed in this way would be unacceptable to the sender.
+The setting value is a pair of bitmaps. In the lower half, each set bit 
+reflects an acceptable signing algorithm for provided certificates. Each 
+bit MUST NOT be set if a proof signed in this way would be unacceptable 
+to the sender. 
 
 Bit 1 (0x00 00 00 01):
-: Always set.  Indicates the ability to interpret requests for certificates.
-
-Bit 2 (0x00 00 00 02):
 : ECDSA P-256 with SHA-256
 
-Bit 3 (0x00 00 00 04):
+Bit 2 (0x00 00 00 02):
 : ECDSA P-384 with SHA-384
 
-Bit 4 (0x00 00 00 08):
+Bit 3 (0x00 00 00 04):
 : Ed25519
 
-Bit 5 (0x00 00 00 10):
+Bit 4 (0x00 00 00 08):
 : Ed448
 
-Bit 6 (0x00 00 00 20):
+Bit 5 (0x00 00 00 10):
 : RSA-PSS with SHA-256 and MGF1 (minimum of 2048 bits)
 
-Bits 7-32:
+Bits 6-16:
 : Reserved for future use
 
 If no compatible signature algorithms have been proffered in SETTINGS by a peer,
 the frames defined in this specification MUST NOT be sent to them, with the
 exception of empty `USE_CERTIFICATE` frames.
+
+In the upper half, each set bit reflects an acceptable form of supporting
+data to include with the certificate.
+
+Bit 17 (0x00 01 00 00):
+: Always set.  Indicates the ability to interpret requests for certificates.
+
+Bit 18 (0x00 02 00 00):
+: Indicates support for OCSP [RFC2560] supporting data.
+
+Bit 19 (0x00 04 00 00):
+: Indicates support for Signed Certificate Timestamp [RFC6962] supporting data.
+
+Bit 20-32:
+: Reserved for future use
 
 ## Making certificates or requests available {#cert-available}
 
@@ -665,7 +688,7 @@ of type `PROTOCOL_ERROR`.
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- |  Cert-ID (8)  |          OCSP-Length (16)     |      OCSP   ...
+ |  Cert-ID (8)  | SData-Count(8)|        SData-Records (*)    ...
  +---------------------------------------------------------------+
  |                          Certificate (*)                    ...
  +---------------------------------------------------------------+
@@ -678,9 +701,11 @@ The fields defined by the `CERTIFICATE` frame are:
 Cert-ID:
 : The sender-assigned ID of the certificate chain.
 
-OCSP-Length and OCSP:
-: OCSP data [RFC2560] supporting this certificate, if any. The length of 
-the OCSP field is given by OCSP-Length, which MAY be zero. 
+SData-Count and SData-Records:
+: An array of Supplemental-Data objects (see 
+{{http-cert-supplemental-data}}), with the number given by SData-Count, 
+which MAY be zero. Each Supplemental-Data object contains information 
+about the certificate. 
 
 Certificate:
 : An X.509v3 [RFC5280] certificate in the sender's certificate chain.
@@ -692,6 +717,37 @@ which specifies a trust anchor MAY be omitted, provided that the
 recipient is known to already possess the relevant certificate. (For 
 example, because it was included in a `CERTIFICATE_REQUEST`'s 
 Certificate-Authorities list.)
+
+### Supplemental-Data {#http-cert-supplemental-data}
+
+Supplemental data helps a client to validate a certificate, but is
+not essential to doing so.  Peers SHOULD NOT include supplemental data
+which the recipient is known not to support, but MAY offer supplemental
+data prior to learning which types the recipient supports.
+
+Each supplemental data object has the following format:
+
+~~~~~~~~~~~~
+  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-------------------------------+-------------------------------+
+ |     Type(8)   |           Length (16)         |    Data (*) ...
+ +---------------------------------------------------------------+
+ 
+~~~~~~~~~~~~~~~
+{: #fig-supplemental-data title="Supplemental-Data element"}
+
+The Type field indicates which type of supplemental data is being offered:
+
+OSCP (0x0):
+: Data contains an OCSP [RFC2560] record supporting this certificate.
+
+SCT (0x1):
+: Data contains a Signed Certificate Timestamp [RFC6962] supporting this 
+certificate. 
+
+Other values (0x3-0xF):
+: Reserved for future use.
 
 ## The CERTIFICATE_PROOF Frame {#http-cert-proof}
 
@@ -801,14 +857,22 @@ the HTTP semantic layer.
 This mechanism defines an alternate way to obtain server and client 
 certificates other than the TLS handshake. While the signature of 
 exporter values is expected to be equally secure, it is important to 
-recognize that a vulnerability in this code path is equal to a 
+recognize that a vulnerability in this code path is at least equal to a 
 vulnerability in the TLS handshake. 
+
+This could also increase the impact of a key compromise. Rather than 
+needing to subvert DNS or IP routing in order to use a compromised 
+certificate, a malicious server now only needs a client to connect to 
+*some* HTTPS site under its control. Clients SHOULD continue to validate 
+that destination IP addresses are valid for the origin either by direct 
+DNS resolution or resolution of a validated Alternative Service. (Future 
+work could include a mechanism for a server to offer proofs.) 
 
 This draft defines a mechanism which could be used to probe servers for 
 origins they support, but opens no new attack versus making repeat TLS 
 connections with different SNI values. Servers SHOULD impose similar 
 denial-of-service mitigations (e.g. request rate limits) to 
-`CERTIFICATE_REQUEST` frames as to new TLS connections.
+`CERTIFICATE_REQUEST` frames as to new TLS connections. 
 
 While the `CERTIFICATE_REQUEST` frame permits the sender to enumerate 
 the acceptable Certificate Authorities for the requested certificate, it 
@@ -858,9 +922,82 @@ instead.
 
 # IANA Considerations {#iana}
 
+This draft establishes two new registries, and adds entries in three others.
+
+Acceptable signature methods are registered in {{iana-signature}}.  Acceptable
+forms of supplemental data are registered in {{iana-supplemental}}.
+
 The HTTP/2 `SETTINGS_HTTP_CERT_AUTH` setting is registered in {{iana-setting}}.
 Five frame types are registered in {{iana-frame}}.  Six error codes are registered
 in {{iana-errors}}.
+
+## Signature Methods {#iana-signature}
+
+This document establishes a registry for signature methods acceptable for
+use with this extension.  The "HTTP-Layer Certificate Signature Method"
+registry manages a space of sixteen values.  The "HTTP-Layer Certificate Signature Method"
+operates under either the "RFC Required" or "IESG Approval" policy.
+
+New entries in this registry require the following information:
+
+Signature Method:
+: A name or label for the signature method
+
+Bit assignment:
+: A single-bit value from 0x0000 to 0x8000
+
+Specification:
+: A document which describes how the signature may be performed
+
+The entries in the following table are registered by this document.
+
+~~~~~~~~~~~~
++-------------------------------+------------+------------------------------+
+| Signature Method              | Bit        | Specification                |
++-------------------------------+------------+------------------------------+
+| ECDSA P-256 with SHA-256      | 1 (0x0001) | [FIPS-186-4]                 |
+| ECDSA P-384 with SHA-384      | 2 (0x0002) | [FIPS-186-4]                 |
+| Ed25519                       | 3 (0x0004) | [I-D.josefsson-eddsa-ed25519]|
+| Ed448                         | 4 (0x0008) | [I-D.josefsson-eddsa-ed25519]|
+| RSA-PSS with SHA-256 and MGF1 | 5 (0x0010) | [PKCS.1]                     |
++-------------------------------+------------+------------------------------+
+~~~~~~~~~~~~~~~
+{: #fig-signature-table}
+
+## Supplemental Data {#iana-supplemental}
+
+This document establishes a registry for supplemental data types acceptable for
+use with this extension.  The "HTTP-Layer Certificate Supplemental Data"
+registry manages a space of sixteen values.  The "HTTP-Layer Certificate Supplemental Data"
+operates under either the "RFC Required" or "IESG Approval" policy.
+
+New entries in this registry require the following information:
+
+Data Type:
+: A name or label for the supplemental data type
+
+Bit assignment:
+: A single-bit value from 0x0000 to 0x8000
+
+Value assignment:
+: A value in the range 0x00 to 0xFF; one type
+MAY reserve multiple values
+
+Specification:
+: A document which describes how the supplemental data may be interpreted
+
+The entries in the following table are registered by this document.
+
+~~~~~~~~~~~~
++------------------------+------------+-------+----------------------+
+| Data Type              | Bit        | Value | Specification        |
++------------------------+------------+-------+----------------------+
+| Reserved               | 1 (0x0001) | N/A   | {{setting}}          |
+| OCSP                   | 2 (0x0002) | 0x00  | [RFC2560]            |
+| SCT                    | 3 (0x0004) | 0x01  | [RFC6962]            |
++------------------------+------------+------------------------------+
+~~~~~~~~~~~~~~~
+{: #fig-supplemental-data-table}
 
 ## HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting {#iana-setting}
 
