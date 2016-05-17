@@ -1,6 +1,6 @@
 # Reactive Certificate-Based Client Authentication in HTTP/2
 
-This is the working area for the Individual internet-draft, "Reactive Certificate-Based Client Authentication in HTTP/2".
+This is the working area for the Individual internet-draft, "Secondary Certificate Authentication in HTTP/2".
 
 * [Editor's copy](https://mikebishop.github.io/http2-client-certs/)
 * [Individual Draft] (https://www.ietf.org/internet-drafts/draft-bishop-httpbis-http2-additional-certs)
