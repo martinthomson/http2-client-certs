@@ -1,4 +1,4 @@
-# Reactive Certificate-Based Client Authentication in HTTP/2
+# Secondary Certificate Authentication in HTTP/2
 
 This is the working area for the Individual internet-draft, "Secondary Certificate Authentication in HTTP/2".
 
