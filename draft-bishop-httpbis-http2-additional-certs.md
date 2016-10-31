@@ -83,8 +83,10 @@ connection. Similarly, servers may require clients to present
 authentication, but have different requirements based on the content the 
 client is attempting to access. 
 
-This document describes a how such certificates can be provided at the 
-HTTP layer to support both scenarios. 
+This document describes a how TLS exported authenticators
+[I-D.draft-sullivan-tls-exported-authenticator]
+can be used to provide proof of ownership of additional certificates to
+the HTTP layer to support both scenarios.
 
 --- middle
 
@@ -255,12 +257,12 @@ protocol like HTTP/2.
 
 ## HTTP-Layer Certificate Authentication
 
-This draft proposes bringing the TLS 1.3 CertificateRequest, 
-Certificate, and CertificateVerify messages into HTTP/2 frames, enabling 
-certificate-based authentication of both clients and servers independent 
-of TLS version. This mechanism can be implemented at the HTTP layer 
-without requiring new TLS stack behavior and without breaking the 
-existing interface between HTTP and applications above it.
+This draft proposes bringing a request/response mechanism that is equivalent
+to the the TLS 1.3 CertificateRequest, Certificate, CertificateVerify and
+Finished messages into HTTP/2 frames, enabling certificate-based authentication
+of both clients and servers independent of TLS version. This mechanism can be
+implemented at the HTTP layer without breaking the existing interface between
+HTTP and applications above it.
 
 This could be done in a naive manner by replicating the messages as 
 HTTP/2 frames on each stream. However, this would create needless 
@@ -291,9 +293,8 @@ RFC 2119 [RFC2119] defines the terms "MUST", "MUST NOT", "SHOULD" and "MAY".
 
 # Discovering Additional Certificates at the HTTP/2 Layer {#discovery}
 
-A certificate chain is sent as a series of `CERTIFICATE` frames (see 
-{{http-certificate}}) on stream zero. Proof of possession of the 
-corresponding private key is sent as a `CERTIFICATE_PROOF` frame (see 
+A certificate chain with proof of possesion of the private key corresponding
+to the end-entity certificate is sent as a single of `CERTIFICATE_PROOF` frame (see 
 {{http-cert-proof}}) on stream zero. Once the holder of a certificate 
 has sent the chain and proof, this certificate chain is cached by the 
 recipient and available for future use. If the certificate is marked as 
@@ -315,54 +316,12 @@ same ID in certain cases.
 
 Clients and servers that will accept requests for HTTP-layer certificate 
 authentication indicate this using the HTTP/2 `SETTINGS_HTTP_CERT_AUTH` 
-(0xSETTING-TBD) setting. 
+(0xSETTING-TBD) setting.
 
 The initial value for the `SETTINGS_HTTP_CERT_AUTH` setting is 0, 
 indicating that the peer does not support HTTP-layer certificate authentication. 
-If a peer does support HTTP-layer certificate authentication, it uses
-the setting to communicate its acceptable hash and signature algorithm.
-
-The setting value is a pair of bitmaps. In the lower half, each set bit 
-reflects an acceptable signing algorithm for provided certificates. Each 
-bit MUST NOT be set if a proof signed in this way would be unacceptable 
-to the sender. 
-
-Bit 1 (0x00 00 00 01):
-: ECDSA P-256 with SHA-256
-
-Bit 2 (0x00 00 00 02):
-: ECDSA P-384 with SHA-384
-
-Bit 3 (0x00 00 00 04):
-: Ed25519
-
-Bit 4 (0x00 00 00 08):
-: Ed448
-
-Bit 5 (0x00 00 00 10):
-: RSA-PSS with SHA-256 and MGF1 (minimum of 2048 bits)
-
-Bits 6-16:
-: Reserved for future use
-
-If no compatible signature algorithms have been advertised in SETTINGS by a peer,
-the frames defined in this specification MUST NOT be sent to them, with the
-exception of empty `USE_CERTIFICATE` frames.
-
-In the upper half, each set bit reflects an acceptable form of supporting
-data to include with the certificate.
-
-Bit 17 (0x00 01 00 00):
-: Always set.  Indicates the ability to interpret requests for certificates.
-
-Bit 18 (0x00 02 00 00):
-: Indicates support for OCSP [RFC2560] supporting data.
-
-Bit 19 (0x00 04 00 00):
-: Indicates support for Signed Certificate Timestamp [RFC6962] supporting data.
-
-Bit 20-32:
-: Reserved for future use
+If a peer does support HTTP-layer certificate authentication, the value
+is 1.
 
 ## Making certificates or requests available {#cert-available}
 
@@ -381,7 +340,6 @@ by future `USE_CERTIFICATE` frames.
 
 ~~~
 Client                                      Server
-   <--<--<------------ (stream 0) CERTIFICATE --
    <-- (stream 0) CERTIFICATE_PROOF (AU flag) --
    ...
    -- (stream N) GET /from-new-origin --------->
@@ -392,7 +350,6 @@ Client                                      Server
 
 ~~~
 Client                                      Server
-   -- (stream 0) CERTIFICATE ------------>-->-->
    -- (stream 0) CERTIFICATE_PROOF (AU flag) -->
    -- (streams 1,3) GET /protected ------------>
    <-------------------- (streams 1,3) 200 OK --
@@ -452,7 +409,6 @@ Client                                      Server
    -- (stream 0) CERTIFICATE_REQUEST ---------->
    ...
    -- (stream N) CERTIFICATE_NEEDED --------->
-   <--<--<------------ (stream 0) CERTIFICATE --
    <------------ (stream 0) CERTIFICATE_PROOF --
    <-------------- (stream N) USE_CERTIFICATE --
    -- (stream N) GET /from-new-origin --------->
@@ -474,7 +430,6 @@ Client                                      Server
    ...
    -- (stream N) GET /protected --------------->
    <--------- (stream N) CERTIFICATE_NEEDED --
-   -- (stream 0) CERTIFICATE ------------>-->-->
    -- (stream 0) CERTIFICATE_PROOF ------------>
    -- (stream N) USE_CERTIFICATE -------------->
    <----------------------- (stream N) 200 OK --
@@ -499,7 +454,7 @@ correlated by their `Request-ID` field. Subsequent
 sent on other streams where the sender is expecting a certificate with 
 the same parameters. 
 
-The `CERTIFICATE`, `CERTIFICATE_PROOF`, and `USE_CERTIFICATE` frames are 
+The `CERTIFICATE_PROOF`, and `USE_CERTIFICATE` frames are 
 correlated by their `Cert-ID` field. Subsequent `USE_CERTIFICATE` frames 
 with the same `Cert-ID` MAY be sent in response to other 
 `CERTIFICATE_NEEDED` frames and refer to the same certificate. 
@@ -558,8 +513,7 @@ for servers or routing the request to a new connection for clients.
 
 Otherwise, the `USE_CERTIFICATE` frame contains the `Cert-ID` of the 
 certificate the sender wishes to use. This MUST be the ID of a 
-certificate previously presented in one or more `CERTIFICATE` frames, 
-and for which proof of possession has been presented in a 
+certificate for which proof of possession has been presented in a 
 `CERTIFICATE_PROOF` frame. Recipients of a `USE_CERTIFICATE` frame of 
 any other length MUST treat this as a stream error of type 
 `PROTOCOL_ERROR`. Frames with identical certificate identifiers refer to 
@@ -569,10 +523,9 @@ The `USE_CERTIFICATE` frame MUST NOT be sent on stream zero or a stream
 on which a `CERTIFICATE_NEEDED` frame has not been received. Receipt of 
 a `USE_CERTIFICATE` frame in these circmustances SHOULD be treated as 
 a stream error of type `PROTOCOL_ERROR`. Each `USE_CERTIFICATE` frame 
-should reference a preceding completed series of `CERTIFICATE` frames 
-followed by a `CERTIFICATE_PROOF` frame. Receipt of a `USE_CERTIFICATE` 
-frame before the necessary frames have been received on stream zero MUST 
-also result in a stream error of type `PROTOCOL_ERROR`. 
+should reference a preceding `CERTIFICATE_PROOF` frame. Receipt of a
+`USE_CERTIFICATE` frame before the necessary frames have been received
+on stream zero MUST also result in a stream error of type `PROTOCOL_ERROR`. 
 
 The referenced certificate chain MUST conform to the requirements 
 expressed in the `CERTIFICATE_REQUEST` to the best of the sender's 
@@ -586,10 +539,6 @@ ability. Specifically:
     the first certificate MUST match with regard to the extension OIDs recognized
     by the sender.
     
-  - Each certificate that is not self-signed MUST be signed using a 
-    hash/signature algorithm listed in the `Algorithms` element. \[\[TODO: No 
-    longer exists; does SETTINGS give enough info?\]\] 
-
 If these requirements are not satisfied, the recipient MAY at its 
 discretion either return an error at the HTTP semantic layer, or respond 
 with a stream error {{RFC7540}} on any stream where the certificate is 
@@ -670,94 +619,12 @@ extension values are not necessarily bitwise-equal. It is expected that
 implementations will rely on their PKI libraries to perform certificate 
 selection using these certificate extension OIDs. 
 
-## The CERTIFICATE frame {#http-certificate}
-
-A certificate chain is transferred as a series of `CERTIFICATE` frames 
-(0xFRAME-TBD3) with the same Cert-ID, each containing a single 
-certificate in the chain. The end certificate of the chain can be used 
-as authentication for previous or subsequent requests. 
-
-The `CERTIFICATE` frame defines no flags. 
- 
-While unlikely, it is possible that an exceptionally large certificate 
-might be too large to fit in a single HTTP/2 frame (see [RFC7540] 
-section 4.2). Senders unable to transfer a requested certificate due to 
-the recipient's `SETTINGS_MAX_FRAME_SIZE` value SHOULD terminate 
-affected streams with `CERTIFICATE_TOO_LARGE`.
-
-The `CERTIFICATE` frame MUST be sent on stream zero. A `CERTIFICATE` 
-frame received on any other stream MUST be rejected with a stream error 
-of type `PROTOCOL_ERROR`. 
-
-~~~~~~~~~~~~
-  0                   1                   2                   3
-  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- +-------------------------------+-------------------------------+
- |  Cert-ID (8)  | SData-Count(8)|        SData-Records (*)    ...
- +---------------------------------------------------------------+
- |                          Certificate (*)                    ...
- +---------------------------------------------------------------+
-
-~~~~~~~~~~~~~~~
-{: #fig-cert-frame title="CERTIFICATE frame payload"}
-
-The fields defined by the `CERTIFICATE` frame are:
-
-Cert-ID:
-: The sender-assigned ID of the certificate chain.
-
-SData-Count and SData-Records:
-: An array of Supplemental-Data objects (see 
-{{http-cert-supplemental-data}}), with the number given by SData-Count, 
-which MAY be zero. Each Supplemental-Data object contains information 
-about the certificate. 
-
-Certificate:
-: An X.509v3 [RFC5280] certificate in the sender's certificate chain.
-
-The first or only `CERTIFICATE` frame with a given Cert-ID MUST 
-contain the sender's certificate. Each subsequent certificate SHOULD 
-directly certify the certificate immediately preceding it. A certificate 
-which specifies a trust anchor MAY be omitted, provided that the 
-recipient is known to already possess the relevant certificate. (For 
-example, because it was included in a `CERTIFICATE_REQUEST`'s 
-Certificate-Authorities list.)
-
-### Supplemental-Data {#http-cert-supplemental-data}
-
-Supplemental data helps a client to validate a certificate, but is
-not essential to doing so.  Peers SHOULD NOT include supplemental data
-which the recipient is known not to support, but MAY offer supplemental
-data prior to learning which types the recipient supports.
-
-Each supplemental data object has the following format:
-
-~~~~~~~~~~~~
-  0                   1                   2                   3
-  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- +-------------------------------+-------------------------------+
- |     Type(8)   |           Length (16)         |    Data (*) ...
- +---------------------------------------------------------------+
- 
-~~~~~~~~~~~~~~~
-{: #fig-supplemental-data title="Supplemental-Data element"}
-
-The Type field indicates which type of supplemental data is being offered:
-
-OSCP (0x0):
-: Data contains an OCSP [RFC2560] record supporting this certificate.
-
-SCT (0x1):
-: Data contains a Signed Certificate Timestamp [RFC6962] supporting this 
-certificate. 
-
-Other values (0x3-0xF):
-: Reserved for future use.
-
 ## The CERTIFICATE_PROOF Frame {#http-cert-proof}
 
-The `CERTIFICATE_PROOF` frame proves possession of the private key corresponding
-to an end-entity certificate previously shown in a `CERTIFICATE` frame.
+The `CERTIFICATE_PROOF` frame provides a exported authenticator message
+from the TLS layer that provides a chain of certificates, associated
+extensions and proves possession of the private key corresponding
+to the end-entity certificate.
 
 The `CERTIFICATE_PROOF` frame defines one flag:
 
@@ -769,41 +636,18 @@ requests.
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- |  Cert-ID (8)  |         Algorithm (16)        | Signature(*)...
+ |  Cert-ID (8)  |         Exported Authenticator(*)...
  +---------------------------------------------------------------+
  
 ~~~~~~~~~~~~~~~
 {: #fig-proof-frame title="CERTIFICATE_PROOF frame payload"}
 
-The `CERTIFICATE_PROOF` frame (0xFRAME-TBD4) contains an `Algorithm` 
-field (a `SignatureAndHashAlgorithm`, from [I-D.ietf-tls-tls13] section 
-6.3.2.1), describing the hash/signature algorithm pair being used. 
-\[\[TODO: Sixteen bits because it is in TLS 1.3; if we're using a 
-bitmask to express allowed values, we're down to ~5 bits needed to 
-contain all permitted algorithms. Shrink?\]\]
-
-The signature is performed as described in [I-D.ietf-tls-tls13], with 
-the following values being used: 
-
-  - The context string for the signature is "HTTP/2 CERTIFICATE_PROOF"
-  - The "specified content" is an [RFC5705] exported value, with the following parameters:
-    - Disambiguating label string: "EXPORTER HTTP/2 CERTIFICATE_PROOF"
-    - Length:  64 bytes
-	- Context:  NULL
-
-Because the exported value can be independently calculated by both sides of the
-TLS connection, the value to be signed is not sent on the wire at any time.
-The same signed value is used for all `CERTIFICATE_PROOF` frames in a single
-HTTP/2 connection.
-
-A `CERTIFICATE_PROOF` frame MUST be sent only after all `CERTIFICATE` 
-frames with the same Cert-ID have been sent, and MUST correspond 
-to the first certificate presented in the first `CERTIFICATE` frame with 
-that Cert-ID. Receipt of multiple `CERTIFICATE_PROOF` frames for 
-the same Cert-ID, receipt of a `CERTIFICATE_PROOF` frame 
-without a corresponding `CERTIFICATE` frame, or receipt of a `CERTIFICATE`
-frame after a corresponding `CERTIFICATE_PROOF` MUST be treated as a session 
-error of type `PROTOCOL_ERROR`.
+The `CERTIFICATE_PROOF` frame (0xFRAME-TBD4) contains an
+`Exported Authenticator` field which corresponds to the value returned
+from the TLS connection exported authenticator API when provided with
+a certificate, a valid certificate chain for the connection and
+associated extensions (OCSP, SCT, etc.), and a connection-unique 8-byte
+certificate_request_context value.
 
 If the `AUTOMATIC_USE` flag is set, the recipient MAY omit sending 
 `CERTIFICATE_NEEDED` frames on future streams which would require a 
@@ -815,6 +659,11 @@ that previously-presented certificates were unacceptable, even if
 sending a `CERTIFICATE_PROOF` frame. A server MUST NOT send certificates 
 for origins which it is not prepared to service on the current 
 connection. 
+
+Upon recieving a CERTIFICATE_PROOF frame, the reciever may validate
+the Exported Authenticator value by using the exported authenticator API.
+This return either an error indicating that the message was invalid,
+or the certificate chain and extensions used to create the message.
 
 # Indicating failures during HTTP-Layer Certificate Authentication {#errors} 
 
@@ -838,22 +687,19 @@ CERTIFICATE_REVOKED (0xERROR-TBD3):
 CERTIFICATE_EXPIRED (0xERROR-TBD4):
 :  A certificate has expired or is not currently valid
 
-BAD_SIGNATURE (0xERROR-TBD5):
-:  The digital signature provided did not match the claimed public key
-
-CERTIFICATE_TOO_LARGE (0xERROR-TBD6):
+CERTIFICATE_TOO_LARGE (0xERROR-TBD5):
 :  The certificate cannot be transferred due to the recipient's 
 `SETTINGS_MAX_FRAME_SIZE` 
 
-CERTIFICATE_GENERAL (0xERROR-TBD7):
+CERTIFICATE_GENERAL (0xERROR-TBD6):
 :  Any other certificate-related error
 
 As described in [RFC7540], implementations MAY choose to treat a stream 
 error as a connection error at any time. Of particular note, a stream 
 error cannot occur on stream 0, which means that implementations cannot 
-send non-session errors in response to `CERTIFICATE_REQUEST`, 
-`CERTIFICATE`, and `CERTIFICATE_PROOF` frames. Implementations which do 
-not wish to terminate the connection MAY either send relevant errors on 
+send non-session errors in response to `CERTIFICATE_REQUEST`, and
+`CERTIFICATE_PROOF` frames. Implementations which do not wish to
+terminate the connection MAY either send relevant errors on 
 any stream which references the failing certificate in question or 
 process the requests as unauthenticated and provide error information at 
 the HTTP semantic layer.
@@ -861,10 +707,10 @@ the HTTP semantic layer.
 # Security Considerations {#security}
 
 This mechanism defines an alternate way to obtain server and client 
-certificates other than the TLS handshake. While the signature of 
-exporter values is expected to be equally secure, it is important to 
-recognize that a vulnerability in this code path is at least equal to a 
-vulnerability in the TLS handshake. 
+certificates other than in the initial TLS handshake. While the signature of
+exported authenticator values is expected to be equally secure, it is
+important to recognize that a vulnerability in this code path is at least
+equal to a vulnerability in the TLS handshake. 
 
 This could also increase the impact of a key compromise. Rather than 
 needing to subvert DNS or IP routing in order to use a compromised 
@@ -891,11 +737,6 @@ certificate to be signed by a particular CA or small set of CAs.
 Failure to provide a certificate on a stream after receiving 
 `CERTIFICATE_NEEDED` blocks processing, and SHOULD be subject 
 to standard timeouts used to guard against unresponsive peers.
-
-In order to protect the privacy of the connection against 
-triple-handshake attacks, this feature of HTTP/2 MUST be used only over 
-TLS 1.3 or greater, or over TLS 1.2 in combination with the Extended 
-Master Secret extension defined in [RFC7627].
 
 Client implementations need to carefully consider the impact of setting 
 the `AUTOMATIC_USE` flag. This flag is a performance optimization, 
@@ -928,82 +769,11 @@ instead.
 
 # IANA Considerations {#iana}
 
-This draft establishes two new registries, and adds entries in three others.
-
-Acceptable signature methods are registered in {{iana-signature}}.  Acceptable
-forms of supplemental data are registered in {{iana-supplemental}}.
+This draft adds entries in three registries.
 
 The HTTP/2 `SETTINGS_HTTP_CERT_AUTH` setting is registered in {{iana-setting}}.
 Five frame types are registered in {{iana-frame}}.  Six error codes are registered
 in {{iana-errors}}.
-
-## Signature Methods {#iana-signature}
-
-This document establishes a registry for signature methods acceptable for
-use with this extension.  The "HTTP-Layer Certificate Signature Method"
-registry manages a space of sixteen values.  The "HTTP-Layer Certificate Signature Method"
-operates under either the "RFC Required" or "IESG Approval" policy.
-
-New entries in this registry require the following information:
-
-Signature Method:
-: A name or label for the signature method
-
-Bit assignment:
-: A single-bit value from 0x0000 to 0x8000
-
-Specification:
-: A document which describes how the signature may be performed
-
-The entries in the following table are registered by this document.
-
-~~~~~~~~~~~~
-+-------------------------------+------------+------------------------------+
-| Signature Method              | Bit        | Specification                |
-+-------------------------------+------------+------------------------------+
-| ECDSA P-256 with SHA-256      | 1 (0x0001) | [FIPS-186-4]                 |
-| ECDSA P-384 with SHA-384      | 2 (0x0002) | [FIPS-186-4]                 |
-| Ed25519                       | 3 (0x0004) | [I-D.josefsson-eddsa-ed25519]|
-| Ed448                         | 4 (0x0008) | [I-D.josefsson-eddsa-ed25519]|
-| RSA-PSS with SHA-256 and MGF1 | 5 (0x0010) | [PKCS.1]                     |
-+-------------------------------+------------+------------------------------+
-~~~~~~~~~~~~~~~
-{: #fig-signature-table}
-
-## Supplemental Data {#iana-supplemental}
-
-This document establishes a registry for supplemental data types acceptable for
-use with this extension.  The "HTTP-Layer Certificate Supplemental Data"
-registry manages a space of sixteen values.  The "HTTP-Layer Certificate Supplemental Data"
-operates under either the "RFC Required" or "IESG Approval" policy.
-
-New entries in this registry require the following information:
-
-Data Type:
-: A name or label for the supplemental data type
-
-Bit assignment:
-: A single-bit value from 0x0000 to 0x8000
-
-Value assignment:
-: A value in the range 0x00 to 0xFF; one type
-MAY reserve multiple values
-
-Specification:
-: A document which describes how the supplemental data may be interpreted
-
-The entries in the following table are registered by this document.
-
-~~~~~~~~~~~~
-+------------------------+------------+-------+----------------------+
-| Data Type              | Bit        | Value | Specification        |
-+------------------------+------------+-------+----------------------+
-| Reserved               | 1 (0x0001) | N/A   | {{setting}}          |
-| OCSP                   | 2 (0x0002) | 0x00  | [RFC2560]            |
-| SCT                    | 3 (0x0004) | 0x01  | [RFC6962]            |
-+------------------------+------------+------------------------------+
-~~~~~~~~~~~~~~~
-{: #fig-supplemental-data-table}
 
 ## HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting {#iana-setting}
 
@@ -1034,9 +804,8 @@ registered by this document.
 +---------------------+--------------+-------------------------+
 | CERTIFICATE_NEEDED  | 0xFRAME-TBD1 | {{http-cert-needed}}    |
 | CERTIFICATE_REQUEST | 0xFRAME-TBD2 | {{http-cert-request}}   |
-| CERTIFICATE         | 0xFRAME-TBD3 | {{http-certificate}}    |
-| CERTIFICATE_PROOF   | 0xFRAME-TBD4 | {{http-cert-proof}}     |
-| USE_CERTIFICATE     | 0xFRAME-TBD5 | {{http-use-certificate}}|
+| CERTIFICATE_PROOF   | 0xFRAME-TBD3 | {{http-cert-proof}}     |
+| USE_CERTIFICATE     | 0xFRAME-TBD4 | {{http-use-certificate}}|
 +---------------------+--------------+-------------------------+
 ~~~~~~~~~~~~~~~
 {: #fig-frame-table}
@@ -1055,8 +824,7 @@ registered by this document.
 | UNSUPPORTED_CERTIFICATE | 0xERROR-TBD2 | {{errors}}              |
 | CERTIFICATE_REVOKED     | 0xERROR-TBD3 | {{errors}}              |
 | CERTIFICATE_EXPIRED     | 0xERROR-TBD4 | {{errors}}              |
-| BAD_SIGNATURE           | 0xERROR-TBD5 | {{errors}}              |
-| CERTIFICATE_GENERAL     | 0xERROR-TBD6 | {{errors}}              |
+| CERTIFICATE_GENERAL     | 0xERROR-TBD5 | {{errors}}              |
 +-------------------------+--------------+-------------------------+
 ~~~~~~~~~~~~~~~
 {: #fig-error-table}
