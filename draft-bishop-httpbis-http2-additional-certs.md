@@ -465,7 +465,7 @@ value by the other peer does not imply any correlation between their frames.
 
 ## The CERTIFICATE_NEEDED frame {#http-cert-needed}
 
-The `CERTIFICATE_NEEDED` frame (0xFRAME-TBD2) is sent to indicate that
+The `CERTIFICATE_NEEDED` frame (0xFRAME-TBD1) is sent to indicate that
 the HTTP request on the current stream is blocked pending certificate
 authentication. The frame includes a request identifier which can be
 used to correlate the stream with a previous `CERTIFICATE_REQUEST` frame
@@ -502,7 +502,7 @@ not in a valid state SHOULD treat this as a stream error of type
 
 ## The USE_CERTIFICATE Frame {#http-use-certificate}
 
-The `USE_CERTIFICATE` frame (0xFRAME-TBD5) is sent in response to a
+The `USE_CERTIFICATE` frame (0xFRAME-TBD4) is sent in response to a
 `CERTIFICATE_NEEDED` frame to indicate which certificate is being used
 to satisfy the requirement.
 
@@ -549,7 +549,7 @@ defines certificate-related error codes which might be applicable.
 
 TLS 1.3 defines the `CertificateRequest` message, which prompts the client to
 provide a certificate which conforms to certain properties specified by the
-server.  This draft defines the `CERTIFICATE_REQUEST` frame (0xFRAME-TBD1),
+server.  This draft defines the `CERTIFICATE_REQUEST` frame (0xFRAME-TBD2),
 which contains the same contents as a TLS 1.3 `CertificateRequest` message, but
 can be sent over any TLS version.
 
@@ -621,10 +621,10 @@ selection using these certificate extension OIDs.
 
 ## The CERTIFICATE Frame {#http-cert}
 
-The `CERTIFICATE` frame provides a exported authenticator message
-([I-D.sullivan-tls-exported-authenticator]) from the TLS layer that provides a
-chain of certificates, associated extensions and proves possession of the
-private key corresponding to the end-entity certificate.
+The `CERTIFICATE` frame (id=0xFRAME-TBD3) provides a exported authenticator
+message ([I-D.sullivan-tls-exported-authenticator]) from the TLS layer that
+provides a chain of certificates, associated extensions and proves possession of
+the private key corresponding to the end-entity certificate.
 
 The `CERTIFICATE` frame defines one flag:
 
@@ -638,7 +638,6 @@ AUTOMATIC_USE (0x01):
  +-------------------------------+-------------------------------+
  |  Cert-ID (8)  |         Exported Authenticator (*)          ...
  +---------------------------------------------------------------+
-
 ~~~~~~~~~~~~~~~
 {: #fig-proof-frame title="CERTIFICATE frame payload"}
 
@@ -805,17 +804,14 @@ Four new frame types are registered in the "HTTP/2 Frame Types" registry
 established in [RFC7540]. The entries in the following table are
 registered by this document.
 
-~~~~~~~~~~~~
-+---------------------+--------------+-------------------------+
+|---------------------|--------------|-------------------------|
 | Frame Type          | Code         | Specification           |
-+---------------------+--------------+-------------------------+
+|---------------------|--------------|-------------------------|
 | CERTIFICATE_NEEDED  | 0xFRAME-TBD1 | {{http-cert-needed}}    |
 | CERTIFICATE_REQUEST | 0xFRAME-TBD2 | {{http-cert-request}}   |
-| CERTIFICATE   | 0xFRAME-TBD3 | {{http-cert-proof}}     |
+| CERTIFICATE         | 0xFRAME-TBD3 | {{http-cert}}           |
 | USE_CERTIFICATE     | 0xFRAME-TBD4 | {{http-use-certificate}}|
-+---------------------+--------------+-------------------------+
-~~~~~~~~~~~~~~~
-{: #fig-frame-table}
+|---------------------|--------------|-------------------------|
 
 ## New HTTP/2 Error Codes {#iana-errors}
 
@@ -823,18 +819,15 @@ Five new error codes are registered in the "HTTP/2 Error Code" registry
 established in [RFC7540]. The entries in the following table are
 registered by this document.
 
-~~~~~~~~~~~~
-+-------------------------+--------------+-------------------------+
+|-------------------------|--------------|-------------------------|
 | Name                    | Code         | Specification           |
-+-------------------------+--------------+-------------------------+
+|-------------------------|--------------|-------------------------|
 | BAD_CERTIFICATE         | 0xERROR-TBD1 | {{errors}}              |
 | UNSUPPORTED_CERTIFICATE | 0xERROR-TBD2 | {{errors}}              |
 | CERTIFICATE_REVOKED     | 0xERROR-TBD3 | {{errors}}              |
 | CERTIFICATE_EXPIRED     | 0xERROR-TBD4 | {{errors}}              |
 | CERTIFICATE_GENERAL     | 0xERROR-TBD5 | {{errors}}              |
-+-------------------------+--------------+-------------------------+
-~~~~~~~~~~~~~~~
-{: #fig-error-table}
+|-------------------------|--------------|-------------------------|
 
 # Acknowledgements {#ack}
 
