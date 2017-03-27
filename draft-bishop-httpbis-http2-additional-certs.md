@@ -797,8 +797,8 @@ certificate.
 This draft adds entries in three registries.
 
 The HTTP/2 `SETTINGS_HTTP_CERT_AUTH` setting is registered in {{iana-setting}}.
-Five frame types are registered in {{iana-frame}}.  Six error codes are registered
-in {{iana-errors}}.
+Four frame types are registered in {{iana-frame}}.  Six error codes are
+registered in {{iana-errors}}.
 
 ## HTTP/2 SETTINGS_HTTP_CERT_AUTH Setting {#iana-setting}
 
