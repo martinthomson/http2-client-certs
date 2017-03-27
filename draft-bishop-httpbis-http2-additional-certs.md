@@ -715,19 +715,34 @@ layer.
 
 # Security Considerations {#security}
 
-This mechanism defines an alternate way to obtain server and client
-certificates other than in the initial TLS handshake. While the signature of
-exported authenticator values is expected to be equally secure, it is
-important to recognize that a vulnerability in this code path is at least
-equal to a vulnerability in the TLS handshake.
+This mechanism defines an alternate way to obtain server and client certificates
+other than in the initial TLS handshake. While the signature of exported
+authenticator values is expected to be equally secure, it is important to
+recognize that a vulnerability in this code path is at least equal to a
+vulnerability in the TLS handshake.
 
-This could also increase the impact of a key compromise. Rather than
-needing to subvert DNS or IP routing in order to use a compromised
-certificate, a malicious server now only needs a client to connect to
-*some* HTTPS site under its control. Clients SHOULD continue to validate
-that destination IP addresses are valid for the origin either by direct
-DNS resolution or resolution of a validated Alternative Service. (Future
-work could include a mechanism for a server to offer proofs.)
+## Impersonation
+
+This mechanism could increase the impact of a key compromise. Rather than
+needing to subvert DNS or IP routing in order to use a compromised certificate,
+a malicious server now only needs a client to connect to *some* HTTPS site under
+its control in order to present the compromised certificate. Clients MUST
+continue to validate that the destination IP address is valid for the origin
+either by direct DNS resolution or resolution of a validated Alternative
+Service. (Future work could include a mechanism for a server to offer proofs.)
+
+As noted in the Security Considerations of
+[I-D.sullivan-tls-exported-authenticator], it difficult to formally prove that
+an endpoint is jointly authoritative over multiple certificates, rather than
+individually authoritative on each certificate.  As a result, clients MUST NOT
+assume that because one origin was previously colocated with another, those
+origins will be reachable via the same endpoints in the future.  Clients MUST
+NOT consider previous secondary certificates to be validated after TLS session
+resumption.  However, clients MAY query for previously-presented secondary
+certificates after first repeating the validation of the endpoint's IP address
+against fresh DNS and Alt-Svc information.
+
+## Fingerprinting
 
 This draft defines a mechanism which could be used to probe servers for
 origins they support, but opens no new attack versus making repeat TLS
@@ -735,17 +750,35 @@ connections with different SNI values. Servers SHOULD impose similar
 denial-of-service mitigations (e.g. request rate limits) to
 `CERTIFICATE_REQUEST` frames as to new TLS connections.
 
-While the `CERTIFICATE_REQUEST` frame permits the sender to enumerate
-the acceptable Certificate Authorities for the requested certificate, it
-might not be prudent (either for security or data consumption) to
-include the full list of trusted Certificate Authorities in every
-request. Senders, particularly clients, are advised to send an empty
-`Certificate-Authorities` element unless they are expecting a
-certificate to be signed by a particular CA or small set of CAs.
+While the `CERTIFICATE_REQUEST` frame permits the sender to enumerate the
+acceptable Certificate Authorities for the requested certificate, it might not
+be prudent (either for security or data consumption) to include the full list of
+trusted Certificate Authorities in every request. Senders, particularly clients,
+SHOULD send an empty `Certificate-Authorities` element unless they are expecting
+a certificate to be signed by a particular CA or one of a small set of CAs.
+
+## Denial of Service
 
 Failure to provide a certificate on a stream after receiving
-`CERTIFICATE_NEEDED` blocks processing, and SHOULD be subject
-to standard timeouts used to guard against unresponsive peers.
+`CERTIFICATE_NEEDED` blocks processing, and SHOULD be subject to standard
+timeouts used to guard against unresponsive peers.
+
+Validating a multitude of signatures can be computationally expensive, while
+generating an invalid signature is computationally cheap. Implementations will
+require checks for attacks from this direction. Signature proofs SHOULD NOT be
+validated until a stream requires the certificate to make progress. A signature
+which is not valid based on the asserted public key SHOULD be treated as a
+session error, to avoid further attacks from the peer, though an implementation
+MAY instead disable HTTP-layer certificates for the current connection instead.
+
+## Confusion About State
+
+Implementations need to be aware of the potential for confusion about
+the state of a connection. The presence or absence of a validated
+certificate can change during the processing of a request, potentially
+multiple times, as `USE_CERTIFICATE` frames are received. A server that
+uses certificate authentication needs to be prepared to reevaluate the
+authorization state of a request as the set of certificates changes.
 
 Client implementations need to carefully consider the impact of setting
 the `AUTOMATIC_USE` flag. This flag is a performance optimization,
@@ -758,23 +791,6 @@ flag on any certificate which is not appropriate for currently-in-flight
 requests, and MUST NOT make any future requests on the same connection
 which they are not willing to have associated with the provided
 certificate.
-
-Implementations need to be aware of the potential for confusion about
-the state of a connection. The presence or absence of a validated
-certificate can change during the processing of a request, potentially
-multiple times, as `USE_CERTIFICATE` frames are received. A server that
-uses certificate authentication needs to be prepared to reevaluate the
-authorization state of a request as the set of certificates changes.
-
-Finally, validating a multitude of signatures can be computationally
-expensive, while generating an invalid signature is computationally
-cheap. Implementations will require checks against attacks from this
-direction. Signature proofs SHOULD NOT be validated until a stream
-requires the certificate to make progress. A signature which is not
-valid based on the asserted public key SHOULD be treated as a session
-error, to avoid further attacks from the peer, though an implementation
-MAY instead disable HTTP-layer certificates for the current connection
-instead.
 
 # IANA Considerations {#iana}
 
