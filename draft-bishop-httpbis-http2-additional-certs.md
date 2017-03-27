@@ -15,13 +15,16 @@ pi: [toc, sortrefs, symrefs]
 
 author:
  -
-    ins: M. Bishop
     name: Mike Bishop
     organization: Microsoft
     email: michael.bishop@microsoft.com
 
  -
-    ins: M. Thomson
+    name: Nick Sullivan
+    organization: Cloudflare
+    email: nick@cloudflare.com
+
+ -
     name: Martin Thomson
     organization: Mozilla
     email: martin.thomson@gmail.com
