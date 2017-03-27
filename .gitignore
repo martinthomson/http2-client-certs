@@ -10,3 +10,4 @@ venv/
 issues.json
 draft-*.xml
 lib
+.targets.mk
