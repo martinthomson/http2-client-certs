@@ -45,6 +45,7 @@ normative:
     seriesinfo:
         ISO: ISO/IEC 8825-1:2002
   I-D.ietf-tls-tls13:
+  I-D.sullivan-tls-exported-authenticator:
 
 informative:
   I-D.nottingham-httpbis-origin-frame:
@@ -84,7 +85,7 @@ authentication, but have different requirements based on the content the
 client is attempting to access.
 
 This document describes a how TLS exported authenticators
-[I-D.draft-sullivan-tls-exported-authenticator]
+[I-D.sullivan-tls-exported-authenticator]
 can be used to provide proof of ownership of additional certificates to
 the HTTP layer to support both scenarios.
 
@@ -202,7 +203,8 @@ elided from the figure for the sake of brevity.
 The critical messages for this example are the server requesting a certificate
 with a TLS CertificateRequest (\*3); this request might use information about
 the request or resource.  The client then provides a certificate and proof of
-possession of the private key in Certificate and CertificateVerify messages (\*4).
+possession of the private key in Certificate and CertificateVerify messages
+(\*4).
 
 When the handshake completes, the server performs any authorization checks a
 second time.  With the client certificate available, it then authorizes the
@@ -220,7 +222,8 @@ enables.
 Client                                      Server
    -- (HTTP) GET /protected ------------------->
    <---------------- (TLS) CertificateRequest --
-   -- (TLS) Certificate, CertificateVerify ---->
+   -- (TLS) Certificate, CertificateVerify,
+               Finished ----------------------->
    <--------------------------- (HTTP) 200 OK --
 ~~~
 {: #ex-tls13 title="HTTP/1.1 Reactive Certificate Authentication with TLS 1.3"}
@@ -257,25 +260,34 @@ protocol like HTTP/2.
 
 ## HTTP-Layer Certificate Authentication
 
-This draft proposes bringing a request/response mechanism that is equivalent
-to the the TLS 1.3 CertificateRequest, Certificate, CertificateVerify and
-Finished messages into HTTP/2 frames, enabling certificate-based authentication
-of both clients and servers independent of TLS version. This mechanism can be
-implemented at the HTTP layer without breaking the existing interface between
-HTTP and applications above it.
+This draft defines HTTP/2 frames to carry the relevant certificate messages,
+enabling certificate-based authentication of both clients and servers
+independent of TLS version. This mechanism can be implemented at the HTTP layer
+without breaking the existing interface between HTTP and applications above it.
 
-This could be done in a naive manner by replicating the messages as
-HTTP/2 frames on each stream. However, this would create needless
-redundancy between streams and require frequent expensive signing
-operations. Instead, this draft lifts the bulky portions of each message
-into frames on stream zero and permits the on-stream frames to
-incorporate them by reference as needed.
+This could be done in a naive manner by replicating the TLS messages as HTTP/2
+frames on each stream. However, this would create needless redundancy between
+streams and require frequent expensive signing operations. Instead, TLS Exported
+Authenticators [I-D.sullivan-tls-exported-authenticators] are exchanged on
+stream zero and the on-stream frames incorporate them by reference as needed.
 
-Certificate chains, with proof-of-possession of the corresponding
-private key, can be supplied into a collection of available
-certificates. Likewise, descriptions of desired certificates can be
-supplied into these collections. These pre-supplied elements are then
-available for automatic use (in some situations) or for reference by
+TLS Exported Authenticators are structured messages that can be exported by
+either party of a TLS connection and validated by the other party. An
+authenticator message can be constructed by either the client or the server
+given an established TLS connection, a certificate, and a corresponding private
+key.  Exported Authenticators use the message structures from section 4.4 of
+[I-D.ietf-tls-tls13], but different parameters.
+
+Each Authenticator is computed using a Handshake Context and Finished MAC Key
+derived from the TLS session.  The Handshake Context is identical for both
+parties of the TLS connection, while the Finished MAC Key is dependent on
+whether the Authenticator is created by the client or the server.
+
+Successfully verified Authenticators result in certificate chains, with verified
+possession of the corresponding private key, which can be supplied into a
+collection of available certificates. Likewise, descriptions of desired
+certificates can be supplied into these collections. These pre-supplied elements
+are then available for automatic use (in some situations) or for reference by
 individual streams.
 
 {{discovery}} describes how the feature is employed, defining means to
@@ -293,16 +305,15 @@ RFC 2119 [RFC2119] defines the terms "MUST", "MUST NOT", "SHOULD" and "MAY".
 
 # Discovering Additional Certificates at the HTTP/2 Layer {#discovery}
 
-A certificate chain with proof of possesion of the private key corresponding
-to the end-entity certificate is sent as a single of `CERTIFICATE_PROOF` frame (see
-{{http-cert-proof}}) on stream zero. Once the holder of a certificate
-has sent the chain and proof, this certificate chain is cached by the
-recipient and available for future use. If the certificate is marked as
-`AUTOMATIC_USE`, the certificate may be used by the recipient to
-authorize any current or future request. Otherwise, the recipient
-requests the required certificate on each stream, but the
-previously-supplied certificates are available for reference without
-having to resend them.
+A certificate chain with proof of possesion of the private key corresponding to
+the end-entity certificate is sent as a single `CERTIFICATE` frame (see
+{{http-cert}}) on stream zero. Once the holder of a certificate has sent the
+chain and proof, this certificate chain is cached by the recipient and available
+for future use. If the certificate is marked as `AUTOMATIC_USE`, the certificate
+may be used by the recipient to authorize any current or future request.
+Otherwise, the recipient requests the required certificate on each stream, but
+the previously-supplied certificates are available for reference without having
+to resend them.
 
 Likewise, the details of a request are sent on stream zero and stored by
 the recipient. These details will be referenced by subsequent
@@ -340,7 +351,7 @@ by future `USE_CERTIFICATE` frames.
 
 ~~~
 Client                                      Server
-   <-- (stream 0) CERTIFICATE_PROOF (AU flag) --
+   <-- (stream 0) CERTIFICATE (AU flag) --
    ...
    -- (stream N) GET /from-new-origin --------->
    <----------------------- (stream N) 200 OK --
@@ -350,7 +361,7 @@ Client                                      Server
 
 ~~~
 Client                                      Server
-   -- (stream 0) CERTIFICATE_PROOF (AU flag) -->
+   -- (stream 0) CERTIFICATE (AU flag) -->
    -- (streams 1,3) GET /protected ------------>
    <-------------------- (streams 1,3) 200 OK --
 
@@ -362,14 +373,6 @@ parameters of a certificate they might request in the future.  It
 is important to note that this does not currently request such a
 certificate, but makes the contents of the request available for
 reference by a future `CERTIFICATE_NEEDED` frame.
-
-Because certificates can be large and each `CERTIFICATE_PROOF` requires
-a signing operation, the server MAY instead send an `ORIGIN` frame
-including origins which are not in its TLS certificate. This represents
-an explicit claim by the server to possess the appropriate certificate
--- a claim the client MUST verify using the procedures in
-{{cert-challenge}} before relying on the server's authority for the
-claimed origin.
 
 ## Requiring certificate authentication {#cert-challenge}
 
@@ -409,7 +412,7 @@ Client                                      Server
    -- (stream 0) CERTIFICATE_REQUEST ---------->
    ...
    -- (stream N) CERTIFICATE_NEEDED --------->
-   <------------ (stream 0) CERTIFICATE_PROOF --
+   <------------ (stream 0) CERTIFICATE --
    <-------------- (stream N) USE_CERTIFICATE --
    -- (stream N) GET /from-new-origin --------->
    <----------------------- (stream N) 200 OK --
@@ -429,8 +432,8 @@ Client                                      Server
    <---------- (stream 0) CERTIFICATE_REQUEST --
    ...
    -- (stream N) GET /protected --------------->
-   <--------- (stream N) CERTIFICATE_NEEDED --
-   -- (stream 0) CERTIFICATE_PROOF ------------>
+   <----------- (stream N) CERTIFICATE_NEEDED --
+   -- (stream 0) CERTIFICATE ------------------>
    -- (stream N) USE_CERTIFICATE -------------->
    <----------------------- (stream N) 200 OK --
 
@@ -454,10 +457,10 @@ correlated by their `Request-ID` field. Subsequent
 sent on other streams where the sender is expecting a certificate with
 the same parameters.
 
-The `CERTIFICATE_PROOF`, and `USE_CERTIFICATE` frames are
-correlated by their `Cert-ID` field. Subsequent `USE_CERTIFICATE` frames
-with the same `Cert-ID` MAY be sent in response to other
-`CERTIFICATE_NEEDED` frames and refer to the same certificate.
+The `CERTIFICATE`, and `USE_CERTIFICATE` frames are correlated by their
+`Cert-ID` field. Subsequent `USE_CERTIFICATE` frames with the same `Cert-ID` MAY
+be sent in response to other `CERTIFICATE_NEEDED` frames and refer to the same
+certificate.
 
 `Request-ID` and `Cert-ID` are sender-local, and the use of the same
 value by the other peer does not imply any correlation between their frames.
@@ -514,51 +517,50 @@ for servers or routing the request to a new connection for clients.
 Otherwise, the `USE_CERTIFICATE` frame contains the `Cert-ID` of the
 certificate the sender wishes to use. This MUST be the ID of a
 certificate for which proof of possession has been presented in a
-`CERTIFICATE_PROOF` frame. Recipients of a `USE_CERTIFICATE` frame of
+`CERTIFICATE` frame. Recipients of a `USE_CERTIFICATE` frame of
 any other length MUST treat this as a stream error of type
 `PROTOCOL_ERROR`. Frames with identical certificate identifiers refer to
 the same certificate chain.
 
-The `USE_CERTIFICATE` frame MUST NOT be sent on stream zero or a stream
-on which a `CERTIFICATE_NEEDED` frame has not been received. Receipt of
-a `USE_CERTIFICATE` frame in these circmustances SHOULD be treated as
-a stream error of type `PROTOCOL_ERROR`. Each `USE_CERTIFICATE` frame
-should reference a preceding `CERTIFICATE_PROOF` frame. Receipt of a
-`USE_CERTIFICATE` frame before the necessary frames have been received
-on stream zero MUST also result in a stream error of type `PROTOCOL_ERROR`.
+The `USE_CERTIFICATE` frame MUST NOT be sent on stream zero or a stream on which
+a `CERTIFICATE_NEEDED` frame has not been received. Receipt of a
+`USE_CERTIFICATE` frame in these circmustances SHOULD be treated as a stream
+error of type `PROTOCOL_ERROR`. Each `USE_CERTIFICATE` frame should reference a
+preceding `CERTIFICATE` frame. Receipt of a `USE_CERTIFICATE` frame before the
+necessary frames have been received on stream zero MUST also result in a stream
+error of type `PROTOCOL_ERROR`.
 
 The referenced certificate chain MUST conform to the requirements
 expressed in the `CERTIFICATE_REQUEST` to the best of the sender's
 ability. Specifically:
 
-  - If the `CERTIFICATE_REQUEST` contained a non-empty `Certificate-Authorities`
-    element, one of the certificates in the chain SHOULD be signed by one of the
-    listed CAs.
+- If the `CERTIFICATE_REQUEST` contained a non-empty `Certificate-Authorities`
+  element, one of the certificates in the chain SHOULD be signed by one of the
+  listed CAs.
 
-  - If the `CERTIFICATE_REQUEST` contained a non-empty `Cert-Extensions` element,
-    the first certificate MUST match with regard to the extension OIDs recognized
-    by the sender.
+- If the `CERTIFICATE_REQUEST` contained a non-empty `Cert-Extensions` element,
+  the end-entity certificate MUST match with regard to the extension OIDs
+  recognized by the sender.
 
-If these requirements are not satisfied, the recipient MAY at its
-discretion either return an error at the HTTP semantic layer, or respond
-with a stream error {{RFC7540}} on any stream where the certificate is
-used. {{errors}} defines certificate-related error codes which might be
-applicable.
+If these requirements are not satisfied, the recipient MAY at its discretion
+either return an error at the HTTP semantic layer, or respond with a stream
+error {{RFC7540}} on any stream where the certificate is used. {{errors}}
+defines certificate-related error codes which might be applicable.
 
 ## The CERTIFICATE_REQUEST Frame {#http-cert-request}
 
 TLS 1.3 defines the `CertificateRequest` message, which prompts the client to
 provide a certificate which conforms to certain properties specified by the
-server.  This draft defines the `CERTIFICATE_REQUEST` frame (0xFRAME-TBD1), which
-contains the same contents as a TLS 1.3 `CertificateRequest` message, but can
-be sent over any TLS version.
+server.  This draft defines the `CERTIFICATE_REQUEST` frame (0xFRAME-TBD1),
+which contains the same contents as a TLS 1.3 `CertificateRequest` message, but
+can be sent over any TLS version.
 
-The `CERTIFICATE_REQUEST` frame SHOULD NOT be sent to a peer which has
-not advertised support for HTTP-layer certificate authentication.
+The `CERTIFICATE_REQUEST` frame SHOULD NOT be sent to a peer which has not
+advertised support for HTTP-layer certificate authentication.
 
-The `CERTIFICATE_REQUEST` frame MUST be sent on stream zero.  A `CERTIFICATE_REQUEST`
-frame received on any other stream MUST be rejected with a stream error of type
-`PROTOCOL_ERROR`.
+The `CERTIFICATE_REQUEST` frame MUST be sent on stream zero.  A
+`CERTIFICATE_REQUEST` frame received on any other stream MUST be rejected with a
+stream error of type `PROTOCOL_ERROR`.
 
 ~~~~~~~~~~~~~~~
   0                   1                   2                   3
@@ -619,51 +621,59 @@ extension values are not necessarily bitwise-equal. It is expected that
 implementations will rely on their PKI libraries to perform certificate
 selection using these certificate extension OIDs.
 
-## The CERTIFICATE_PROOF Frame {#http-cert-proof}
+## The CERTIFICATE Frame {#http-cert}
 
-The `CERTIFICATE_PROOF` frame provides a exported authenticator message
-from the TLS layer that provides a chain of certificates, associated
-extensions and proves possession of the private key corresponding
-to the end-entity certificate.
+The `CERTIFICATE` frame provides a exported authenticator message
+([I-D.sullivan-tls-exported-authenticators]) from the TLS layer that provides a
+chain of certificates, associated extensions and proves possession of the
+private key corresponding to the end-entity certificate.
 
-The `CERTIFICATE_PROOF` frame defines one flag:
+The `CERTIFICATE` frame defines one flag:
 
 AUTOMATIC_USE (0x01):
 : Indicates that the certificate can be used automatically on future
-requests.
+  requests.
 
 ~~~~~~~~~~~~
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- |  Cert-ID (8)  |         Exported Authenticator(*)...
+ |  Cert-ID (8)  |         Exported Authenticator (*)          ...
  +---------------------------------------------------------------+
 
 ~~~~~~~~~~~~~~~
-{: #fig-proof-frame title="CERTIFICATE_PROOF frame payload"}
+{: #fig-proof-frame title="CERTIFICATE frame payload"}
 
-The `CERTIFICATE_PROOF` frame (0xFRAME-TBD4) contains an
-`Exported Authenticator` field which corresponds to the value returned
-from the TLS connection exported authenticator API when provided with
-a certificate, a valid certificate chain for the connection and
-associated extensions (OCSP, SCT, etc.), and a connection-unique 8-byte
-certificate_request_context value.
+The `CERTIFICATE` frame (0xFRAME-TBD4) contains an `Exported Authenticator`
+field which corresponds to the value returned from the TLS connection exported
+authenticator API when provided with a certificate, a valid certificate chain
+for the connection and associated extensions (OCSP, SCT, etc.), and a
+connection-unique 8-byte certificate_request_context value.
 
 If the `AUTOMATIC_USE` flag is set, the recipient MAY omit sending
 `CERTIFICATE_NEEDED` frames on future streams which would require a
 similar certificate and use the referenced certificate for
 authentication without further notice to the holder. This behavior is
 optional, and receipt of a `CERTIFICATE_NEEDED` frame does not imply
-that previously-presented certificates were unacceptable, even if 
+that previously-presented certificates were unacceptable, even if
 `AUTOMATIC_USE` was set. Servers MUST set the `AUTOMATIC_USE` flag when
-sending a `CERTIFICATE_PROOF` frame. A server MUST NOT send certificates
+sending a `CERTIFICATE` frame. A server MUST NOT send certificates
 for origins which it is not prepared to service on the current
 connection.
 
-Upon recieving a CERTIFICATE_PROOF frame, the reciever may validate
-the Exported Authenticator value by using the exported authenticator API.
-This return either an error indicating that the message was invalid,
-or the certificate chain and extensions used to create the message.
+Upon recieving a CERTIFICATE frame, the reciever may validate the Exported
+Authenticator value by using the exported authenticator API. This returns either
+an error indicating that the message was invalid, or the certificate chain and
+extensions used to create the message.
+
+It is possible that a large certificate chain might be too large to fit in a
+single HTTP/2 frame (see [RFC7540] section 4.2).  Senders unable to transfer a
+requested certificate due to the recipient's `SETTINGS_MAX_FRAME_SIZE` value
+SHOULD terminate affected streams with `CERTIFICATE_TOO_LARGE`.
+
+The `CERTIFICATE` frame MUST be sent on stream zero.  A `CERTIFICATE` frame
+received on any other stream MUST be rejected with a stream error of type
+`PROTOCOL_ERROR`.
 
 # Indicating failures during HTTP-Layer Certificate Authentication {#errors}
 
@@ -674,12 +684,12 @@ framing layer. In this section, those errors are restated and added to
 the HTTP/2 error code registry.
 
 BAD_CERTIFICATE (0xERROR-TBD1):
-:  A certificate was corrupt, contained signatures
-   that did not verify correctly, etc.
+:  A certificate was corrupt, contained signatures that did not verify
+   correctly, etc.
 
 UNSUPPORTED_CERTIFICATE (0xERROR-TBD2):
 : A certificate was of an unsupported type or did not contain required
-extensions
+  extensions
 
 CERTIFICATE_REVOKED (0xERROR-TBD3):
 :  A certificate was revoked by its signer
@@ -689,20 +699,19 @@ CERTIFICATE_EXPIRED (0xERROR-TBD4):
 
 CERTIFICATE_TOO_LARGE (0xERROR-TBD5):
 :  The certificate cannot be transferred due to the recipient's
-`SETTINGS_MAX_FRAME_SIZE`
+   `SETTINGS_MAX_FRAME_SIZE`
 
 CERTIFICATE_GENERAL (0xERROR-TBD6):
 :  Any other certificate-related error
 
-As described in [RFC7540], implementations MAY choose to treat a stream
-error as a connection error at any time. Of particular note, a stream
-error cannot occur on stream 0, which means that implementations cannot
-send non-session errors in response to `CERTIFICATE_REQUEST`, and
-`CERTIFICATE_PROOF` frames. Implementations which do not wish to
-terminate the connection MAY either send relevant errors on
-any stream which references the failing certificate in question or
-process the requests as unauthenticated and provide error information at
-the HTTP semantic layer.
+As described in [RFC7540], implementations MAY choose to treat a stream error as
+a connection error at any time. Of particular note, a stream error cannot occur
+on stream 0, which means that implementations cannot send non-session errors in
+response to `CERTIFICATE_REQUEST`, and `CERTIFICATE` frames. Implementations
+which do not wish to terminate the connection MAY either send relevant errors on
+any stream which references the failing certificate in question or process the
+requests as unauthenticated and provide error information at the HTTP semantic
+layer.
 
 # Security Considerations {#security}
 
@@ -804,7 +813,7 @@ registered by this document.
 +---------------------+--------------+-------------------------+
 | CERTIFICATE_NEEDED  | 0xFRAME-TBD1 | {{http-cert-needed}}    |
 | CERTIFICATE_REQUEST | 0xFRAME-TBD2 | {{http-cert-request}}   |
-| CERTIFICATE_PROOF   | 0xFRAME-TBD3 | {{http-cert-proof}}     |
+| CERTIFICATE   | 0xFRAME-TBD3 | {{http-cert-proof}}     |
 | USE_CERTIFICATE     | 0xFRAME-TBD4 | {{http-use-certificate}}|
 +---------------------+--------------+-------------------------+
 ~~~~~~~~~~~~~~~
