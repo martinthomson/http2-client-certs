@@ -353,7 +353,7 @@ by future `USE_CERTIFICATE` frames.
 
 ~~~
 Client                                      Server
-   <-- (stream 0) CERTIFICATE (AU flag) --
+   <-------- (stream 0) CERTIFICATE (AU flag) --
    ...
    -- (stream N) GET /from-new-origin --------->
    <----------------------- (stream N) 200 OK --
@@ -363,7 +363,7 @@ Client                                      Server
 
 ~~~
 Client                                      Server
-   -- (stream 0) CERTIFICATE (AU flag) -->
+   -- (stream 0) CERTIFICATE (AU flag) -------->
    -- (streams 1,3) GET /protected ------------>
    <-------------------- (streams 1,3) 200 OK --
 
