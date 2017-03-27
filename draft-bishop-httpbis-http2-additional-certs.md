@@ -412,8 +412,8 @@ current connection.
 Client                                      Server
    -- (stream 0) CERTIFICATE_REQUEST ---------->
    ...
-   -- (stream N) CERTIFICATE_NEEDED --------->
-   <------------ (stream 0) CERTIFICATE --
+   -- (stream N) CERTIFICATE_NEEDED ----------->
+   <------------------ (stream 0) CERTIFICATE --
    <-------------- (stream N) USE_CERTIFICATE --
    -- (stream N) GET /from-new-origin --------->
    <----------------------- (stream N) 200 OK --
