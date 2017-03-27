@@ -2,7 +2,7 @@
 title: Secondary Certificate Authentication in HTTP/2
 abbrev: Secondary Cert Auth in HTTP/2
 docname: draft-bishop-httpbis-http2-additional-certs-latest
-date: 2016
+date: {DATE}
 category: std
 
 ipr: trust200902
@@ -49,7 +49,7 @@ normative:
 
 informative:
   I-D.nottingham-httpbis-origin-frame:
-  I-D.ietf-httpbis-alt-svc:
+  RFC7838:
   RFC2560:
   RFC6962:
   FIPS-186-4:
@@ -117,7 +117,7 @@ resolves the origin to the IP address of the server and (for TLS) if the
 certificate presented by the server contains the origin in the Subject
 Alternative Names field.
 
-[I-D.ietf-httpbis-alt-svc] enables a step of abstraction from the DNS
+[RFC7838] enables a step of abstraction from the DNS
 resolution. If both hosts have provided an Alternative Service at
 hostnames which resolve to the IP address of the server, they are
 considered authoritative just as if DNS resolved the origin itself to
@@ -268,7 +268,7 @@ without breaking the existing interface between HTTP and applications above it.
 This could be done in a naive manner by replicating the TLS messages as HTTP/2
 frames on each stream. However, this would create needless redundancy between
 streams and require frequent expensive signing operations. Instead, TLS Exported
-Authenticators [I-D.sullivan-tls-exported-authenticators] are exchanged on
+Authenticators [I-D.sullivan-tls-exported-authenticator] are exchanged on
 stream zero and the on-stream frames incorporate them by reference as needed.
 
 TLS Exported Authenticators are structured messages that can be exported by
@@ -377,7 +377,7 @@ reference by a future `CERTIFICATE_NEEDED` frame.
 ## Requiring certificate authentication {#cert-challenge}
 
 As defined in [RFC7540], when a client finds that a https:// origin (or
-Alternative Service [I-D.ietf-httpbis-alt-svc]) to which it needs to
+Alternative Service [RFC7838]) to which it needs to
 make a request has the same IP address as a server to which it is
 already connected, it MAY check whether the TLS certificate provided
 contains the new origin as well, and if so, reuse the connection.
@@ -624,7 +624,7 @@ selection using these certificate extension OIDs.
 ## The CERTIFICATE Frame {#http-cert}
 
 The `CERTIFICATE` frame provides a exported authenticator message
-([I-D.sullivan-tls-exported-authenticators]) from the TLS layer that provides a
+([I-D.sullivan-tls-exported-authenticator]) from the TLS layer that provides a
 chain of certificates, associated extensions and proves possession of the
 private key corresponding to the end-entity certificate.
 
