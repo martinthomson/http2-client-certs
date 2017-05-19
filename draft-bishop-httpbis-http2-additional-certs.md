@@ -86,7 +86,7 @@ connection. Similarly, servers may require clients to present
 authentication, but have different requirements based on the content the
 client is attempting to access.
 
-This document describes a how TLS exported authenticators
+This document describes how TLS exported authenticators
 [I-D.ietf-tls-exported-authenticator] can be used to provide proof of ownership
 of additional certificates to the HTTP layer to support both scenarios.
 
