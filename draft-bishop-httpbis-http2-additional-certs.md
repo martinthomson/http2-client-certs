@@ -48,7 +48,7 @@ normative:
     seriesinfo:
         ISO: ISO/IEC 8825-1:2002
   I-D.ietf-tls-tls13:
-  I-D.sullivan-tls-exported-authenticator:
+  I-D.ietf-tls-exported-authenticator:
 
 informative:
   RFC7838:
@@ -87,18 +87,17 @@ authentication, but have different requirements based on the content the
 client is attempting to access.
 
 This document describes a how TLS exported authenticators
-[I-D.sullivan-tls-exported-authenticator]
-can be used to provide proof of ownership of additional certificates to
-the HTTP layer to support both scenarios.
+[I-D.ietf-tls-exported-authenticator] can be used to provide proof of ownership
+of additional certificates to the HTTP layer to support both scenarios.
 
 --- middle
 
 # Introduction
 
-HTTP clients need to know that the content they receive on a connection comes from
-the origin that they intended to retrieve in from.
-The traditional form of server authentication in HTTP has been in the form of
-X.509 certificates provided during the TLS [RFC5246][I-D.ietf-tls-tls13] handshake.
+HTTP clients need to know that the content they receive on a connection comes
+from the origin that they intended to retrieve in from. The traditional form of
+server authentication in HTTP has been in the form of X.509 certificates
+provided during the TLS [RFC5246][I-D.ietf-tls-tls13] handshake.
 
 Many existing HTTP [RFC7230] servers also have authentication requirements
 for the resources they serve.  Of the bountiful authentication options
@@ -106,9 +105,9 @@ available for authenticating HTTP requests, client certificates present a unique
 challenge for resource-specific authentication requirements because of the
 interaction with the underlying TLS layer.
 
-TLS 1.2 [RFC5246] supports one server and one client certificate on a connection.
-These certificates may contain multiple identities, but only one certificate may be
-provided.
+TLS 1.2 [RFC5246] supports one server and one client certificate on a
+connection. These certificates may contain multiple identities, but only one
+certificate may be provided.
 
 ## Server Certificate Authentication
 
@@ -252,13 +251,13 @@ authentication in HTTP/2 is an identifier that can be use to correlate an HTTP
 request with a request for a certificate.  Since streams are used for individual
 requests, correlation with a stream is sufficient.
 
-[RFC7540] prohibits renegotiation after any application data has been sent.  This
-completely blocks reactive certificate authentication in HTTP/2 using TLS 1.2.
-If this restriction were relaxed by an extension or update to HTTP/2,
-such an identifier could be added to TLS 1.2 by means of an extension to TLS.
+[RFC7540] prohibits renegotiation after any application data has been sent.
+This completely blocks reactive certificate authentication in HTTP/2 using TLS
+1.2. If this restriction were relaxed by an extension or update to HTTP/2, such
+an identifier could be added to TLS 1.2 by means of an extension to TLS.
 Unfortunately, many TLS 1.2 implementations do not permit application data to
-continue during a renegotiation. This is problematic for a multiplexed
-protocol like HTTP/2.
+continue during a renegotiation. This is problematic for a multiplexed protocol
+like HTTP/2.
 
 ## HTTP-Layer Certificate Authentication
 
@@ -270,7 +269,7 @@ without breaking the existing interface between HTTP and applications above it.
 This could be done in a naive manner by replicating the TLS messages as HTTP/2
 frames on each stream. However, this would create needless redundancy between
 streams and require frequent expensive signing operations. Instead, TLS Exported
-Authenticators [I-D.sullivan-tls-exported-authenticator] are exchanged on
+Authenticators [I-D.ietf-tls-exported-authenticator] are exchanged on
 stream zero and the on-stream frames incorporate them by reference as needed.
 
 TLS Exported Authenticators are structured messages that can be exported by
@@ -292,13 +291,13 @@ certificates can be supplied into these collections. These pre-supplied elements
 are then available for automatic use (in some situations) or for reference by
 individual streams.
 
-{{discovery}} describes how the feature is employed, defining means to
-detect support in peers ({{setting}}), make certificates and requests
-available ({{cert-available}}), and indicate when streams are blocked
-waiting on an appropriate certificate ({{cert-challenge}}).
-{{certs-http2}} defines the required frame types, which parallel the TLS
-1.3 message exchange. Finally, {{errors}} defines new error types which
-can be used to notify peers when the exchange has not been successful.
+{{discovery}} describes how the feature is employed, defining means to detect
+support in peers ({{setting}}), make certificates and requests available
+({{cert-available}}), and indicate when streams are blocked waiting on an
+appropriate certificate ({{cert-challenge}}). {{certs-http2}} defines the
+required frame types, which parallel the TLS 1.3 message exchange. Finally,
+{{errors}} defines new error types which can be used to notify peers when the
+exchange has not been successful.
 
 ## Terminology
 
@@ -625,7 +624,7 @@ selection using these certificate extension OIDs.
 ## The CERTIFICATE Frame {#http-cert}
 
 The `CERTIFICATE` frame (id=0xFRAME-TBD3) provides a exported authenticator
-message ([I-D.sullivan-tls-exported-authenticator]) from the TLS layer that
+message ([I-D.ietf-tls-exported-authenticator]) from the TLS layer that
 provides a chain of certificates, associated extensions and proves possession of
 the private key corresponding to the end-entity certificate.
 
@@ -732,7 +731,7 @@ either by direct DNS resolution or resolution of a validated Alternative
 Service. (Future work could include a mechanism for a server to offer proofs.)
 
 As noted in the Security Considerations of
-[I-D.sullivan-tls-exported-authenticator], it difficult to formally prove that
+[I-D.ietf-tls-exported-authenticator], it difficult to formally prove that
 an endpoint is jointly authoritative over multiple certificates, rather than
 individually authoritative on each certificate.  As a result, clients MUST NOT
 assume that because one origin was previously colocated with another, those
