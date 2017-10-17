@@ -33,12 +33,10 @@ author:
 normative:
   RFC2119:
   RFC2459:
-  RFC5705:
   RFC5246:
   RFC5280:
   RFC7230:
   RFC7540:
-  RFC7627:
   X690:
     target: http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf
     title: "Information technology - ASN.1 encoding Rules: Specification of Basic Encoding Rules (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules (DER)"
@@ -53,18 +51,6 @@ normative:
 informative:
   I-D.ietf-httpbis-origin-frame:
   RFC7838:
-  RFC2560:
-  RFC6962:
-  FIPS-186-4:
-    target: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf
-    title: "Digital Signature Standard (DSS)"
-    author:
-        org: National Institute of Standards and Technology
-    date: 2013-07
-    seriesinfo:
-        FIPS: 186-4
-  I-D.josefsson-eddsa-ed25519:
-  PKCS.1.1991:
 
 
 --- abstract
