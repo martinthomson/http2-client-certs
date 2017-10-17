@@ -51,7 +51,7 @@ normative:
   I-D.ietf-tls-exported-authenticator:
 
 informative:
-  I-D.nottingham-httpbis-origin-frame:
+  I-D.ietf-httpbis-origin-frame:
   RFC7838:
   RFC2560:
   RFC6962:
@@ -125,6 +125,10 @@ hostnames which resolve to the IP address of the server, they are
 considered authoritative just as if DNS resolved the origin itself to
 that address. However, the server's one TLS certificate is still
 required to contain the name of each origin in question.
+
+[I-D.ietf-httpbis-origin-frame] relaxes the requirement to perform the DNS
+lookup if already connected to a server with an appropriate certificate which
+claims support for a particular origin.
 
 Servers which host many origins often would prefer to have separate
 certificates for some sets of origins. This may be for ease of
@@ -307,7 +311,7 @@ RFC 2119 [RFC2119] defines the terms "MUST", "MUST NOT", "SHOULD" and "MAY".
 
 # Discovering Additional Certificates at the HTTP/2 Layer {#discovery}
 
-A certificate chain with proof of possesion of the private key corresponding to
+A certificate chain with proof of possession of the private key corresponding to
 the end-entity certificate is sent as a single `CERTIFICATE` frame (see
 {{http-cert}}) on stream zero. Once the holder of a certificate has sent the
 chain and proof, this certificate chain is cached by the recipient and available
@@ -384,14 +388,15 @@ make a request has the same IP address as a server to which it is
 already connected, it MAY check whether the TLS certificate provided
 contains the new origin as well, and if so, reuse the connection.
 
-If the TLS certificate does not contain the new origin, but the server
-has advertised support for HTTP-layer certificates (see {{setting}}), it
-MAY send a `CERTIFICATE_NEEDED` frame on the stream it will use to
-make the request. (If the request parameters have not already been made
-available using a `CERTIFICATE_REQUEST` frame, the client will need to
-send the `CERTIFICATE_REQUEST` in order to generate the
-`CERTIFICATE_NEEDED` frame.) The stream represents a pending request
-to that origin which is blocked until a valid certificate is processed.
+If the TLS certificate does not contain the new origin, but the server has
+claimed support for that origin (with an ORIGIN frame, see
+[I-D.ietf-httpbis-origin-frame]) and advertised support for HTTP-layer
+certificates (see {{setting}}), it MAY send a `CERTIFICATE_NEEDED` frame on the
+stream it will use to make the request. (If the request parameters have not
+already been made available using a `CERTIFICATE_REQUEST` frame, the client will
+need to send the `CERTIFICATE_REQUEST` in order to generate the
+`CERTIFICATE_NEEDED` frame.) The stream represents a pending request to that
+origin which is blocked until a valid certificate is processed.
 
 The request is blocked until the server has responded with a
 `USE_CERTIFICATE` frame pointing to a certificate for that origin. If
@@ -401,12 +406,10 @@ certificate has not already been transmitted, the server will need to
 make the certificate available as described in {{cert-available}} before
 completing the exchange.)
 
-If the server does not have the desired certificate or cannot produce a
-signature compatible with the client's advertised settings, it MUST
-respond with an empty `USE_CERTIFICATE` frame. In this case, or if the
-server has not advertised support for HTTP-layer certificates, the
-client MUST NOT send any requests for resources in that origin on the
-current connection.
+If the server does not have the desired certificate, it MUST respond with an
+empty `USE_CERTIFICATE` frame. In this case, or if the server has not advertised
+support for HTTP-layer certificates, the client MUST NOT send any requests for
+resources in that origin on the current connection.
 
 ~~~
 Client                                      Server
@@ -442,14 +445,14 @@ Client                                      Server
 ~~~
 {: #ex-http2-client-requested title="Reactive Certificate Authentication"}
 
-A server SHOULD provide certificates for an origin before pushing
-resources from it. If a client receives a `PUSH_PROMISE` referencing an
-origin for which it has not yet received the server's certificate, the
-client MUST verify the server's possession of an appropriate certificate
-by sending a `CERTIFICATE_NEEDED` frame on the pushed stream to inform
-the server that progress is blocked until the request is satisfied. The
-client MUST NOT use the pushed resource until an appropriate certificate
-has been received and validated.
+A server SHOULD provide certificates for an origin before pushing resources from
+it or supplying content referencing the origin. If a client receives a
+`PUSH_PROMISE` referencing an origin for which it has not yet received the
+server's certificate, the client MUST verify the server's possession of an
+appropriate certificate by sending a `CERTIFICATE_NEEDED` frame on the pushed
+stream to inform the server that progress is blocked until the request is
+satisfied. The client MUST NOT use the pushed resource until an appropriate
+certificate has been received and validated.
 
 # Certificates Frames for HTTP/2 {#certs-http2}
 
@@ -526,7 +529,7 @@ the same certificate chain.
 
 The `USE_CERTIFICATE` frame MUST NOT be sent on stream zero or a stream on which
 a `CERTIFICATE_NEEDED` frame has not been received. Receipt of a
-`USE_CERTIFICATE` frame in these circmustances SHOULD be treated as a stream
+`USE_CERTIFICATE` frame in these circumstances SHOULD be treated as a stream
 error of type `PROTOCOL_ERROR`. Each `USE_CERTIFICATE` frame should reference a
 preceding `CERTIFICATE` frame. Receipt of a `USE_CERTIFICATE` frame before the
 necessary frames have been received on stream zero MUST also result in a stream
@@ -662,7 +665,7 @@ sending a `CERTIFICATE` frame. A server MUST NOT send certificates
 for origins which it is not prepared to service on the current
 connection.
 
-Upon recieving a CERTIFICATE frame, the reciever may validate the Exported
+Upon receiving a CERTIFICATE frame, the receiver may validate the Exported
 Authenticator value by using the exported authenticator API. This returns either
 an error indicating that the message was invalid, or the certificate chain and
 extensions used to create the message.
@@ -727,21 +730,20 @@ vulnerability in the TLS handshake.
 This mechanism could increase the impact of a key compromise. Rather than
 needing to subvert DNS or IP routing in order to use a compromised certificate,
 a malicious server now only needs a client to connect to *some* HTTPS site under
-its control in order to present the compromised certificate. Clients MUST
-continue to validate that the destination IP address is valid for the origin
-either by direct DNS resolution or resolution of a validated Alternative
-Service. (Future work could include a mechanism for a server to offer proofs.)
+its control in order to present the compromised certificate. As recommended in
+[I-D.ietf-httpbis-origin-frame], clients opting not to consult DNS ought to
+employ some alternative means to increase confidence that the certificate is
+legitimate.
 
 As noted in the Security Considerations of
-[I-D.ietf-tls-exported-authenticator], it difficult to formally prove that
-an endpoint is jointly authoritative over multiple certificates, rather than
+[I-D.ietf-tls-exported-authenticator], it difficult to formally prove that an
+endpoint is jointly authoritative over multiple certificates, rather than
 individually authoritative on each certificate.  As a result, clients MUST NOT
-assume that because one origin was previously colocated with another, those
+assume that because one origin was previously collocated with another, those
 origins will be reachable via the same endpoints in the future.  Clients MUST
 NOT consider previous secondary certificates to be validated after TLS session
-resumption.  However, clients MAY query for previously-presented secondary
-certificates after first repeating the validation of the endpoint's IP address
-against fresh DNS and Alt-Svc information.
+resumption.  However, clients MAY proactively query for previously-presented
+secondary certificates.
 
 ## Fingerprinting
 
@@ -766,11 +768,10 @@ timeouts used to guard against unresponsive peers.
 
 Validating a multitude of signatures can be computationally expensive, while
 generating an invalid signature is computationally cheap. Implementations will
-require checks for attacks from this direction. Signature proofs SHOULD NOT be
-validated until a stream requires the certificate to make progress. A signature
-which is not valid based on the asserted public key SHOULD be treated as a
-session error, to avoid further attacks from the peer, though an implementation
-MAY instead disable HTTP-layer certificates for the current connection instead.
+require checks for attacks from this direction. Invalid exported authenticators
+SHOULD be treated as a session error, to avoid further attacks from the peer,
+though an implementation MAY instead disable HTTP-layer certificates for the
+current connection instead.
 
 ## Confusion About State
 
