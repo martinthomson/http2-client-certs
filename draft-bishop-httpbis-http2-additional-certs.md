@@ -51,6 +51,7 @@ normative:
   I-D.ietf-tls-exported-authenticator:
 
 informative:
+  I-D.nottingham-httpbis-origin-frame:
   RFC7838:
   RFC2560:
   RFC6962:
@@ -409,6 +410,7 @@ current connection.
 
 ~~~
 Client                                      Server
+   <----------------------- (stream 0) ORIGIN --
    -- (stream 0) CERTIFICATE_REQUEST ---------->
    ...
    -- (stream N) CERTIFICATE_NEEDED ----------->
