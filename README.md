@@ -2,7 +2,7 @@
 
 This is the working area for the Individual internet-draft, "Secondary Certificate Authentication in HTTP/2".
 
-* [Editor's copy](https://mikebishop.github.io/http2-client-certs/)
+* [Editor's copy](https://mikebishop.github.io/http2-certs/)
 * [Individual Draft](https://www.ietf.org/internet-drafts/draft-bishop-httpbis-http2-additional-certs)
 
 ## Building the Draft
