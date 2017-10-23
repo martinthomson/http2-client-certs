@@ -557,11 +557,7 @@ stream error of type `PROTOCOL_ERROR`.
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+---------------+---------------+
- | Request-ID (8)|        CA-Count (16)          |
- +-----------------------------------------------+---------------+
- |                   Certificate-Authorities (?)               ...
- +---------------------------------------------------------------+
- |   Cert-Extension-Count (16)   |       Cert-Extensions(?)    ...
+ | Request-ID (8)|              Cert-Extensions(?)             ...
  +---------------------------------------------------------------+
 ~~~~~~~~~~~~~~~
 {: #fig-cert-request title="CERTIFICATE_REQUEST frame payload"}
@@ -569,48 +565,25 @@ stream error of type `PROTOCOL_ERROR`.
 The frame contains the following fields:
 
 Request-ID:
-: `Request-ID` is an 8-bit opaque identifier used to correlate
-subsequent certificate-related frames with this request.  The identifier
-MUST be unique in the session for the sender.
+: `Request-ID` is an 8-bit opaque identifier used to correlate subsequent
+  certificate-related frames with this request.  The identifier MUST be unique
+  in the session for the sender.
 
-CA-Count and Certificate-Authorities:
-: `Certificate-Authorities` is a series of distinguished names of
-acceptable certificate authorities, represented in DER-encoded [X690] format.
-These distinguished names may specify a desired distinguished name for a root
-CA or for a subordinate CA; thus, this message can be used to describe known
-roots as well as a desired authorization space. The number of such structures
-is given by the 16-bit `CA-Count` field, which MAY be zero. If the `CA-Count`
-field is zero, then the recipient MAY send any certificate that meets the rest
-of the selection criteria in the `CERTIFICATE_REQUEST`, unless there is some
-external arrangement to the contrary.
+Cert-Extensions:
 
-Cert-Extension-Count and Cert-Extensions:
-: A list of certificate extension OIDs [RFC5280] with their allowed
-values, represented in a series of `CertificateExtension` structures
-(see [I-D.ietf-tls-tls13] section 6.3.5). The list of OIDs MUST be used
-in certificate selection as described in {{I-D.ietf-tls-tls13}}. The
-number of Cert-Extension structures is given by the 16-bit
-`Cert-Extension-Count` field, which MAY be zero.
+: A TLS extensions block using the encoding `Extension <0..2^16-1>` as defined
+  in {{I-D.ietf-tls-tls13}}.
 
-Some certificate extension OIDs allow multiple values (e.g. Extended Key
-Usage). If the sender has included a non-empty Cert-Extensions
-list, the certificate MUST contain all of the specified extension OIDs
-that the recipient recognizes. For each extension OID recognized by the
-recipient, all of the specified values MUST be present in the
-certificate (but the certificate MAY have other values as well).
-However, the recipient MUST ignore and skip any unrecognized certificate
-extension OIDs.
+The Cert-Extensions block corresponds exactly to the extensions block in a TLS
+1.3 CertificateRequest message, with the identifiers and their semantics being
+the same as for CertificateRequest extensions in TLS when the
+CERTIFICATE_REQUEST is sent by a server.  In particular, the
+`signature_algorithms` extension is mandatory, because it determines the
+signature algorithms that can be used.
 
-Servers MUST be able to recognize the "subjectAltName" extension
-([RFC2459] section 4.2.1.7) at a minimum. Clients MUST always
-specify the desired origin using this extension, though other
-extensions MAY also be included.
-
-PKIX RFCs define a variety of certificate extension OIDs and their
-corresponding value types. Depending on the type, matching certificate
-extension values are not necessarily bitwise-equal. It is expected that
-implementations will rely on their PKI libraries to perform certificate
-selection using these certificate extension OIDs.
+When the `CERTIFICATE_REQUEST` frame is sent by a client, in addition to the any
+extensions permitted by TLS in a Certificate Request message, the `server_name`
+TLS extension MAY be included.
 
 ## The CERTIFICATE Frame {#http-cert}
 
