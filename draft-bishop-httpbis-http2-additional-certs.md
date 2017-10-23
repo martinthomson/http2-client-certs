@@ -318,13 +318,23 @@ same ID in certain cases.
 ## Indicating support for HTTP-layer certificate authentication {#setting}
 
 Clients and servers that will accept requests for HTTP-layer certificate
-authentication indicate this using the HTTP/2 `SETTINGS_HTTP_CERT_AUTH`
+authentication indicate this using the HTTP/2 `SETTINGS_MAX_CERTIFICATE_SIZE`
+(0xSETTING-TBD) and `SETTINGS_MAX_CERTIFICATE_COUNT`
 (0xSETTING-TBD) setting.
 
-The initial value for the `SETTINGS_HTTP_CERT_AUTH` setting is 0,
-indicating that the peer does not support HTTP-layer certificate authentication.
-If a peer does support HTTP-layer certificate authentication, the value
-is 1.
+The initial value for both settings is 0, indicating that the peer does not
+support HTTP-layer certificate authentication.  If a peer does support
+HTTP-layer certificate authentication, it can set these settings to appropriate
+values.
+
+The value of `SETTINGS_MAX_CERTIFICATE_SIZE` indicates the maximum size, in
+octets, of an Exported Authenticator that the endpoint is willing to receive.
+The valid range for this setting is 0 to 2^32-1.
+
+The value of `SETTINGS_MAX_CERTIFICATE_COUNT` indicates how many certificates
+the endpoint is willing to manage.  The Cert-ID field used in unsolicited
+`CERTIFICATE` frames MUST NOT equal or exceed this value.  The valid range for
+this setting is 0 to 256.
 
 ## Making certificates or requests available {#cert-available}
 
@@ -619,11 +629,14 @@ message ([I-D.ietf-tls-exported-authenticator]) from the TLS layer that
 provides a chain of certificates, associated extensions and proves possession of
 the private key corresponding to the end-entity certificate.
 
-The `CERTIFICATE` frame defines one flag:
+The `CERTIFICATE` frame defines two flags:
 
 AUTOMATIC_USE (0x01):
 : Indicates that the certificate can be used automatically on future
   requests.
+
+COMPLETE (0x02):
+: Indicates that the exported authenticator is complete.
 
 ~~~~~~~~~~~~
   0                   1                   2                   3
@@ -651,15 +664,28 @@ sending a `CERTIFICATE` frame. A server MUST NOT send certificates
 for origins which it is not prepared to service on the current
 connection.
 
-Upon receiving a CERTIFICATE frame, the receiver may validate the Exported
-Authenticator value by using the exported authenticator API. This returns either
-an error indicating that the message was invalid, or the certificate chain and
-extensions used to create the message.
+If the `COMPLETE` bit is not set, the `Exported Authenticator` field is
+incomplete.  The next `CERTIFICATE` frame with the same Cert-ID will contain
+more data.  Once a frame with the `COMPLETE` bit set is received, the recipient
+forms an Exported Authenticator value by concatenating the `Exported
+Authenticator` fields from all frames in the order that they were received.
+Endpoints SHOULD avoid sending interleaved `CERTIFICATE` frames with different
+Cert-ID values.
 
-It is possible that a large certificate chain might be too large to fit in a
-single HTTP/2 frame (see [RFC7540] section 4.2).  Senders unable to transfer a
-requested certificate due to the recipient's `SETTINGS_MAX_FRAME_SIZE` value
-SHOULD terminate affected streams with `CERTIFICATE_TOO_LARGE`.
+Certificates are potentially large, and the `CERTIFICATE` frame is not flow
+controlled.  The settings `SETTINGS_MAX_CERTIFICATE_SIZE` and
+`SETTINGS_MAX_CERTIFICATE_COUNT` are used to govern the size of overall size and
+number of certificates.  If the size of concatenated `Exported Authenticator`
+fields exceeds the advertised value of the `SETTINGS_MAX_CERTIFICATE_SIZE`, the
+endpoint MUST generate a connection error of type `CERTIFICATE_TOO_LARGE` (see
+{{errors}}).  If a `CERTIFICATE` frame includes a Cert-ID that exceeds the limit
+the endpoint advertised in the `SETTINGS_MAX_CERTIFICATE_COUNT` setting, it MUST
+generate a connection error of type `CERTIFICATE_INVALID_ID`.
+
+Upon receiving a complete sequence of `CERTIFICATE` frames, the receiver can
+validate the Exported Authenticator value by using the exported authenticator
+API. This returns either an error indicating that the message was invalid, or
+the certificate chain and extensions used to create the message.
 
 The `CERTIFICATE` frame MUST be sent on stream zero.  A `CERTIFICATE` frame
 received on any other stream MUST be rejected with a stream error of type
@@ -688,8 +714,12 @@ CERTIFICATE_EXPIRED (0xERROR-TBD4):
 :  A certificate has expired or is not currently valid
 
 CERTIFICATE_TOO_LARGE (0xERROR-TBD5):
-:  The certificate cannot be transferred due to the recipient's
-   `SETTINGS_MAX_FRAME_SIZE`
+:  A certificate exceeded the recipient's `SETTINGS_MAX_CERTIFICATE_SIZE`
+   setting.
+
+CERTIFICATE_INVALID_ID (0xERROR-TBD5):
+:  A certificate identifier used a value that exceeded the recipient's
+   `SETTINGS_MAX_CERTIFICATE_COUNT` setting.
 
 CERTIFICATE_GENERAL (0xERROR-TBD6):
 :  Any other certificate-related error
