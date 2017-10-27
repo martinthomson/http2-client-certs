@@ -595,26 +595,37 @@ message ([I-D.ietf-tls-exported-authenticator]) from the TLS layer that
 provides a chain of certificates, associated extensions and proves possession of
 the private key corresponding to the end-entity certificate.
 
-The `CERTIFICATE` frame defines one flag:
+The `CERTIFICATE` frame defines two flags:
 
 AUTOMATIC_USE (0x01):
 : Indicates that the certificate can be used automatically on future
   requests.
 
+TO_BE_CONTINUED (0x02):
+: Indicates that the exported authenticator spans more than one frame.
+
 ~~~~~~~~~~~~
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- |  Cert-ID (8)  |         Exported Authenticator (*)          ...
+ |  Cert-ID (8)  |      Exported Authenticator Fragment (*)    ...
  +---------------------------------------------------------------+
 ~~~~~~~~~~~~~~~
 {: #fig-proof-frame title="CERTIFICATE frame payload"}
 
-The `CERTIFICATE` frame (0xFRAME-TBD4) contains an `Exported Authenticator`
-field which corresponds to the value returned from the TLS connection exported
-authenticator API when provided with a certificate, a valid certificate chain
-for the connection and associated extensions (OCSP, SCT, etc.), and a
-connection-unique 8-byte certificate_request_context value.
+The `Exported Authenticator Fragment` field contains a portion of the opaque
+data returned from the TLS connection exported authenticator API when provided
+with a certificate, a valid certificate chain for the connection and associated
+extensions (OCSP, SCT, etc.), and a connection-unique 8-byte
+certificate_request_context value.
+
+This opaque data is transported in zero or more `CERTIFICATE` frames with the
+`TO_BE_CONTINUED` flag set, followed by one `CERTIFICATE` frame with the
+`TO_BE_CONTINUED` flag unset.  Each of these frames contains the same `Cert-ID`
+field, permitting them to be associated with each other.  Receipt of any
+`CERTIFICATE` frame with the same `Cert-ID` following the receipt of a
+`CERTIFICATE` frame with `TO_BE_CONTINUED` unset MUST be treated as a connection
+error of type `PROTOCOL_ERROR`.
 
 If the `AUTOMATIC_USE` flag is set, the recipient MAY omit sending
 `CERTIFICATE_NEEDED` frames on future streams which would require a
@@ -627,15 +638,10 @@ sending a `CERTIFICATE` frame. A server MUST NOT send certificates
 for origins which it is not prepared to service on the current
 connection.
 
-Upon receiving a CERTIFICATE frame, the receiver may validate the Exported
-Authenticator value by using the exported authenticator API. This returns either
-an error indicating that the message was invalid, or the certificate chain and
-extensions used to create the message.
-
-It is possible that a large certificate chain might be too large to fit in a
-single HTTP/2 frame (see [RFC7540] section 4.2).  Senders unable to transfer a
-requested certificate due to the recipient's `SETTINGS_MAX_FRAME_SIZE` value
-SHOULD terminate affected streams with `CERTIFICATE_TOO_LARGE`.
+Upon receiving a complete series of `CERTIFICATE` frames, the receiver may
+validate the Exported Authenticator value by using the exported authenticator
+API. This returns either an error indicating that the message was invalid, or
+the certificate chain and extensions used to create the message.
 
 The `CERTIFICATE` frame MUST be sent on stream zero.  A `CERTIFICATE` frame
 received on any other stream MUST be rejected with a stream error of type
@@ -663,11 +669,7 @@ CERTIFICATE_REVOKED (0xERROR-TBD3):
 CERTIFICATE_EXPIRED (0xERROR-TBD4):
 :  A certificate has expired or is not currently valid
 
-CERTIFICATE_TOO_LARGE (0xERROR-TBD5):
-:  The certificate cannot be transferred due to the recipient's
-   `SETTINGS_MAX_FRAME_SIZE`
-
-CERTIFICATE_GENERAL (0xERROR-TBD6):
+CERTIFICATE_GENERAL (0xERROR-TBD5):
 :  Any other certificate-related error
 
 As described in [RFC7540], implementations MAY choose to treat a stream error as
