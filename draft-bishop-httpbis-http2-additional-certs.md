@@ -556,12 +556,10 @@ stream error of type `PROTOCOL_ERROR`.
 ~~~~~~~~~~~~~~~
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- +-------------------------------+---------------+---------------+
- | Request-ID (8)|        CA-Count (16)          |
+ +---------------+-------------------------------+---------------+
+ | Request-ID (8)|      Extension-Count (16)     |
  +-----------------------------------------------+---------------+
- |                   Certificate-Authorities (?)               ...
- +---------------------------------------------------------------+
- |   Cert-Extension-Count (16)   |       Cert-Extensions(?)    ...
+ |                          Extensions(?)                      ...
  +---------------------------------------------------------------+
 ~~~~~~~~~~~~~~~
 {: #fig-cert-request title="CERTIFICATE_REQUEST frame payload"}
@@ -570,47 +568,25 @@ The frame contains the following fields:
 
 Request-ID:
 : `Request-ID` is an 8-bit opaque identifier used to correlate
-subsequent certificate-related frames with this request.  The identifier
-MUST be unique in the session for the sender.
+  subsequent certificate-related frames with this request.  The identifier
+  MUST be unique in the session for the sender.
 
-CA-Count and Certificate-Authorities:
-: `Certificate-Authorities` is a series of distinguished names of
-acceptable certificate authorities, represented in DER-encoded [X690] format.
-These distinguished names may specify a desired distinguished name for a root
-CA or for a subordinate CA; thus, this message can be used to describe known
-roots as well as a desired authorization space. The number of such structures
-is given by the 16-bit `CA-Count` field, which MAY be zero. If the `CA-Count`
-field is zero, then the recipient MAY send any certificate that meets the rest
-of the selection criteria in the `CERTIFICATE_REQUEST`, unless there is some
-external arrangement to the contrary.
+Extension-Count and Extensions:
+: A list of certificate selection criteria, represented in a series of
+  `Extension` structures (see [I-D.ietf-tls-tls13] section 4.2). This criteria
+  MUST be used in certificate selection as described in {{I-D.ietf-tls-tls13}}.
+  The number of `Extension` structures is given by the 16-bit `Extension-Count`
+  field, which MAY be zero.
 
-Cert-Extension-Count and Cert-Extensions:
-: A list of certificate extension OIDs [RFC5280] with their allowed
-values, represented in a series of `CertificateExtension` structures
-(see [I-D.ietf-tls-tls13] section 6.3.5). The list of OIDs MUST be used
-in certificate selection as described in {{I-D.ietf-tls-tls13}}. The
-number of Cert-Extension structures is given by the 16-bit
-`Cert-Extension-Count` field, which MAY be zero.
+Some extensions used for certificate selection allow multiple values (e.g.
+oid_filters on Extended Key Usage). If the sender has included a non-empty
+Extensions list, the certificate MUST match all criteria specified by extensions
+the recipient recognizes. However, the recipient MUST ignore and skip any
+unrecognized certificate selection extensions.
 
-Some certificate extension OIDs allow multiple values (e.g. Extended Key
-Usage). If the sender has included a non-empty Cert-Extensions
-list, the certificate MUST contain all of the specified extension OIDs
-that the recipient recognizes. For each extension OID recognized by the
-recipient, all of the specified values MUST be present in the
-certificate (but the certificate MAY have other values as well).
-However, the recipient MUST ignore and skip any unrecognized certificate
-extension OIDs.
-
-Servers MUST be able to recognize the "subjectAltName" extension
-([RFC2459] section 4.2.1.7) at a minimum. Clients MUST always
-specify the desired origin using this extension, though other
-extensions MAY also be included.
-
-PKIX RFCs define a variety of certificate extension OIDs and their
-corresponding value types. Depending on the type, matching certificate
-extension values are not necessarily bitwise-equal. It is expected that
-implementations will rely on their PKI libraries to perform certificate
-selection using these certificate extension OIDs.
+Servers MUST be able to recognize the `server_name` extension ([RFC6066]) at a
+minimum. Clients MUST always specify the desired origin using this extension,
+though other extensions MAY also be included.
 
 ## The CERTIFICATE Frame {#http-cert}
 
@@ -739,12 +715,12 @@ connections with different SNI values. Servers SHOULD impose similar
 denial-of-service mitigations (e.g. request rate limits) to
 `CERTIFICATE_REQUEST` frames as to new TLS connections.
 
-While the `CERTIFICATE_REQUEST` frame permits the sender to enumerate the
-acceptable Certificate Authorities for the requested certificate, it might not
-be prudent (either for security or data consumption) to include the full list of
-trusted Certificate Authorities in every request. Senders, particularly clients,
-SHOULD send an empty `Certificate-Authorities` element unless they are expecting
-a certificate to be signed by a particular CA or one of a small set of CAs.
+While the extensions in the `CERTIFICATE_REQUEST` frame permit the sender to
+enumerate the acceptable Certificate Authorities for the requested certificate,
+it might not be prudent (either for security or data consumption) to include the
+full list of trusted Certificate Authorities in every request. Senders,
+particularly clients, SHOULD send only the extensions that narrowly specify
+which certificates would be acceptable.
 
 ## Denial of Service
 
