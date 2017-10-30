@@ -520,17 +520,11 @@ preceding `CERTIFICATE` frame. Receipt of a `USE_CERTIFICATE` frame before the
 necessary frames have been received on stream zero MUST also result in a stream
 error of type `PROTOCOL_ERROR`.
 
-The referenced certificate chain MUST conform to the requirements
-expressed in the `CERTIFICATE_REQUEST` to the best of the sender's
-ability. Specifically:
-
-- If the `CERTIFICATE_REQUEST` contained a non-empty `Certificate-Authorities`
-  element, one of the certificates in the chain SHOULD be signed by one of the
-  listed CAs.
-
-- If the `CERTIFICATE_REQUEST` contained a non-empty `Cert-Extensions` element,
-  the end-entity certificate MUST match with regard to the extension OIDs
-  recognized by the sender.
+The referenced certificate chain MUST conform to the requirements expressed in
+the `CERTIFICATE_REQUEST` to the best of the sender's ability. Specifically, if
+the `CERTIFICATE_REQUEST` contained a non-empty `Cert-Extensions` element, the
+end-entity certificate MUST match with regard to the extensions recognized by
+the sender.
 
 If these requirements are not satisfied, the recipient MAY at its discretion
 either return an error at the HTTP semantic layer, or respond with a stream
