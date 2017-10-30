@@ -35,6 +35,7 @@ normative:
   RFC2459:
   RFC5246:
   RFC5280:
+  RFC6066:
   RFC7230:
   RFC7540:
   X690:
@@ -465,7 +466,7 @@ used to correlate the stream with a previous `CERTIFICATE_REQUEST` frame
 sent on stream zero. The `CERTIFICATE_REQUEST` describes the certificate
 the sender requires to make progress on the stream in question.
 
-The `CERTIFICATE_NEEDED` frame contains 1 octet, which is the
+The `CERTIFICATE_NEEDED` frame contains 2 octets, which is the
 authentication request identifier, `Request-ID`. A peer that receives a
 `CERTIFICATE_NEEDED` of any other length MUST treat this as a stream
 error of type `PROTOCOL_ERROR`. Frames with identical request
@@ -505,13 +506,12 @@ TLS layer, the stream should be processed with no authentication, likely
 returning an authentication-related error at the HTTP level (e.g. 403)
 for servers or routing the request to a new connection for clients.
 
-Otherwise, the `USE_CERTIFICATE` frame contains the `Cert-ID` of the
-certificate the sender wishes to use. This MUST be the ID of a
-certificate for which proof of possession has been presented in a
-`CERTIFICATE` frame. Recipients of a `USE_CERTIFICATE` frame of
-any other length MUST treat this as a stream error of type
-`PROTOCOL_ERROR`. Frames with identical certificate identifiers refer to
-the same certificate chain.
+Otherwise, the `USE_CERTIFICATE` frame contains the two-octet `Cert-ID` of the
+certificate the sender wishes to use. This MUST be the ID of a certificate for
+which proof of possession has been presented in a `CERTIFICATE` frame.
+Recipients of a `USE_CERTIFICATE` frame of any other length MUST treat this as a
+stream error of type `PROTOCOL_ERROR`. Frames with identical certificate
+identifiers refer to the same certificate chain.
 
 The `USE_CERTIFICATE` frame MUST NOT be sent on stream zero or a stream on which
 a `CERTIFICATE_NEEDED` frame has not been received. Receipt of a
@@ -556,9 +556,9 @@ stream error of type `PROTOCOL_ERROR`.
 ~~~~~~~~~~~~~~~
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- +---------------+-------------------------------+---------------+
- | Request-ID (8)|      Extension-Count (16)     |
- +-----------------------------------------------+---------------+
+ +-------------------------------+-------------------------------+
+ |        Request-ID (16)        |      Extension-Count (16)     |
+ +-------------------------------+-------------------------------+
  |                          Extensions(?)                      ...
  +---------------------------------------------------------------+
 ~~~~~~~~~~~~~~~
@@ -567,9 +567,9 @@ stream error of type `PROTOCOL_ERROR`.
 The frame contains the following fields:
 
 Request-ID:
-: `Request-ID` is an 8-bit opaque identifier used to correlate
-  subsequent certificate-related frames with this request.  The identifier
-  MUST be unique in the session for the sender.
+: `Request-ID` is a 16-bit opaque identifier used to correlate subsequent
+  certificate-related frames with this request.  The identifier MUST be unique
+  in the session for the sender.
 
 Extension-Count and Extensions:
 : A list of certificate selection criteria, represented in a series of
@@ -608,7 +608,7 @@ TO_BE_CONTINUED (0x02):
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-------------------------------+-------------------------------+
- |  Cert-ID (8)  |      Exported Authenticator Fragment (*)    ...
+ |          Cert-ID (16)         |   Authenticator Fragment (*)...
  +---------------------------------------------------------------+
 ~~~~~~~~~~~~~~~
 {: #fig-proof-frame title="CERTIFICATE frame payload"}
