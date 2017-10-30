@@ -16,8 +16,7 @@ pi: [toc, sortrefs, symrefs]
 author:
  -
     name: Mike Bishop
-    organization: Microsoft
-    email: michael.bishop@microsoft.com
+    email: mbishop@evequefou.be
 
  -
     name: Nick Sullivan
