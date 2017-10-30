@@ -453,8 +453,9 @@ The `CERTIFICATE`, and `USE_CERTIFICATE` frames are correlated by their
 be sent in response to other `CERTIFICATE_NEEDED` frames and refer to the same
 certificate.
 
-`Request-ID` and `Cert-ID` are sender-local, and the use of the same
-value by the other peer does not imply any correlation between their frames.
+`Request-ID` and `Cert-ID` are sender-local, and the use of the same value by
+the other peer does not imply any correlation between their frames. These values
+MUST be unique per sender over the lifetime of the connection.
 
 ## The CERTIFICATE_NEEDED frame {#http-cert-needed}
 
@@ -536,8 +537,8 @@ defines certificate-related error codes which might be applicable.
 TLS 1.3 defines the `CertificateRequest` message, which prompts the client to
 provide a certificate which conforms to certain properties specified by the
 server.  This draft defines the `CERTIFICATE_REQUEST` frame (0xFRAME-TBD2),
-which contains the same contents as a TLS 1.3 `CertificateRequest` message, but
-can be sent over any TLS version.
+which uses the same set of extensions to specify a desired certificate, but
+can be sent over any TLS version and can be sent by either peer.
 
 The `CERTIFICATE_REQUEST` frame SHOULD NOT be sent to a peer which has not
 advertised support for HTTP-layer certificate authentication.
