@@ -584,9 +584,9 @@ though other extensions MAY also be included.
 ## The CERTIFICATE Frame {#http-cert}
 
 The `CERTIFICATE` frame (id=0xFRAME-TBD3) provides a exported authenticator
-message ([I-D.ietf-tls-exported-authenticator]) from the TLS layer that
-provides a chain of certificates, associated extensions and proves possession of
-the private key corresponding to the end-entity certificate.
+message from the TLS layer that provides a chain of certificates, associated
+extensions and proves possession of the private key corresponding to the
+end-entity certificate.
 
 The `CERTIFICATE` frame defines two flags:
 
@@ -607,10 +607,8 @@ TO_BE_CONTINUED (0x02):
 {: #fig-proof-frame title="CERTIFICATE frame payload"}
 
 The `Exported Authenticator Fragment` field contains a portion of the opaque
-data returned from the TLS connection exported authenticator API when provided
-with a certificate, a valid certificate chain for the connection and associated
-extensions (OCSP, SCT, etc.), and a connection-unique 8-byte
-certificate_request_context value.
+data returned from the TLS connection exported authenticator `authenticate` API.
+See {{exp-auth}} for more details on the input to this API.
 
 This opaque data is transported in zero or more `CERTIFICATE` frames with the
 `TO_BE_CONTINUED` flag set, followed by one `CERTIFICATE` frame with the
