@@ -640,6 +640,23 @@ The `CERTIFICATE` frame MUST be sent on stream zero.  A `CERTIFICATE` frame
 received on any other stream MUST be rejected with a stream error of type
 `PROTOCOL_ERROR`.
 
+### Exported Authenticator Characteristics {#exp-auth}
+
+The Exported Authenticator API defined in [I-D.ietf-tls-exported-authenticator]
+takes as input a certificate, supporting information about the certificate
+(OCSP, SCT, etc.), and an optional `certificate_request_context`.  When
+generating exported authenticators for use with this extension, the
+`certificate_request_context` MUST be the two-octet Cert-ID.
+
+Upon receipt of a completed authenticator, an endpoint MUST check that:
+
+ - the `validate` API confirms the validity of the authenticator itself
+ - the `certificate_request_context` matches the Cert-ID of the frame(s) in
+   which it was received
+
+Once the authenticator is accepted, the endpoint can perform any other checks
+for the acceptability of the certificate itself.
+
 # Indicating failures during HTTP-Layer Certificate Authentication {#errors}
 
 Because this draft permits certificates to be exchanged at the HTTP
