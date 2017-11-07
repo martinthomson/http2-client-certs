@@ -16,6 +16,7 @@ pi: [toc, sortrefs, symrefs]
 author:
  -
     name: Mike Bishop
+    organization: Akamai
     email: mbishop@evequefou.be
 
  -
@@ -825,8 +826,10 @@ registered by this document.
 
 # Acknowledgements {#ack}
 
-Eric Rescorla pointed out several failings in an earlier revision.
-Andrei Popov contributed to the TLS considerations.
+Eric Rescorla pointed out several failings in an earlier revision. Andrei Popov
+contributed to the TLS considerations.
 
+A substantial portion of Mike's work on this draft was supported by Microsoft
+during his employment there.
 
 --- back
